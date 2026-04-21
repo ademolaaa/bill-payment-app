@@ -43,16 +43,16 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, d
   const formattedAmount = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Math.abs(transaction.amount));
 
   return (
-    <Link href={`/history/${transaction.id}`} className="flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-50 mb-3 hover:bg-gray-50 transition-colors">
+    <Link href={`/history/${transaction.id}`} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-50 dark:border-slate-800 mb-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
       <div className="flex items-center space-x-3">
         {getIcon()}
         <div>
-          <h4 className="text-[15px] font-semibold text-gray-900 capitalize">{transaction.providerReference || transaction.type}</h4>
-          <p className="text-[12px] text-gray-500">{dateStr}</p>
+          <h4 className="text-[15px] font-semibold text-gray-900 dark:text-white capitalize">{transaction.providerReference || transaction.type}</h4>
+          <p className="text-[12px] text-gray-500 dark:text-slate-400">{dateStr}</p>
         </div>
       </div>
       <div className="text-right">
-        <p className={`text-[15px] font-semibold ${isPositive ? 'text-green-600' : 'text-gray-900'}`}>
+        <p className={`text-[15px] font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
           {isPositive ? '+' : '-'}{formattedAmount}
         </p>
         <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${

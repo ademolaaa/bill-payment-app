@@ -7,7 +7,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-slate-50 relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
       {/* 
         The main content area has pb-20 to ensure it doesn't 
         hide behind the fixed BottomNav on mobile. 

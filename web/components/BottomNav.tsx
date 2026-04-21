@@ -47,16 +47,16 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-safe pt-2 px-4 z-50 rounded-t-xl">
+    <nav className="fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)] pb-safe pt-2 px-4 z-50 rounded-t-xl transition-colors duration-300">
       <div className="flex justify-between items-center max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = pathname?.startsWith(item.href);
           return (
             <Link key={item.label} href={item.href} className="flex flex-col items-center justify-center w-16 h-12">
-              <div className={`mb-1 transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-gray-400'}`}>
+              <div className={`mb-1 transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-gray-400 dark:text-slate-500'}`}>
                 {item.icon}
               </div>
-              <span className={`text-[10px] font-medium transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-gray-400'}`}>
+              <span className={`text-[10px] font-medium transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-gray-400 dark:text-slate-500'}`}>
                 {item.label}
               </span>
             </Link>

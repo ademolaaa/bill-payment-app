@@ -8,12 +8,12 @@ interface NotificationItemProps {
 
 export const NotificationItem: React.FC<NotificationItemProps> = ({ title, description, timestamp }) => {
   return (
-    <div className="py-4 border-b border-gray-100 last:border-b-0">
+    <div className="py-4 border-b border-gray-100 dark:border-slate-800 last:border-b-0">
       <div className="flex justify-between items-start mb-1">
-        <h4 className="text-[16px] font-semibold text-[#1a202c]">{title}</h4>
-        <span className="text-[13px] text-gray-500 font-medium">{timestamp}</span>
+        <h4 className="text-[16px] font-semibold text-[#1a202c] dark:text-white">{title}</h4>
+        <span className="text-[13px] text-gray-500 dark:text-slate-400 font-medium">{timestamp}</span>
       </div>
-      <p className="text-[15px] text-gray-800 leading-relaxed pr-8">
+      <p className="text-[15px] text-gray-800 dark:text-slate-300 leading-relaxed pr-8">
         {description}
       </p>
     </div>
