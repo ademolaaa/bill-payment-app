@@ -25,8 +25,8 @@ export default function HomePage() {
           </div>
           
           <div className="flex w-full space-x-3">
-            <Button className="flex-1 rounded-[12px]">Deposit</Button>
-            <Button className="flex-1 rounded-[12px]">Pay Bills</Button>
+            <Link href="/deposit" className="flex-1"><Button className="w-full rounded-[12px]">Deposit</Button></Link>
+            <Link href="/pay-bills" className="flex-1"><Button className="w-full rounded-[12px]">Pay Bills</Button></Link>
           </div>
         </div>
 
@@ -60,17 +60,17 @@ export default function HomePage() {
         {/* Quick Actions Row */}
         <div className="grid grid-cols-4 gap-2 pt-2">
           {[
-            { label: 'Transfer', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg> },
-            { label: 'Withdraw', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg> },
-            { label: 'Invest', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> },
-            { label: 'Wallet', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> },
+            { label: 'Transfer', href: '/transfer', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg> },
+            { label: 'Withdraw', href: '/withdraw', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg> },
+            { label: 'Invest', href: '/investments', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> },
+            { label: 'Wallet', href: '/deposit', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> },
           ].map((action, idx) => (
-            <div key={idx} className="flex flex-col items-center cursor-pointer">
-              <div className="w-[52px] h-[52px] bg-blue-600 rounded-full flex items-center justify-center text-white mb-2 shadow-sm hover:bg-blue-700 transition">
+            <Link href={action.href} key={idx} className="flex flex-col items-center cursor-pointer group">
+              <div className="w-[52px] h-[52px] bg-blue-600 rounded-full flex items-center justify-center text-white mb-2 shadow-sm group-hover:bg-blue-700 transition">
                 {action.icon}
               </div>
-              <span className="text-[12px] font-medium text-gray-900">{action.label}</span>
-            </div>
+              <span className="text-[12px] font-medium text-gray-900 group-hover:text-blue-600 transition">{action.label}</span>
+            </Link>
           ))}
         </div>
 
