@@ -6,11 +6,65 @@ import { Input } from '../../../components/Input';
 
 const BILL_CATEGORIES = [
   { id: 'airtime', name: 'Airtime', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>, color: 'text-blue-500', bg: 'bg-blue-50' },
-  { id: 'data', name: 'Data', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>, color: 'text-green-500', bg: 'bg-green-50' },
+  { id: 'data', name: 'Data', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 21.213 0" /></svg>, color: 'text-green-500', bg: 'bg-green-50' },
   { id: 'electricity', name: 'Electricity', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>, color: 'text-yellow-500', bg: 'bg-yellow-50' },
   { id: 'tv', name: 'TV', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>, color: 'text-purple-500', bg: 'bg-purple-50' },
   { id: 'betting', name: 'Betting', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, color: 'text-red-500', bg: 'bg-red-50' },
 ];
+
+const CATEGORY_PROVIDERS: Record<string, { label: string; placeholder: string; options: { value: string; label: string }[] }> = {
+  airtime: {
+    label: 'Network',
+    placeholder: 'Select Network',
+    options: [
+      { value: 'mtn', label: 'MTN' },
+      { value: 'airtel', label: 'Airtel' },
+      { value: 'glo', label: 'Glo' },
+      { value: '9mobile', label: '9mobile' },
+    ],
+  },
+  data: {
+    label: 'Network',
+    placeholder: 'Select Network',
+    options: [
+      { value: 'mtn', label: 'MTN' },
+      { value: 'airtel', label: 'Airtel' },
+      { value: 'glo', label: 'Glo' },
+      { value: '9mobile', label: '9mobile' },
+    ],
+  },
+  electricity: {
+    label: 'Provider',
+    placeholder: 'Select Distribution Company',
+    options: [
+      { value: 'ikedc', label: 'Ikeja Electric (IKEDC)' },
+      { value: 'ekedc', label: 'Eko Electric (EKEDC)' },
+      { value: 'aedc', label: 'Abuja Electric (AEDC)' },
+      { value: 'kedco', label: 'Kano Electric (KEDCO)' },
+      { value: 'phEDC', label: 'Port Harcourt (PHEDC)' },
+    ],
+  },
+  tv: {
+    label: 'Provider',
+    placeholder: 'Select TV Provider',
+    options: [
+      { value: 'dstv', label: 'DSTV' },
+      { value: 'gotv', label: 'GOTV' },
+      { value: 'startimes', label: 'StarTimes' },
+      { value: 'showmax', label: 'Showmax' },
+    ],
+  },
+  betting: {
+    label: 'Package',
+    placeholder: 'Select Betting Platform',
+    options: [
+      { value: 'bet9ja', label: 'Bet9ja' },
+      { value: 'sportybet', label: 'SportyBet' },
+      { value: 'betway', label: 'Betway' },
+      { value: '1xbet', label: '1xBet' },
+    ],
+  },
+};
 
 export default function PayBillsPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -68,7 +122,7 @@ export default function PayBillsPage() {
         </div>
       </section>
 
-      {/* Dummy Modal Overlay - Currently mapped to 'airtime' but acts globally as per instructions */}
+      {/* Dummy Modal Overlay */}
       {activeCategory && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           {/* Backdrop */}
@@ -80,27 +134,28 @@ export default function PayBillsPage() {
             
             <form onSubmit={handlePay}>
               <div className="space-y-4 mb-8">
-                 {/* Styled Select Dropdown overriding Input for Network */}
+                 {/* Styled Select Dropdown overriding Input for Provider/Network */}
                  <div>
-                    <label className="block text-gray-800 text-[15px] font-medium mb-1.5">Network</label>
+                    <label className="block text-gray-800 text-[15px] font-medium mb-1.5">
+                      {CATEGORY_PROVIDERS[activeCategory]?.label || 'Provider'}
+                    </label>
                     <select 
                       className="w-full border border-gray-200 rounded-xl py-3.5 px-4 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                       value={network}
                       onChange={(e) => setNetwork(e.target.value)}
                       required
                     >
-                      <option value="" disabled>Select Network</option>
-                      <option value="mtn">MTN</option>
-                      <option value="airtel">Airtel</option>
-                      <option value="glo">Glo</option>
-                      <option value="9mobile">9mobile</option>
+                      <option value="" disabled>{CATEGORY_PROVIDERS[activeCategory]?.placeholder || 'Select Option'}</option>
+                      {CATEGORY_PROVIDERS[activeCategory]?.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
                     </select>
                  </div>
 
                  <Input 
-                   label="Phone Number"
+                   label={activeCategory === 'electricity' ? 'Meter Number' : activeCategory === 'tv' ? 'Smart Card Number' : 'Phone Number'}
                    type="tel"
-                   placeholder="0801 234 5678"
+                   placeholder={activeCategory === 'electricity' ? '01023456789' : activeCategory === 'tv' ? '1234567890' : '0801 234 5678'}
                    value={phone}
                    onChange={(e) => setPhone(e.target.value)}
                    required
