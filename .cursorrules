@@ -1,0 +1,5 @@
+SYSTEM INSTRUCTIONS FOR AI:
+1. Security First: Never use client-side logic for financial calculations. All money math MUST happen in Next.js Server Actions or Firebase Cloud Functions.
+2. Data Validation: Use the 'zod' library to strictly validate every user input before it touches the database. 
+3. Transactions: Use Firebase 'Batched Writes' or 'Transactions' for all wallet deductions to prevent double-spending.
+4. No Secrets: Never hardcode API keys. Always pull from process.env.

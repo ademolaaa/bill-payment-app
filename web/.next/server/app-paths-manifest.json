@@ -1,0 +1,7 @@
+{
+  "/kyc/page": "app/kyc/page.js",
+  "/(dashboard)/home/page": "app/(dashboard)/home/page.js",
+  "/(dashboard)/profile/page": "app/(dashboard)/profile/page.js",
+  "/(dashboard)/investments/page": "app/(dashboard)/investments/page.js",
+  "/(dashboard)/pay-bills/page": "app/(dashboard)/pay-bills/page.js"
+}
