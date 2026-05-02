@@ -8,12 +8,7 @@ import { Transaction } from '../../../types/database';
 import { supabase } from '../../../lib/supabase/client';
 import { Transaction } from '../../../types/database';
 
-// ── Dummy recent transactions (reusing same shape as history page) ────────────
-const RECENT_TRANSACTIONS: (Transaction & { dateStr: string })[] = [
-  { id: 't1', userId: 'u1', type: 'deposit',  amount:  150000, status: 'completed', providerReference: 'Salary Deposit',       dateStr: 'Today, 21 Apr' },
-  { id: 't2', userId: 'u1', type: 'payment',  amount:  -6500,  status: 'completed', providerReference: 'Netflix Subscription',  dateStr: 'Today, 21 Apr' },
-  { id: 't3', userId: 'u1', type: 'transfer', amount:  -25000, status: 'pending',   providerReference: 'Transfer to Mom',       dateStr: 'Today, 21 Apr' },
-];
+// ── Dashboard state will replace dummy data ────────────
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function getGreeting(): string {
@@ -42,16 +37,53 @@ const EyeOffIcon = () => (
 export default function HomePage() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [userName, setUserName] = useState('');
+  const [balanceNGN, setBalanceNGN] = useState<number>(0);
+  const [balanceUSDT, setBalanceUSDT] = useState<number>(0);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchDashboardData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user && user.user_metadata?.full_name) {
+      if (!user) return;
+      
+      if (user.user_metadata?.full_name) {
         const firstName = user.user_metadata.full_name.split(' ')[0];
         setUserName(firstName);
       }
+
+      // Fetch profile balances
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('balance_ngn, balance_usdt')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile) {
+        setBalanceNGN(Number(profile.balance_ngn) || 0);
+        setBalanceUSDT(Number(profile.balance_usdt) || 0);
+      }
+
+      // Fetch recent transactions
+      const { data: txs } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+        
+      if (txs && txs.length > 0) {
+        const formattedTxs = txs.map(tx => ({
+          id: tx.id,
+          type: tx.type,
+          amount: Number(tx.amount),
+          status: tx.status,
+          providerReference: tx.description || tx.provider_reference || (tx.type === 'deposit' ? 'Account Deposit' : 'Transaction'),
+          dateStr: new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        }));
+        setRecentTransactions(formattedTxs);
+      }
     };
-    fetchUser();
+    fetchDashboardData();
   }, []);
 
   const mask = (value: string) => (balanceVisible ? value : '••••••');
@@ -92,10 +124,10 @@ export default function HomePage() {
             </div>
 
             <h2 className="text-[34px] font-bold text-gray-900 tracking-tight leading-none mb-2 transition-all duration-300">
-              {mask('₦182,300.00')}
+              {mask(`₦${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
             </h2>
             <p className="text-[15px] font-medium text-gray-500 mb-6">
-              {mask('1,250.75 USDT')}
+              {mask(`${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`)}
             </p>
           </div>
 
@@ -166,9 +198,15 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="flex flex-col">
-            {RECENT_TRANSACTIONS.map((tx) => (
-              <TransactionItem key={tx.id} transaction={tx} dateStr={tx.dateStr} />
-            ))}
+            {recentTransactions.length > 0 ? (
+              recentTransactions.map((tx) => (
+                <TransactionItem key={tx.id} transaction={tx} dateStr={tx.dateStr} />
+              ))
+            ) : (
+              <div className="py-6 text-center text-gray-400 text-sm">
+                No recent transactions
+              </div>
+            )}
           </div>
         </div>
 
