@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button } from '../../../components/Button';
-import { Input } from '../../../components/Input';
+import Link from 'next/link';
 
 export default function WithdrawPage() {
   return (
@@ -12,29 +11,37 @@ export default function WithdrawPage() {
         <p className="text-gray-500 text-sm mt-1">Send funds to your local bank or crypto wallet</p>
       </header>
 
-      <div className="px-5 pt-6">
-        <form className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm mt-2">
-          <div className="mb-4">
-            <label className="block text-gray-800 text-[15px] font-medium mb-1.5">Withdraw Method</label>
-            <select className="w-full border border-gray-200 rounded-xl py-3.5 px-4 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-[15px]">
-              <option>Local Bank Transfer</option>
-              <option>USDT (TRC20)</option>
-            </select>
+      <div className="px-5 pt-6 flex flex-col space-y-8">
+        
+        <div>
+          <h2 className="text-[15px] font-bold text-gray-900 mb-3 ml-1">External Transfer</h2>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            
+            <Link href="/withdraw/bank-transfer" className="flex items-center p-4 hover:bg-gray-50 transition-colors border-b border-gray-50">
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>
+              </div>
+              <div className="flex-grow">
+                <h3 className="text-[15px] font-bold text-gray-900">Bank Transfer</h3>
+                <p className="text-[12px] text-gray-500 mt-0.5">Withdraw to your local bank account</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+
+            <Link href="/withdraw/crypto-transfer" className="flex items-center p-4 hover:bg-gray-50 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              </div>
+              <div className="flex-grow">
+                <h3 className="text-[15px] font-bold text-gray-900">Cryptocurrency (USDT TRC20)</h3>
+                <p className="text-[12px] text-gray-500 mt-0.5">Withdraw to external USDT wallet</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+
           </div>
-          
-          <Input 
-            label="Amount" 
-            placeholder="0.00" 
-            type="number" 
-          />
-          <Input 
-            label="Destination Account / Address" 
-            placeholder="Account Number or Wallet Address" 
-          />
-          <div className="mt-8">
-            <Button type="submit">Submit Withdrawal</Button>
-          </div>
-        </form>
+        </div>
+
       </div>
     </div>
   );

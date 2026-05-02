@@ -281,8 +281,18 @@ export default function InvestmentsPage() {
                     : `Enter the amount you wish to invest to earn ${activePlan?.apy}.`}
                 </p>
                 <div className="mb-6">
+                  {modalMode !== 'topup' && (
+                    <div className="mb-4">
+                      <label htmlFor="investment-package" className="block text-gray-800 text-[14px] font-medium mb-1.5">Investment Package</label>
+                      <select id="investment-package" className="w-full border border-gray-200 rounded-xl py-3 px-4 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-[14px]">
+                        <option>3 Months, 11% ROI</option>
+                        <option>6 Months, 23% ROI</option>
+                        <option>12 Months, 47% ROI</option>
+                      </select>
+                    </div>
+                  )}
                   <Input
-                    label="Amount (₦)"
+                    label="Amount"
                     type="number"
                     placeholder="0.00"
                     value={amount}
