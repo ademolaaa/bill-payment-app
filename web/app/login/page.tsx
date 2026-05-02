@@ -14,6 +14,7 @@ export default function LoginPage() {
     password: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,6 +23,14 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
+
+    if (!formData.email || !formData.password) {
+      setError('Email and password are required.');
+      setIsLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
@@ -29,6 +38,7 @@ export default function LoginPage() {
     
     if (error) {
       setError(error.message);
+      setIsLoading(false);
     } else {
       router.push('/home');
     }
@@ -67,7 +77,9 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" variant="primary">Log In</Button>
+          <Button type="submit" variant="primary" disabled={isLoading}>
+            {isLoading ? 'Logging In...' : 'Log In'}
+          </Button>
           
           <div className="text-center mt-6">
             <p className="text-[#1a202c] font-medium text-[15px]">

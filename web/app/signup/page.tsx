@@ -16,6 +16,7 @@ export default function SignUpPage() {
     confirmPassword: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,10 +25,26 @@ export default function SignUpPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    setIsLoading(true);
+
+    if (!formData.email || !formData.password || !formData.fullName) {
+      setError('All fields are required.');
+      setIsLoading(false);
       return;
     }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
@@ -40,6 +57,7 @@ export default function SignUpPage() {
     
     if (error) {
       setError(error.message);
+      setIsLoading(false);
     } else {
       router.push('/home');
     }
@@ -90,7 +108,9 @@ export default function SignUpPage() {
              />
           </div>
 
-          <Button type="submit" variant="primary">Create Account</Button>
+          <Button type="submit" variant="primary" disabled={isLoading}>
+            {isLoading ? 'Creating Account...' : 'Create Account'}
+          </Button>
           
           <div className="text-center mt-4">
             <p className="text-sm text-gray-500 font-medium px-4">
