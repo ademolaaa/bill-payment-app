@@ -18,17 +18,17 @@ export default function SuccessfulReferralsPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
-      <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm relative z-10">
-        <Link href="/referral" className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
+      <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white dark:bg-slate-900 shadow-sm relative z-10">
+        <Link href="/referral" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:bg-slate-800 transition-colors cursor-pointer">
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
-        <h1 className="text-[17px] font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">Successful Referrals</h1>
+        <h1 className="text-[17px] font-bold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">Successful Referrals</h1>
         <div className="w-8"></div>
       </header>
 
       <div className="p-4 mt-2">
-        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center space-x-4 mb-6">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl shadow-sm border border-gray-100 flex items-center space-x-4 mb-6">
           <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 relative">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -36,16 +36,16 @@ export default function SuccessfulReferralsPage() {
             </div>
           </div>
           <div>
-            <p className="text-[13px] font-medium text-gray-500 mb-0.5">Total Successful Referrals</p>
+            <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-0.5">Total Successful Referrals</p>
             <h2 className="text-[28px] font-bold text-blue-600">18</h2>
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="grid grid-cols-3 gap-2 p-4 border-b border-gray-50">
-            <span className="text-[12px] font-medium text-gray-500 col-span-1">Referee</span>
-            <span className="text-[12px] font-medium text-gray-500 text-center col-span-1">Joined Date</span>
-            <span className="text-[12px] font-medium text-gray-500 text-right col-span-1">Investment Date</span>
+            <span className="text-[12px] font-medium text-gray-500 dark:text-slate-400 col-span-1">Referee</span>
+            <span className="text-[12px] font-medium text-gray-500 dark:text-slate-400 text-center col-span-1">Joined Date</span>
+            <span className="text-[12px] font-medium text-gray-500 dark:text-slate-400 text-right col-span-1">Investment Date</span>
           </div>
           
           <div className="flex flex-col divide-y divide-gray-50">
@@ -55,7 +55,7 @@ export default function SuccessfulReferralsPage() {
                   <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0">
                     {ref.initials}
                   </div>
-                  <span className="text-[13px] font-bold text-gray-900 truncate">{ref.name}</span>
+                  <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate">{ref.name}</span>
                 </div>
                 <div className="text-[12px] font-medium text-gray-600 text-center col-span-1">
                   {ref.joined}

@@ -6,14 +6,14 @@ import { Input } from '../../../components/Input';
 
 export default function TransferPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
-      <header className="px-5 pt-12 pb-4 border-b border-gray-100 bg-white">
-        <h1 className="text-[24px] font-bold text-gray-900">Transfer</h1>
-        <p className="text-gray-500 text-sm mt-1">Send funds to another Kyvatron user</p>
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
+      <header className="px-5 pt-12 pb-4 border-b border-gray-100 bg-white dark:bg-slate-900">
+        <h1 className="text-[24px] font-bold text-gray-900 dark:text-white">Transfer</h1>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Send funds to another Kyvatron user</p>
       </header>
 
       <div className="px-5 pt-6">
-        <form className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm mt-2">
+        <form className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 shadow-sm mt-2">
           <Input 
             label="Recipient Email or Username" 
             placeholder="e.g. user@kyvatron.com" 

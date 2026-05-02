@@ -6,7 +6,7 @@ import { Input } from '../../../../components/Input';
 
 export default function DeleteAccountPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-white pb-24">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 pb-24">
       <header className="px-5 pt-12 pb-4 border-b border-gray-100">
         <h1 className="text-[26px] font-bold text-red-600">Delete Account</h1>
       </header>

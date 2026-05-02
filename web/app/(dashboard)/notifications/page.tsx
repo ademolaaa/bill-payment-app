@@ -32,10 +32,10 @@ const dummyNotifications = [
 
 export default function NotificationsPage() {
   return (
-    <div className="flex flex-col p-6 min-h-screen bg-white">
+    <div className="flex flex-col p-6 min-h-screen bg-white dark:bg-slate-900">
       {/* Header */}
       <header className="mb-6 mt-10">
-        <h1 className="text-3xl font-bold text-[#1a202c]">Notifications</h1>
+        <h1 className="text-3xl font-bold text-[#1a202c] dark:text-white">Notifications</h1>
       </header>
 
       {/* Notifications List */}

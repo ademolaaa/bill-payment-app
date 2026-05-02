@@ -45,9 +45,9 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 flex flex-col items-center p-6 pt-24">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center p-6 pt-24">
       <div className="w-full max-w-sm flex flex-col">
-        <h1 className="text-3xl font-bold text-[#1a202c] mb-8">Log In</h1>
+        <h1 className="text-3xl font-bold text-[#1a202c] dark:text-white mb-8">Log In</h1>
         
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         
@@ -82,7 +82,7 @@ export default function LoginPage() {
           </Button>
           
           <div className="text-center mt-6">
-            <p className="text-[#1a202c] font-medium text-[15px]">
+            <p className="text-[#1a202c] dark:text-white font-medium text-[15px]">
               Don&apos;t have an account?{' '}
               <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Sign Up

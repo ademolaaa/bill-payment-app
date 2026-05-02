@@ -17,16 +17,16 @@ export default function MenuPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-white pb-24">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 pb-24">
       <header className="px-5 pt-12 pb-4 border-b border-gray-100">
-        <h1 className="text-[28px] font-bold text-gray-900">Menu</h1>
+        <h1 className="text-[28px] font-bold text-gray-900 dark:text-white">Menu</h1>
       </header>
 
       <div className="px-5 pt-6">
         <ul className="space-y-1">
           {menuItems.map((item, index) => (
             <li key={index}>
-              <Link href={item.href} className="block py-4 text-[17px] font-medium text-gray-800 border-b border-gray-50 hover:text-blue-600 transition-colors">
+              <Link href={item.href} className="block py-4 text-[17px] font-medium text-gray-800 dark:text-slate-200 border-b border-gray-50 hover:text-blue-600 transition-colors">
                 {item.label}
               </Link>
             </li>

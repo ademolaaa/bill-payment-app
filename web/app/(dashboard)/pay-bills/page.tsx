@@ -106,12 +106,12 @@ const SelectField = ({
   placeholder: string; options: { value: string; label: string }[];
 }) => (
   <div className="mb-4 w-full">
-    <label htmlFor={id} className="block text-gray-900 text-[15px] font-bold mb-2">{label}</label>
+    <label htmlFor={id} className="block text-gray-900 dark:text-white text-[15px] font-bold mb-2">{label}</label>
     <div className="relative">
       <select
         id={id}
         title={label}
-        className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-5 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-[15px] font-medium shadow-sm appearance-none"
+        className="w-full bg-gray-50 border border-transparent rounded-2xl py-4 px-5 text-gray-900 dark:text-white focus:outline-none focus:bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-[15px] font-medium shadow-sm appearance-none"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
@@ -119,7 +119,7 @@ const SelectField = ({
         <option value="" disabled>{placeholder}</option>
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
-      <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400">
+      <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400 dark:text-slate-500">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
       </div>
     </div>
@@ -412,12 +412,12 @@ export default function PayBillsPage() {
   return (
     <div className="flex flex-col p-4 pt-10 min-h-screen relative">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Pay Bills</h1>
-        <p className="text-sm text-gray-500 mt-1">Select a service to proceed</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pay Bills</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Select a service to proceed</p>
       </header>
 
       {/* Bill Category Grid */}
-      <div className="grid grid-cols-4 gap-y-6 gap-x-2 mb-8 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
+      <div className="grid grid-cols-4 gap-y-6 gap-x-2 mb-8 bg-white dark:bg-slate-900 border border-gray-100 rounded-3xl p-5 shadow-sm">
         {BILL_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
@@ -434,11 +434,11 @@ export default function PayBillsPage() {
 
       {/* Recent Billers */}
       <section className="mt-2">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Recent</h3>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent</h3>
         <div className="flex items-center space-x-4 overflow-x-auto pb-4">
           {['Mom', 'Electrician', 'Landlord', 'Sister'].map((contact, idx) => (
             <div key={idx} className="flex flex-col items-center flex-shrink-0">
-              <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-100">
+              <div className="w-12 h-12 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-slate-400 border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-100">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
               </div>
               <p className="text-[11px] font-medium text-gray-600 mt-2 truncate w-14 text-center">{contact}</p>
@@ -452,7 +452,7 @@ export default function PayBillsPage() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={closeModal} />
 
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-6 pt-8 w-full max-w-sm relative z-10">
+          <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl p-6 pt-8 w-full max-w-sm relative z-10">
 
             {/* ── STEP: FORM ── */}
             {step === 'form' && (
@@ -461,7 +461,7 @@ export default function PayBillsPage() {
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeConfig.bg} ${activeConfig.color}`}>
                     {activeConfig.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{activeConfig.name} Payment</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{activeConfig.name} Payment</h3>
                 </div>
                 <form onSubmit={handleFormSubmit}>
                   <FormBody category={activeCategory} form={form} set={setField} />
@@ -480,19 +480,19 @@ export default function PayBillsPage() {
                   <div className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-50 text-blue-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Confirm Payment</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Confirm Payment</h3>
                 </div>
-                <p className="text-sm text-gray-500 mb-5">Please review your transaction details before confirming.</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mb-5">Please review your transaction details before confirming.</p>
 
-                <div className="bg-gray-50 rounded-2xl divide-y divide-gray-100 mb-6 overflow-hidden">
+                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl divide-y divide-gray-100 mb-6 overflow-hidden">
                   <div className="flex justify-between items-center px-4 py-3">
-                    <span className="text-[13px] font-semibold text-gray-500">Service</span>
-                    <span className="text-[13px] font-bold text-gray-900 capitalize">{activeConfig.name}</span>
+                    <span className="text-[13px] font-semibold text-gray-500 dark:text-slate-400">Service</span>
+                    <span className="text-[13px] font-bold text-gray-900 dark:text-white capitalize">{activeConfig.name}</span>
                   </div>
                   {summaryLines.map((line) => (
                     <div key={line.label} className="flex justify-between items-center px-4 py-3">
-                      <span className="text-[13px] font-semibold text-gray-500">{line.label}</span>
-                      <span className="text-[13px] font-bold text-gray-900">{line.value}</span>
+                      <span className="text-[13px] font-semibold text-gray-500 dark:text-slate-400">{line.label}</span>
+                      <span className="text-[13px] font-bold text-gray-900 dark:text-white">{line.value}</span>
                     </div>
                   ))}
                 </div>
@@ -510,8 +510,8 @@ export default function PayBillsPage() {
                 <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center text-green-500 mb-5">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h3>
-                <p className="text-gray-500 text-sm mb-8">Your <span className="font-semibold text-gray-700">{activeConfig.name}</span> payment has been processed successfully.</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Payment Successful!</h3>
+                <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">Your <span className="font-semibold text-gray-700">{activeConfig.name}</span> payment has been processed successfully.</p>
                 <Button type="button" variant="primary" onClick={closeModal}>Done</Button>
               </div>
             )}

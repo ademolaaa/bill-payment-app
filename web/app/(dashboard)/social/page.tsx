@@ -14,24 +14,24 @@ const SOCIAL_LINKS = [
 
 export default function SocialPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 relative pb-24">
-      <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm relative z-10">
-        <Link href="/support" className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 relative pb-24">
+      <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white dark:bg-slate-900 shadow-sm relative z-10">
+        <Link href="/support" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:bg-slate-800 transition-colors cursor-pointer">
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
-        <h1 className="text-lg font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">Social Channels</h1>
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">Social Channels</h1>
         <div className="w-8"></div>
       </header>
 
       <div className="flex-grow p-4 mt-2">
-        <section className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <section className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           {SOCIAL_LINKS.map((link, index) => (
             <a key={link.name} href={link.url} className={`flex items-center p-4 hover:bg-gray-50 transition-colors ${index !== SOCIAL_LINKS.length - 1 ? 'border-b border-gray-50' : ''}`}>
-              <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-600 mr-4">
+              <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 flex items-center justify-center text-gray-600 mr-4">
                 {link.icon}
               </div>
-              <span className="text-[16px] font-semibold text-gray-900 flex-grow">{link.name}</span>
-              <span className="text-[14px] text-gray-500">{link.handle}</span>
+              <span className="text-[16px] font-semibold text-gray-900 dark:text-white flex-grow">{link.name}</span>
+              <span className="text-[14px] text-gray-500 dark:text-slate-400">{link.handle}</span>
             </a>
           ))}
         </section>

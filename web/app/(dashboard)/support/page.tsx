@@ -14,7 +14,7 @@ const SOCIAL_LINKS = [
 
 export default function SupportPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-white relative pb-24">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 relative pb-24">
       {/* Header */}
       <header className="px-5 pt-12 pb-4">
         <h1 className="text-[26px] font-bold text-[#1f2937]">Support</h1>
@@ -34,7 +34,7 @@ export default function SupportPage() {
               </div>
               <span className="text-[17px] font-semibold text-[#111827] flex-grow">{link.name}</span>
               
-              <div className="flex items-center text-gray-500">
+              <div className="flex items-center text-gray-500 dark:text-slate-400">
                 <span className="text-[15px]">{link.handle}</span>
                 {link.showArrow && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px] ml-1.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

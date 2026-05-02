@@ -33,7 +33,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, d
         );
       default:
         return (
-          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+          <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
           </div>
         );

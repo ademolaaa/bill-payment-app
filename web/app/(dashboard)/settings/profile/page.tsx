@@ -34,7 +34,7 @@ export default function ProfileSettingsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white pb-24">
+    <div className="flex flex-col min-h-screen bg-white dark:bg-slate-900 pb-24">
       {/* Header */}
       <header className="px-5 pt-12 pb-4">
         <h1 className="text-[26px] font-bold text-[#1f2937]">Profile Settings</h1>

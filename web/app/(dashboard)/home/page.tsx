@@ -88,16 +88,16 @@ export default function HomePage() {
   const mask = (value: string) => (balanceVisible ? value : '••••••');
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 pb-24">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
 
       {/* ── Header with greeting ─────────────────────────────────────────── */}
       <header className="px-5 pt-12 pb-4 flex items-center justify-between">
         <div>
-          <p className="text-[14px] text-gray-500 font-medium">{getGreeting()},</p>
-          <h1 className="text-2xl font-bold text-gray-900">{userName || 'User'} 👋</h1>
+          <p className="text-[14px] text-gray-500 dark:text-slate-400 font-medium">{getGreeting()},</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{userName || 'User'} 👋</h1>
         </div>
         {/* Notification bell placeholder */}
-        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition">
+        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-gray-500 dark:text-slate-400 cursor-pointer hover:bg-gray-50 transition">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
@@ -107,25 +107,25 @@ export default function HomePage() {
       <div className="px-5 flex flex-col space-y-6">
 
         {/* ── Total Balance Card ───────────────────────────────────────────── */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col items-center">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm flex flex-col items-center">
           <div className="w-full text-left">
 
             {/* Title row with eye toggle */}
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[14px] text-gray-500 font-medium">Total Balance</p>
+              <p className="text-[14px] text-gray-500 dark:text-slate-400 font-medium">Total Balance</p>
               <button
                 onClick={() => setBalanceVisible(v => !v)}
-                className="text-gray-400 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100 dark:bg-slate-800 focus:outline-none"
                 aria-label={balanceVisible ? 'Hide balance' : 'Show balance'}
               >
                 {balanceVisible ? <EyeIcon /> : <EyeOffIcon />}
               </button>
             </div>
 
-            <h2 className="text-[34px] font-bold text-gray-900 tracking-tight leading-none mb-2 transition-all duration-300">
+            <h2 className="text-[34px] font-bold text-gray-900 dark:text-white tracking-tight leading-none mb-2 transition-all duration-300">
               {mask(`₦${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
             </h2>
-            <p className="text-[15px] font-medium text-gray-500 mb-6">
+            <p className="text-[15px] font-medium text-gray-500 dark:text-slate-400 mb-6">
               {mask(`${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`)}
             </p>
           </div>
@@ -142,13 +142,13 @@ export default function HomePage() {
 
         {/* ── Investments ──────────────────────────────────────────────────── */}
         <div>
-          <h3 className="text-[17px] font-bold text-gray-900 mb-4">Investments</h3>
+          <h3 className="text-[17px] font-bold text-gray-900 dark:text-white mb-4">Investments</h3>
           <div className="flex space-x-3">
             {/* NGN Card */}
-            <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
               <div>
-                <p className="text-[13px] font-bold text-gray-900 mb-1">NGN</p>
-                <h4 className="text-[18px] font-bold text-gray-900 mb-1">
+                <p className="text-[13px] font-bold text-gray-900 dark:text-white mb-1">NGN</p>
+                <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
                   {mask('₦56,780.25')}
                 </h4>
               </div>
@@ -156,16 +156,16 @@ export default function HomePage() {
             </div>
 
             {/* USDT Card — fixed: was showing ¥, now correctly shows ₮ */}
-            <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
               <div>
-                <p className="text-[13px] font-bold text-gray-900 mb-1">USDT</p>
-                <h4 className="text-[18px] font-bold text-gray-900 mb-1">
+                <p className="text-[13px] font-bold text-gray-900 dark:text-white mb-1">USDT</p>
+                <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
                   {mask('₮6,420.10')}
                 </h4>
               </div>
               <div className="flex justify-between items-end">
                 <p className="text-[13px] font-medium text-[#16a34a]">+3.60%</p>
-                <span className="text-[10px] uppercase font-bold text-gray-400">TRC20</span>
+                <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-slate-500">TRC20</span>
               </div>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function HomePage() {
               <div className="w-[52px] h-[52px] bg-blue-600 rounded-full flex items-center justify-center text-white mb-2 shadow-sm group-hover:bg-blue-700 transition">
                 {action.icon}
               </div>
-              <span className="text-[12px] font-medium text-gray-900 group-hover:text-blue-600 transition">{action.label}</span>
+              <span className="text-[12px] font-medium text-gray-900 dark:text-white group-hover:text-blue-600 transition">{action.label}</span>
             </Link>
           ))}
         </div>
@@ -191,7 +191,7 @@ export default function HomePage() {
         {/* ── Recent Transactions ──────────────────────────────────────────── */}
         <div className="pt-1 pb-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[17px] font-bold text-gray-900">Recent Transactions</h3>
+            <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">Recent Transactions</h3>
             <Link href="/history" className="text-[13px] font-semibold text-blue-600 hover:text-blue-700 transition">
               See all →
             </Link>
@@ -202,7 +202,7 @@ export default function HomePage() {
                 <TransactionItem key={tx.id} transaction={tx} dateStr={tx.dateStr} />
               ))
             ) : (
-              <div className="py-6 text-center text-gray-400 text-sm">
+              <div className="py-6 text-center text-gray-400 dark:text-slate-500 text-sm">
                 No recent transactions
               </div>
             )}
