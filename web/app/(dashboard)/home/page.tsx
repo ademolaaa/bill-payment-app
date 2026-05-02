@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '../../../components/Button';
 import { TransactionItem } from '../../../components/TransactionItem';
+import { Transaction } from '../../../types/database';
+import { supabase } from '../../../lib/supabase/client';
 import { Transaction } from '../../../types/database';
 
 // ── Dummy recent transactions (reusing same shape as history page) ────────────
@@ -39,6 +41,18 @@ const EyeOffIcon = () => (
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && user.user_metadata?.full_name) {
+        const firstName = user.user_metadata.full_name.split(' ')[0];
+        setUserName(firstName);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const mask = (value: string) => (balanceVisible ? value : '••••••');
 
@@ -49,7 +63,7 @@ export default function HomePage() {
       <header className="px-5 pt-12 pb-4 flex items-center justify-between">
         <div>
           <p className="text-[14px] text-gray-500 font-medium">{getGreeting()},</p>
-          <h1 className="text-2xl font-bold text-gray-900">John 👋</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{userName || 'User'} 👋</h1>
         </div>
         {/* Notification bell placeholder */}
         <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 transition">
