@@ -6,7 +6,6 @@ import { Button } from '../../../components/Button';
 import { TransactionItem } from '../../../components/TransactionItem';
 import { Transaction } from '../../../types/database';
 import { supabase } from '../../../lib/supabase/client';
-import { Transaction } from '../../../types/database';
 
 // ── Dashboard state will replace dummy data ────────────
 
