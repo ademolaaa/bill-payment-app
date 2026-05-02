@@ -5,13 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User } from '../../../types/database';
 
-// ── Dummy user — name matches the Home page greeting ──────────────────────────
-const dummyUser: User = {
-  id: 'u1',
-  name: 'John Doe',
-  email: 'john@example.com',
-  kycStatus: 'unverified',
-};
+import { supabase } from '../../../lib/supabase/client';
 
 // ── Profile menu items ────────────────────────────────────────────────────────
 const PROFILE_LINKS = [
@@ -81,13 +75,29 @@ const PROFILE_LINKS = [
   },
 ];
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const router = useRouter();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userId, setUserId] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    // Dummy logout — in production would clear session/tokens
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserName(user.user_metadata?.full_name || 'User');
+        setUserEmail(user.email || '');
+        setUserId(user.id.substring(0, 8)); // Just show first 8 chars of UUID
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await supabase.auth.signOut();
     router.push('/login');
   };
 
@@ -124,10 +134,10 @@ export default function ProfilePage() {
 
           {/* Name + email */}
           <div className="flex-grow min-w-0">
-            <h2 className="text-[19px] font-bold text-gray-900 leading-tight truncate">{dummyUser.name}</h2>
-            <p className="text-sm text-gray-500 truncate">{dummyUser.email}</p>
+            <h2 className="text-[19px] font-bold text-gray-900 leading-tight truncate">{userName}</h2>
+            <p className="text-sm text-gray-500 truncate">{userEmail}</p>
             <span className="inline-block mt-1.5 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-              ID: {dummyUser.id.toUpperCase()}
+              ID: {userId.toUpperCase()}
             </span>
           </div>
         </div>
@@ -207,9 +217,10 @@ export default function ProfilePage() {
             <div className="flex flex-col space-y-3">
               <button
                 onClick={handleLogout}
+                disabled={isLoggingOut}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl py-4 text-[15px] transition-colors active:scale-95"
               >
-                Yes, Log Me Out
+                {isLoggingOut ? 'Logging Out...' : 'Yes, Log Me Out'}
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}

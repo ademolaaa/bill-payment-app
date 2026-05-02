@@ -1,17 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '../../../../components/Input';
 import { Button } from '../../../../components/Button';
+import { supabase } from '../../../../lib/supabase/client';
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setFullName(user.user_metadata?.full_name || '');
+        setEmail(user.email || '');
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Changes Saved!");
-    router.push('/settings');
+    setIsLoading(true);
+    // Dummy update for now until we build the settings mutation logic
+    setTimeout(() => {
+      setIsLoading(false);
+      router.push('/settings');
+    }, 1000);
   };
 
   return (
@@ -26,13 +45,15 @@ export default function ProfileSettingsPage() {
           
           <Input 
             label="Full Name" 
-            defaultValue="John Doe" 
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
           />
 
           <Input 
             label="Email" 
             type="email" 
-            defaultValue="john.doe@example.com" 
+            value={email}
+            disabled={true} 
           />
 
           <Input 
@@ -47,7 +68,9 @@ export default function ProfileSettingsPage() {
           />
 
           <div className="pt-2">
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
 
         </form>
