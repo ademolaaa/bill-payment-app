@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { supabase } from '../../lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,22 +13,33 @@ export default function LoginPage() {
     email: '',
     password: ''
   });
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Dummy state auth logic
-    console.log('Logging in with', formData);
-    router.push('/home');
+    setError(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+    
+    if (error) {
+      setError(error.message);
+    } else {
+      router.push('/home');
+    }
   };
 
   return (
     <main className="min-h-screen bg-slate-50 flex flex-col items-center p-6 pt-24">
       <div className="w-full max-w-sm flex flex-col">
         <h1 className="text-3xl font-bold text-[#1a202c] mb-8">Log In</h1>
+        
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         
         <form onSubmit={handleLogin} className="flex flex-col flex-grow">
           <div className="space-y-1 mb-2">
