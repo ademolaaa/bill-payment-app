@@ -13,8 +13,9 @@ export default function ConvertPage() {
   const numAmount = parseFloat(amount) || 0;
   
   // Calculate preview
-  const fees = fromCurrency === 'NGN' ? 500 : 0.5; // Example fees
   const convertAmount = Math.max(0, numAmount);
+  // Using dynamic fee calculation to look realistic (e.g., 2% for USDT, flat 500 for NGN)
+  const fees = fromCurrency === 'NGN' ? (convertAmount > 0 ? 500 : 0) : (convertAmount > 0 ? convertAmount * 0.02 : 0);
   const receiveAmount = fromCurrency === 'NGN' 
     ? (convertAmount > fees ? (convertAmount - fees) / exchangeRate : 0)
     : (convertAmount > fees ? (convertAmount - fees) * exchangeRate : 0);
@@ -86,15 +87,18 @@ export default function ConvertPage() {
             {/* Amount Input */}
             <div className="bg-white dark:bg-slate-900 border border-blue-400 dark:border-blue-500/50 rounded-2xl p-4 shadow-sm ring-1 ring-blue-100 dark:ring-blue-900/30">
               <label className="block text-[13px] text-gray-500 dark:text-slate-400 mb-1">Enter Amount</label>
-              <div className="flex items-center">
-                <span className="text-[22px] font-medium text-gray-400 mr-1">{fromCurrency === 'NGN' ? '₦' : '$'}</span>
+              <div className="flex items-center relative">
+                {fromCurrency === 'NGN' && <span className="text-[22px] font-medium text-gray-400 mr-1">₦</span>}
                 <input 
                   type="number"
                   placeholder="0.00"
-                  className="w-full bg-transparent text-[22px] font-medium text-[#0F172A] dark:text-white focus:outline-none placeholder-gray-300 dark:placeholder-gray-600"
+                  className="w-full bg-transparent text-[22px] font-medium text-[#0F172A] dark:text-white focus:outline-none placeholder-gray-300 dark:placeholder-gray-500"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
+                {fromCurrency === 'USDT' && (
+                  <div className="text-[22px] font-medium text-gray-400 absolute right-0">USDT</div>
+                )}
               </div>
             </div>
           </div>
