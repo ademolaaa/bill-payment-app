@@ -4,16 +4,48 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '../../components/Button';
-import { Input } from '../../components/Input';
 import { supabase } from '../../lib/supabase/client';
+
+// SVG Icons
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+const MailIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  </svg>
+);
+
+const EyeOffIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.5-4.173M9.88 9.88a3 3 0 104.24 4.24M15 12a3 3 0 00-3-3m0 0a3 3 0 00-3 3M3 3l18 18" />
+  </svg>
+);
+
+const TagIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+  </svg>
+);
 
 export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    referralCode: ''
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,8 +59,8 @@ export default function SignUpPage() {
     setError(null);
     setIsLoading(true);
 
-    if (!formData.email || !formData.password || !formData.fullName) {
-      setError('All fields are required.');
+    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+      setError('All fields except Referral Code are required.');
       setIsLoading(false);
       return;
     }
@@ -50,7 +82,7 @@ export default function SignUpPage() {
       password: formData.password,
       options: {
         data: {
-          full_name: formData.fullName,
+          full_name: `${formData.firstName} ${formData.lastName}`.trim(),
         }
       }
     });
@@ -63,71 +95,125 @@ export default function SignUpPage() {
     }
   };
 
-  const lockIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-    </svg>
-  );
-
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm flex flex-col">
-        <h1 className="text-3xl font-bold text-black dark:text-white mb-8">Sign Up</h1>
+    <main className="min-h-screen bg-white dark:bg-slate-950 flex flex-col items-center justify-center p-6 pb-12 font-sans">
+      <div className="w-full max-w-sm flex flex-col items-center">
         
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {/* Logo Placeholder */}
+        <div className="mb-6 mt-8 flex flex-col items-center">
+          <img src="/logo.png" alt="Kyvatron" className="h-[48px] object-contain" onError={(e) => {
+            // Fallback if logo not found
+            e.currentTarget.style.display = 'none';
+            const span = document.createElement('span');
+            span.innerHTML = '<span class="text-[#0047FF] font-bold text-3xl">K</span><span class="text-[#0F172A] dark:text-white font-bold text-2xl ml-1">Kyvatron</span>';
+            e.currentTarget.parentNode?.appendChild(span);
+          }} />
+        </div>
+
+        <div className="text-center mb-8">
+          <h1 className="text-[26px] font-bold text-[#0F172A] dark:text-white mb-2 leading-tight">Create your account</h1>
+          <p className="text-[14px] text-[#64748B] dark:text-slate-400">Join Kyvatron and start trading profitably today</p>
+        </div>
         
-        <form onSubmit={handleSignUp} className="flex flex-col flex-grow">
-          <div className="space-y-4 mb-6">
-             <Input 
-               name="fullName"
-               placeholder="Full Name" 
-               value={formData.fullName}
-               onChange={handleChange}
-             />
-             <Input 
-               name="email"
-               type="email"
-               placeholder="Email" 
-               value={formData.email}
-               onChange={handleChange}
-             />
-             <Input 
-               name="password"
-               type="password"
-               placeholder="Password" 
-               icon={lockIcon}
-               value={formData.password}
-               onChange={handleChange}
-             />
-             <Input 
-               name="confirmPassword"
-               type="password"
-               placeholder="Confirm Password" 
-               value={formData.confirmPassword}
-               onChange={handleChange}
-             />
+        {error && <p className="text-red-500 text-[13px] font-medium mb-4 w-full text-center">{error}</p>}
+        
+        <form onSubmit={handleSignUp} className="w-full flex flex-col">
+          <div className="space-y-4 mb-8">
+            
+            <div className="relative flex items-center">
+              <div className="absolute left-4 z-10"><UserIcon /></div>
+              <input 
+                name="firstName"
+                placeholder="First Name" 
+                value={formData.firstName}
+                onChange={handleChange}
+                className="w-full h-[52px] pl-[48px] pr-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
+              />
+            </div>
+
+            <div className="relative flex items-center">
+              <div className="absolute left-4 z-10"><UserIcon /></div>
+              <input 
+                name="lastName"
+                placeholder="Last Name" 
+                value={formData.lastName}
+                onChange={handleChange}
+                className="w-full h-[52px] pl-[48px] pr-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
+              />
+            </div>
+
+            <div className="relative flex items-center">
+              <div className="absolute left-4 z-10"><MailIcon /></div>
+              <input 
+                name="email"
+                type="email"
+                placeholder="Email Address" 
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full h-[52px] pl-[48px] pr-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
+              />
+            </div>
+
+            <div className="relative flex items-center">
+              <div className="absolute left-4 z-10"><LockIcon /></div>
+              <input 
+                name="password"
+                type="password"
+                placeholder="Password" 
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full h-[52px] pl-[48px] pr-[48px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
+              />
+              <div className="absolute right-4 z-10 cursor-pointer"><EyeOffIcon /></div>
+            </div>
+
+            <div className="relative flex items-center">
+              <div className="absolute left-4 z-10"><LockIcon /></div>
+              <input 
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm Password" 
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="w-full h-[52px] pl-[48px] pr-[48px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
+              />
+              <div className="absolute right-4 z-10 cursor-pointer"><EyeOffIcon /></div>
+            </div>
+
+            <div className="relative flex items-center">
+              <div className="absolute left-4 z-10"><TagIcon /></div>
+              <input 
+                name="referralCode"
+                placeholder="Referral Code (Optional)" 
+                value={formData.referralCode}
+                onChange={handleChange}
+                className="w-full h-[52px] pl-[48px] pr-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
+              />
+            </div>
+            
           </div>
 
-          <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? 'Creating Account...' : 'Create Account'}
-          </Button>
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full h-[54px] bg-[#0047FF] hover:bg-blue-700 text-white font-bold text-[16px] rounded-[14px] transition-colors shadow-sm disabled:opacity-70"
+          >
+            {isLoading ? 'Signing Up...' : 'Sign Up'}
+          </button>
           
-          <div className="text-center mt-4">
-            <p className="text-sm text-gray-700 dark:text-slate-600 font-medium px-4">
-              By signing up, you agree to our <br className="hidden sm:block"/>
-              <Link href="/terms" className="text-blue-600 hover:text-blue-700">Terms of Service</Link> and <Link href="/privacy" className="text-blue-600 hover:text-blue-700">Privacy Policy</Link>.
+          <div className="text-center mt-6 mb-8">
+            <p className="text-[12px] text-[#64748B] dark:text-slate-400 font-medium">
+              By signing up, you agree to our <Link href="/terms" className="text-[#0047FF] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#0047FF] hover:underline">Privacy Policy</Link>.
             </p>
           </div>
         </form>
 
-        <div className="text-center mt-12 mb-4">
-          <p className="text-black dark:text-white font-medium text-[15px]">
-            Already have an account?
-            <span className="block mt-1">
-              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Log In
-              </Link>
-            </span>
+        <div className="text-center mt-auto">
+          <p className="text-[#0F172A] dark:text-white font-medium text-[14px]">
+            Already have an account?{' '}
+            <Link href="/login" className="text-[#0047FF] hover:underline font-bold">
+              Log In
+            </Link>
           </p>
         </div>
       </div>
