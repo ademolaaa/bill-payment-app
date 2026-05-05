@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { Button } from '../../../components/Button';
 
 export default function ReferralPage() {
-  const [referralCode, setReferralCode] = useState('K...');
+  const [referralCode, setReferralCode] = useState('K583925847');
 
   useEffect(() => {
-    // Generate K + 9 digits
+    // Generate K + 9 random digits (e.g. K583925847)
     const generateCode = () => {
       let code = 'K';
       for (let i = 0; i < 9; i++) {
@@ -16,7 +16,16 @@ export default function ReferralPage() {
       }
       return code;
     };
-    setReferralCode(generateCode());
+
+    // Ensure the referral code is persistent for the user across reloads
+    const storedCode = localStorage.getItem('kyvatron_referral_code');
+    if (storedCode) {
+      setReferralCode(storedCode);
+    } else {
+      const newCode = generateCode();
+      localStorage.setItem('kyvatron_referral_code', newCode);
+      setReferralCode(newCode);
+    }
   }, []);
 
   return (
