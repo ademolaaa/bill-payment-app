@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
+import { useRouter } from 'next/navigation';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ModalMode = 'invest' | 'topup' | 'details';
@@ -80,11 +81,10 @@ export default function InvestmentsPage() {
   const [amount, setAmount] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const router = useRouter();
+
   const openNewInvestment = (plan: typeof AVAILABLE_PLANS[0]) => {
-    setActivePlan(plan);
-    setModalMode('invest');
-    setSuccess(false);
-    setAmount('');
+    router.push('/investments/new');
   };
 
   const openCardAction = (inv: ActiveInvestment, mode: ModalMode) => {
