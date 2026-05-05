@@ -52,50 +52,74 @@ export default function DepositPage() {
       <div className="px-5">
         {activeTab === 'NGN' ? (
           /* NGN Tab Content */
-          <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="animate-in fade-in slide-in-from-right-4 duration-300 pb-20">
             {/* Balance Card */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-200 rounded-3xl p-6 mb-6 shadow-sm flex flex-col items-start space-y-1">
-              <span className="text-[14px] font-bold text-gray-900 dark:text-white">NGN <span className="font-medium text-gray-700 dark:text-slate-600">Balance</span></span>
-              <h2 className="text-[28px] font-bold text-gray-900 dark:text-white">₦182,300.00</h2>
-            </div>
-
-            {/* Amount Form */}
-            <div className="mb-6">
-              <Input 
-                label="Amount" 
-                placeholder=""
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-[15px] font-bold text-gray-900 dark:text-white mb-3">Deposit via</label>
-              <div className="flex items-center text-[16px] text-gray-900 dark:text-white">
-                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-                  </svg>
-                </div>
-                Manual Bank Transfer
+            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[20px] p-6 mb-6 shadow-sm flex items-center justify-between">
+              <div>
+                <span className="text-[14px] text-[#475569] dark:text-slate-400 font-medium block mb-1">NGN Balance</span>
+                <h2 className="text-[28px] font-bold text-[#0F172A] dark:text-white leading-none">₦182,300.00</h2>
+              </div>
+              <div className="w-12 h-12 bg-[#DCFCE7] dark:bg-[#166534]/30 rounded-full flex items-center justify-center text-[#16A34A] dark:text-[#22C55E]">
+                <span className="text-[22px] font-bold">₦</span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[16px] font-bold text-gray-900 dark:text-white">Fee</span>
-              <span className="text-[16px] font-bold text-gray-900 dark:text-white">₦1000.00</span>
-            </div>
-
-            <div className="flex justify-between items-center mb-8">
-              <span className="text-[16px] font-bold text-gray-900 dark:text-white">Total Amount</span>
-              <span className="text-[16px] font-bold text-gray-900 dark:text-white">₦182,400.00</span>
-            </div>
-
+            {/* Amount Form */}
             <div className="mb-8">
-              <Link href="/deposit/manual">
-                <Button>Proceed to Manual Deposit</Button>
-              </Link>
+              <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-3">Amount</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-gray-400 text-[18px] font-bold">₦</span>
+                </div>
+                <input 
+                  type="number" 
+                  placeholder="Enter amount"
+                  className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 pl-10 pr-4 text-[16px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-gray-300 shadow-sm"
+                />
+              </div>
             </div>
 
-            <h3 className="text-[15px] font-medium text-gray-700 dark:text-slate-600">Recent Deposits</h3>
+            {/* Select Deposit Method */}
+            <div className="mb-6">
+              <label className="block text-[15px] font-medium text-[#0F172A] dark:text-white mb-4">Select Deposit Method</label>
+              
+              <div className="grid grid-cols-2 gap-4">
+                
+                {/* Manual Method (Selected) */}
+                <Link href="/deposit/manual" className="block">
+                  <div className="bg-[#F0F5FF] dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 text-center flex flex-col items-center h-full transition-all">
+                    <div className="w-14 h-14 bg-[#1D4ED8] rounded-full flex items-center justify-center text-white mb-4 shadow-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                      </svg>
+                    </div>
+                    <h3 className="text-[15px] font-bold text-[#0F172A] dark:text-white mb-0.5">Deposit Manually</h3>
+                    <p className="text-[13px] font-medium text-[#2563EB] mb-4">(Unlimited)</p>
+                    <p className="text-[12px] text-[#475569] dark:text-slate-400 leading-relaxed">
+                      Get bank details and make a manual transfer.
+                    </p>
+                  </div>
+                </Link>
+
+                {/* Automatic Method (Unselected) */}
+                <button className="block w-full text-left focus:outline-none">
+                  <div className="bg-gradient-to-br from-[#F8FAFC] to-white dark:from-slate-800 dark:to-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-5 text-center flex flex-col items-center h-full shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 to-orange-100/50 dark:from-purple-900/10 dark:to-orange-900/10 opacity-50"></div>
+                    <div className="relative z-10 w-14 h-14 bg-gradient-to-br from-purple-600 to-orange-500 rounded-full flex items-center justify-center text-white mb-4 shadow-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5L21 3m-7.5 7.5v9l-3-3-3 3v-9m7.5-7.5L3 21m0 0l3-3m-3 3h9" />
+                      </svg>
+                    </div>
+                    <h3 className="text-[15px] font-bold text-[#0F172A] dark:text-white mb-0.5 relative z-10">Deposit Automatically</h3>
+                    <p className="text-[13px] font-medium text-purple-600 dark:text-purple-400 mb-4 relative z-10">(Flutterwave)</p>
+                    <p className="text-[12px] text-[#475569] dark:text-slate-400 leading-relaxed relative z-10">
+                      Pay securely with your bank card or account.
+                    </p>
+                  </div>
+                </button>
+
+              </div>
+            </div>
           </div>
         ) : (
           /* USDT Tab Content */
