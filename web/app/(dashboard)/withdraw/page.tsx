@@ -1,42 +1,137 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { Button } from '../../../components/Button';
 
 export default function WithdrawPage() {
+  const [amount, setAmount] = useState('');
+  const [email, setEmail] = useState('');
+
+  // Calculate preview values
+  const numAmount = parseFloat(amount) || 0;
+  const fees = 0; // Internal transfers usually have 0 fees
+  const finalAmount = numAmount - fees > 0 ? numAmount - fees : 0;
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
-      <header className="px-5 pt-12 pb-4 border-b border-gray-100 bg-white dark:bg-slate-900">
-        <h1 className="text-[24px] font-bold text-gray-900 dark:text-white">Withdraw</h1>
-        <p className="text-gray-700 dark:text-slate-600 text-sm mt-1">Send funds to your local bank or crypto wallet</p>
+    <div className="flex flex-col min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-24">
+      {/* Header */}
+      <header className="px-5 pt-12 pb-6">
+        <h1 className="text-[28px] font-bold text-[#0F172A] dark:text-white">Withdraw</h1>
       </header>
 
-      <div className="px-5 pt-6 flex flex-col space-y-8">
+      <div className="px-5 flex flex-col space-y-6">
         
+        {/* Currency Selector */}
         <div>
-          <h2 className="text-[15px] font-bold text-gray-900 dark:text-white mb-3 ml-1">External Transfer</h2>
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Currency</label>
+          <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm cursor-pointer hover:border-gray-200 transition-colors">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-[#26A17B] rounded-full flex items-center justify-center text-white font-bold text-[12px]">
+                T
+              </div>
+              <span className="text-[15px] font-medium text-[#334155] dark:text-slate-300">USDT (TRC20)</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Amount Input */}
+        <div>
+          <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Amount</label>
+          <div className="relative flex items-center">
+            <div className="absolute left-4 text-gray-400 font-medium">$</div>
+            <input 
+              type="number"
+              placeholder="Enter amount"
+              className="w-full bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/50 rounded-2xl py-4 pl-8 pr-16 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow shadow-sm text-gray-900 dark:text-white placeholder-gray-400"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <div className="absolute right-4 text-gray-500 dark:text-slate-400 font-medium text-[14px]">USDT</div>
+          </div>
+        </div>
+
+        {/* Receiver's Email */}
+        <div>
+          <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Receiver&apos;s Email</label>
+          <div className="relative flex items-center">
+            <div className="absolute left-4 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <input 
+              type="email"
+              placeholder="Enter email address"
+              className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow shadow-sm text-gray-900 dark:text-white placeholder-gray-400"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Internal Transfer Preview */}
+        <div>
+          <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Internal Transfer Preview</label>
+          <div className="bg-[#F8FAFC] dark:bg-slate-800/50 rounded-2xl p-5 border border-gray-50 dark:border-slate-800">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-[14px] text-[#475569] dark:text-slate-400">Initial Amount</span>
+              <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">{numAmount.toFixed(2)} USDT</span>
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-[14px] text-[#475569] dark:text-slate-400">Fees</span>
+              <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">{fees.toFixed(2)} USDT</span>
+            </div>
+            <div className="h-[1px] bg-gray-200 dark:bg-slate-700 w-full mb-4"></div>
+            <div className="flex justify-between items-center">
+              <span className="text-[14px] text-[#475569] dark:text-slate-400">Final Amount</span>
+              <span className="text-[14px] font-medium text-blue-600 dark:text-blue-400">{finalAmount.toFixed(2)} USDT</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Withdraw Button */}
+        <div className="pt-2">
+          <Button className="w-full rounded-[14px] bg-[#0047FF] hover:bg-blue-700 py-4 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            Withdraw USDT
+          </Button>
+        </div>
+
+        {/* External Transfer Links */}
+        <div className="pt-4">
+          <h2 className="text-[16px] font-bold text-[#0F172A] dark:text-white mb-3">External Transfer</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
             
-            <Link href="/withdraw/bank-transfer" className="flex items-center p-4 hover:bg-gray-50 dark:bg-slate-800 transition-colors border-b border-gray-50">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>
+            <Link href="/withdraw/bank-transfer" className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-800">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-slate-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                  </svg>
+                </div>
+                <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">Bank Transfer</span>
               </div>
-              <div className="flex-grow">
-                <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Bank Transfer</h3>
-                <p className="text-[12px] text-gray-700 dark:text-slate-600 mt-0.5">Withdraw to your local bank account</p>
-              </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
 
-            <Link href="/withdraw/crypto-transfer" className="flex items-center p-4 hover:bg-gray-50 dark:bg-slate-800 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <Link href="/withdraw/crypto-transfer" className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-[#26A17B] rounded-full flex items-center justify-center text-white font-bold text-[12px]">
+                  T
+                </div>
+                <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">Cryptocurrency (USDT TRC20)</span>
               </div>
-              <div className="flex-grow">
-                <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Cryptocurrency (USDT TRC20)</h3>
-                <p className="text-[12px] text-gray-700 dark:text-slate-600 mt-0.5">Withdraw to external USDT wallet</p>
-              </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
 
           </div>

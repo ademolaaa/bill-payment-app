@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
 
@@ -64,8 +65,12 @@ export default function DepositPage() {
             <div className="mb-6">
               <label className="block text-[15px] font-bold text-gray-900 dark:text-white mb-3">Deposit via</label>
               <div className="flex items-center text-[16px] text-gray-900 dark:text-white">
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 20C11 20 15.69 11 19 8C19 8 16.5 7 14 7C14 7 14 3 14 3C14 3 6.69 11 4 14C4 14 6 14 8 14C8 14 8 20 11 20Z" fill="#F5A623"/></svg>
-                Flutterwave
+                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                  </svg>
+                </div>
+                Manual Bank Transfer
               </div>
             </div>
 
@@ -80,7 +85,9 @@ export default function DepositPage() {
             </div>
 
             <div className="mb-8">
-              <Button>Proceed to Flutterwave</Button>
+              <Link href="/deposit/manual">
+                <Button>Proceed to Manual Deposit</Button>
+              </Link>
             </div>
 
             <h3 className="text-[15px] font-medium text-gray-700 dark:text-slate-600">Recent Deposits</h3>
