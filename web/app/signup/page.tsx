@@ -72,7 +72,7 @@ export default function SignUpPage() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm flex flex-col">
-        <h1 className="text-3xl font-bold text-[#1a202c] dark:text-white mb-8">Sign Up</h1>
+        <h1 className="text-3xl font-bold text-black dark:text-white mb-8">Sign Up</h1>
         
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         
@@ -113,7 +113,7 @@ export default function SignUpPage() {
           </Button>
           
           <div className="text-center mt-4">
-            <p className="text-sm text-gray-500 dark:text-slate-400 font-medium px-4">
+            <p className="text-sm text-gray-700 dark:text-slate-600 font-medium px-4">
               By signing up, you agree to our <br className="hidden sm:block"/>
               <Link href="/terms" className="text-blue-600 hover:text-blue-700">Terms of Service</Link> and <Link href="/privacy" className="text-blue-600 hover:text-blue-700">Privacy Policy</Link>.
             </p>
@@ -121,7 +121,7 @@ export default function SignUpPage() {
         </form>
 
         <div className="text-center mt-12 mb-4">
-          <p className="text-[#1a202c] dark:text-white font-medium text-[15px]">
+          <p className="text-black dark:text-white font-medium text-[15px]">
             Already have an account?
             <span className="block mt-1">
               <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">

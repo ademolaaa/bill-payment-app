@@ -30,7 +30,7 @@ export default function HistoryPage() {
     <div className="flex flex-col p-4 pt-10 min-h-screen bg-slate-50 dark:bg-slate-950">
       <header className="mb-6 flex items-center">
         <Link href="/home" className="mr-3 p-2 bg-white dark:bg-slate-900 rounded-full shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-900 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Transaction History</h1>
       </header>
@@ -48,7 +48,7 @@ export default function HistoryPage() {
       <div className="flex-grow pb-12">
         {transactionHistory.map((group, groupIdx) => (
           <div key={groupIdx} className="mb-6">
-            <h3 className="text-[13px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-1">{group.date}</h3>
+            <h3 className="text-[13px] font-bold text-gray-700 dark:text-slate-600 uppercase tracking-wider mb-3 px-1">{group.date}</h3>
             <div className="flex flex-col">
               {group.data.map((tx) => (
                 <TransactionItem key={tx.id} transaction={tx} dateStr={group.date} />

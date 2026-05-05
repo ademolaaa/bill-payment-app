@@ -93,11 +93,11 @@ export default function HomePage() {
       {/* ── Header with greeting ─────────────────────────────────────────── */}
       <header className="px-5 pt-12 pb-4 flex items-center justify-between">
         <div>
-          <p className="text-[14px] text-gray-500 dark:text-slate-400 font-medium">{getGreeting()},</p>
+          <p className="text-[14px] text-gray-700 dark:text-slate-600 font-medium">{getGreeting()},</p>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{userName || 'User'} 👋</h1>
         </div>
         {/* Notification bell placeholder */}
-        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-gray-500 dark:text-slate-400 cursor-pointer hover:bg-gray-50 transition">
+        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-gray-700 dark:text-slate-600 cursor-pointer hover:bg-gray-50 transition">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
@@ -112,10 +112,10 @@ export default function HomePage() {
 
             {/* Title row with eye toggle */}
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[14px] text-gray-500 dark:text-slate-400 font-medium">Total Balance</p>
+              <p className="text-[14px] text-gray-700 dark:text-slate-600 font-medium">Total Balance</p>
               <button
                 onClick={() => setBalanceVisible(v => !v)}
-                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100 dark:bg-slate-800 focus:outline-none"
+                className="text-gray-600 dark:text-slate-700 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100 dark:bg-slate-800 focus:outline-none"
                 aria-label={balanceVisible ? 'Hide balance' : 'Show balance'}
               >
                 {balanceVisible ? <EyeIcon /> : <EyeOffIcon />}
@@ -125,7 +125,7 @@ export default function HomePage() {
             <h2 className="text-[34px] font-bold text-gray-900 dark:text-white tracking-tight leading-none mb-2 transition-all duration-300">
               {mask(`₦${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
             </h2>
-            <p className="text-[15px] font-medium text-gray-500 dark:text-slate-400 mb-6">
+            <p className="text-[15px] font-medium text-gray-700 dark:text-slate-600 mb-6">
               {mask(`${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`)}
             </p>
           </div>
@@ -165,7 +165,7 @@ export default function HomePage() {
               </div>
               <div className="flex justify-between items-end">
                 <p className="text-[13px] font-medium text-[#16a34a]">+3.60%</p>
-                <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-slate-500">TRC20</span>
+                <span className="text-[10px] uppercase font-bold text-gray-600 dark:text-slate-700">TRC20</span>
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function HomePage() {
                 <TransactionItem key={tx.id} transaction={tx} dateStr={tx.dateStr} />
               ))
             ) : (
-              <div className="py-6 text-center text-gray-400 dark:text-slate-500 text-sm">
+              <div className="py-6 text-center text-gray-600 dark:text-slate-700 text-sm">
                 No recent transactions
               </div>
             )}

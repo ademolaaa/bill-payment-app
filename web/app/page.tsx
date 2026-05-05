@@ -26,7 +26,7 @@ export default function LaunchPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             Pay Bills, <br className="hidden sm:block" /> Simplified.
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm px-4">
+          <p className="text-gray-700 dark:text-slate-600 text-sm px-4">
             Manage your utilities, subscriptions, and transfers securely in one place.
           </p>
         </div>

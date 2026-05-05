@@ -14,7 +14,7 @@ export default function SecurityPage() {
       {/* Header */}
       <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white dark:bg-slate-900 shadow-sm relative z-10">
         <Link href="/settings" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:bg-slate-800 transition-colors cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-900 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
         <h1 className="text-lg font-bold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">Security & 2FA</h1>
         <div className="w-8"></div> {/* Spacer for center alignment */}
@@ -25,14 +25,14 @@ export default function SecurityPage() {
         
         {/* 2FA Toggles Section */}
         <section className="mb-8">
-          <h2 className="text-[14px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">Two-Factor Authentication</h2>
+          <h2 className="text-[14px] font-bold text-gray-700 dark:text-slate-600 uppercase tracking-wider mb-3 px-2">Two-Factor Authentication</h2>
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             
             {/* Email 2FA Toggle */}
             <div className="flex items-center justify-between p-5 border-b border-gray-50">
               <div>
                 <h3 className="text-[16px] font-medium text-gray-900 dark:text-white mb-0.5">Email Verification</h3>
-                <p className="text-[13px] text-gray-500 dark:text-slate-400">Receive codes via registered email</p>
+                <p className="text-[13px] text-gray-700 dark:text-slate-600">Receive codes via registered email</p>
               </div>
               <button 
                 onClick={() => setEmail2FA(!email2FA)}
@@ -46,7 +46,7 @@ export default function SecurityPage() {
             <div className="flex items-center justify-between p-5">
               <div className="mr-4">
                 <h3 className="text-[16px] font-medium text-gray-900 dark:text-white mb-0.5">Authenticator App</h3>
-                <p className="text-[13px] text-gray-500 dark:text-slate-400">Google Authenticator or similar</p>
+                <p className="text-[13px] text-gray-700 dark:text-slate-600">Google Authenticator or similar</p>
               </div>
               <button 
                 onClick={() => setAuthApp(!authApp)}
@@ -61,7 +61,7 @@ export default function SecurityPage() {
 
         {/* Change Password Form */}
         <section>
-          <h2 className="text-[14px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">Change Password</h2>
+          <h2 className="text-[14px] font-bold text-gray-700 dark:text-slate-600 uppercase tracking-wider mb-3 px-2">Change Password</h2>
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 p-6">
             <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); console.log("Password updated"); }}>
               <Input 

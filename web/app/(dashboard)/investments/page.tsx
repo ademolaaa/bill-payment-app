@@ -136,7 +136,7 @@ export default function InvestmentsPage() {
       <section className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white shadow-xl mb-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white dark:bg-slate-900 opacity-5 rounded-bl-full" />
         <div className="relative z-10 flex flex-col space-y-1">
-          <p className="text-sm font-medium text-gray-400 dark:text-slate-500">Total Invested</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-slate-700">Total Invested</p>
           <h2 className="text-3xl font-bold tracking-tight">₦450,000.00</h2>
         </div>
         <div className="relative z-10 flex items-center mt-4 space-x-2">
@@ -146,7 +146,7 @@ export default function InvestmentsPage() {
             </svg>
             <span>+12.4% p.a.</span>
           </div>
-          <p className="text-xs font-medium text-gray-400 dark:text-slate-500">Current Yield (₦55,800.00)</p>
+          <p className="text-xs font-medium text-gray-600 dark:text-slate-700">Current Yield (₦55,800.00)</p>
         </div>
       </section>
 
@@ -162,20 +162,20 @@ export default function InvestmentsPage() {
                 <h4 className="text-[16px] font-bold text-gray-900 dark:text-white leading-snug">{inv.name}</h4>
                 <span className="text-[12px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded ml-2 flex-shrink-0">Active</span>
               </div>
-              <p className="text-[13px] text-gray-500 dark:text-slate-400 mb-3">Principal: {inv.principal}</p>
+              <p className="text-[13px] text-gray-700 dark:text-slate-600 mb-3">Principal: {inv.principal}</p>
 
               {/* Stats — consistent grid prevents text cutoff */}
               <div className="grid grid-cols-2 gap-x-4 border-t border-gray-50 pt-3 mb-4">
                 <div>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mb-0.5">Accrued Interest</p>
+                  <p className="text-[11px] text-gray-600 dark:text-slate-700 mb-0.5">Accrued Interest</p>
                   <p className="text-[14px] font-bold text-green-600">{inv.accruedInterest}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mb-0.5">Maturity Date</p>
+                  <p className="text-[11px] text-gray-600 dark:text-slate-700 mb-0.5">Maturity Date</p>
                   <p className="text-[13px] font-bold text-gray-900 dark:text-white">{inv.maturityDate}</p>
                 </div>
                 <div className="col-span-2 mt-2">
-                  <p className="text-[11px] text-gray-400 dark:text-slate-500 mb-0.5">Yield Rate</p>
+                  <p className="text-[11px] text-gray-600 dark:text-slate-700 mb-0.5">Yield Rate</p>
                   <p className="text-[13px] font-bold text-blue-600">{inv.yieldRate}</p>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function InvestmentsPage() {
                   {plan.apy}
                 </span>
               </div>
-              <p className="text-[13px] text-gray-500 dark:text-slate-400 mb-4 leading-relaxed">{plan.description}</p>
+              <p className="text-[13px] text-gray-700 dark:text-slate-600 mb-4 leading-relaxed">{plan.description}</p>
               <Button variant="outline" fullWidth={false} className="w-full text-[14px] py-2" onClick={() => openNewInvestment(plan)}>
                 Invest Now
               </Button>
@@ -245,7 +245,7 @@ export default function InvestmentsPage() {
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   {modalMode === 'topup' ? 'Top Up Successful!' : 'Investment Confirmed!'}
                 </h3>
-                <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">Your investment has been processed successfully.</p>
+                <p className="text-gray-700 dark:text-slate-600 text-sm mb-8">Your investment has been processed successfully.</p>
                 <Button variant="primary" onClick={closeAll}>Done</Button>
               </div>
             ) : modalMode === 'details' && selectedInvestment ? (
@@ -261,7 +261,7 @@ export default function InvestmentsPage() {
                     { label: 'Status', value: 'Active' },
                   ].map((row) => (
                     <div key={row.label} className="flex justify-between items-center px-4 py-3">
-                      <span className="text-[13px] font-semibold text-gray-500 dark:text-slate-400">{row.label}</span>
+                      <span className="text-[13px] font-semibold text-gray-700 dark:text-slate-600">{row.label}</span>
                       <span className="text-[13px] font-bold text-gray-900 dark:text-white">{row.value}</span>
                     </div>
                   ))}
@@ -275,7 +275,7 @@ export default function InvestmentsPage() {
               /* ── Invest / Top Up form ── */
               <form onSubmit={handleInvest}>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{modalTitle}</h3>
-                <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">
+                <p className="text-sm text-gray-700 dark:text-slate-600 mb-6">
                   {modalMode === 'topup'
                     ? `Add more funds to your ${selectedInvestment?.name} at ${selectedInvestment?.yieldRate}.`
                     : `Enter the amount you wish to invest to earn ${activePlan?.apy}.`}
@@ -283,7 +283,7 @@ export default function InvestmentsPage() {
                 <div className="mb-6">
                   {modalMode !== 'topup' && (
                     <div className="mb-4">
-                      <label htmlFor="investment-package" className="block text-gray-800 dark:text-slate-200 text-[14px] font-medium mb-1.5">Investment Package</label>
+                      <label htmlFor="investment-package" className="block text-gray-900 dark:text-slate-200 text-[14px] font-medium mb-1.5">Investment Package</label>
                       <select id="investment-package" className="w-full border border-gray-200 rounded-xl py-3 px-4 text-gray-900 dark:text-white bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-[14px]">
                         <option>3 Months, 11% ROI</option>
                         <option>6 Months, 23% ROI</option>

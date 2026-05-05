@@ -48,7 +48,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, d
         {getIcon()}
         <div>
           <h4 className="text-[15px] font-semibold text-gray-900 dark:text-white capitalize">{transaction.providerReference || transaction.type}</h4>
-          <p className="text-[12px] text-gray-500 dark:text-slate-400">{dateStr}</p>
+          <p className="text-[12px] text-gray-700 dark:text-slate-600">{dateStr}</p>
         </div>
       </div>
       <div className="text-right">

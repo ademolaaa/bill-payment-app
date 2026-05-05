@@ -55,7 +55,7 @@ function ThemeRow({
           <p className={`text-[16px] font-semibold transition-colors duration-200 ${active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-slate-400'}`}>
             {label}
           </p>
-          <p className="text-[12px] text-gray-400 dark:text-slate-500 mt-0.5">{sublabel}</p>
+          <p className="text-[12px] text-gray-600 dark:text-slate-700 mt-0.5">{sublabel}</p>
         </div>
       </div>
       <Toggle active={active} onToggle={onToggle} />
@@ -118,7 +118,7 @@ export default function ThemeSettingsPage() {
 
       {/* Current theme indicator */}
       <div className="mt-auto pt-8 text-center">
-        <p className="text-[13px] text-gray-400 dark:text-slate-500">
+        <p className="text-[13px] text-gray-600 dark:text-slate-700">
           Currently using{' '}
           <span className="font-semibold text-gray-600 dark:text-slate-300 capitalize">{activeTheme} Mode</span>
         </p>

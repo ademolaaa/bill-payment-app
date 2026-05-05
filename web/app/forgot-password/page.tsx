@@ -39,8 +39,8 @@ export default function ForgotPasswordPage() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center p-6 pt-24">
       <div className="w-full max-w-sm flex flex-col">
-        <h1 className="text-3xl font-bold text-[#1a202c] dark:text-white mb-2">Reset Password</h1>
-        <p className="text-gray-500 dark:text-slate-400 text-sm mb-8">Enter your email and we'll send you a link to reset your password.</p>
+        <h1 className="text-3xl font-bold text-black dark:text-white mb-2">Reset Password</h1>
+        <p className="text-gray-700 dark:text-slate-600 text-sm mb-8">Enter your email and we'll send you a link to reset your password.</p>
         
         {error && <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}
         {success && <p className="text-green-600 text-sm mb-4 bg-green-50 p-3 rounded-lg border border-green-100">{success}</p>}

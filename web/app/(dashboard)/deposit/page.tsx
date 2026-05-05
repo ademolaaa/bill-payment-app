@@ -49,7 +49,7 @@ export default function DepositPage() {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300">
             {/* Balance Card */}
             <div className="bg-white dark:bg-slate-900 border border-gray-200 rounded-3xl p-6 mb-6 shadow-sm flex flex-col items-start space-y-1">
-              <span className="text-[14px] font-bold text-gray-900 dark:text-white">NGN <span className="font-medium text-gray-500 dark:text-slate-400">Balance</span></span>
+              <span className="text-[14px] font-bold text-gray-900 dark:text-white">NGN <span className="font-medium text-gray-700 dark:text-slate-600">Balance</span></span>
               <h2 className="text-[28px] font-bold text-gray-900 dark:text-white">₦182,300.00</h2>
             </div>
 
@@ -83,7 +83,7 @@ export default function DepositPage() {
               <Button>Proceed to Flutterwave</Button>
             </div>
 
-            <h3 className="text-[15px] font-medium text-gray-500 dark:text-slate-400">Recent Deposits</h3>
+            <h3 className="text-[15px] font-medium text-gray-700 dark:text-slate-600">Recent Deposits</h3>
           </div>
         ) : (
           /* USDT Tab Content */
@@ -101,7 +101,7 @@ export default function DepositPage() {
             <div className="mb-2">
               <label className="block text-[15px] font-bold text-gray-900 dark:text-white mb-2">Deposit Address</label>
               <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-200 rounded-2xl p-[6px] pl-4 shadow-sm">
-                <span className="text-[15px] text-gray-500 dark:text-slate-400 tracking-wider">TLg8B5...,....</span>
+                <span className="text-[15px] text-gray-700 dark:text-slate-600 tracking-wider">TLg8B5...,....</span>
                 <Button 
                   onClick={handleCopy}
                   variant="outline"
@@ -112,7 +112,7 @@ export default function DepositPage() {
               </div>
             </div>
 
-            <p className="text-[13px] text-gray-500 dark:text-slate-400 leading-relaxed mb-10 pr-4">
+            <p className="text-[13px] text-gray-700 dark:text-slate-600 leading-relaxed mb-10 pr-4">
               Only send TRC20-based USDT to this deposit address.
             </p>
 

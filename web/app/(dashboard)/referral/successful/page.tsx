@@ -21,7 +21,7 @@ export default function SuccessfulReferralsPage() {
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
       <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white dark:bg-slate-900 shadow-sm relative z-10">
         <Link href="/referral" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:bg-slate-800 transition-colors cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-900 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
         <h1 className="text-[17px] font-bold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">Successful Referrals</h1>
         <div className="w-8"></div>
@@ -36,16 +36,16 @@ export default function SuccessfulReferralsPage() {
             </div>
           </div>
           <div>
-            <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-0.5">Total Successful Referrals</p>
+            <p className="text-[13px] font-medium text-gray-700 dark:text-slate-600 mb-0.5">Total Successful Referrals</p>
             <h2 className="text-[28px] font-bold text-blue-600">18</h2>
           </div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="grid grid-cols-3 gap-2 p-4 border-b border-gray-50">
-            <span className="text-[12px] font-medium text-gray-500 dark:text-slate-400 col-span-1">Referee</span>
-            <span className="text-[12px] font-medium text-gray-500 dark:text-slate-400 text-center col-span-1">Joined Date</span>
-            <span className="text-[12px] font-medium text-gray-500 dark:text-slate-400 text-right col-span-1">Investment Date</span>
+            <span className="text-[12px] font-medium text-gray-700 dark:text-slate-600 col-span-1">Referee</span>
+            <span className="text-[12px] font-medium text-gray-700 dark:text-slate-600 text-center col-span-1">Joined Date</span>
+            <span className="text-[12px] font-medium text-gray-700 dark:text-slate-600 text-right col-span-1">Investment Date</span>
           </div>
           
           <div className="flex flex-col divide-y divide-gray-50">

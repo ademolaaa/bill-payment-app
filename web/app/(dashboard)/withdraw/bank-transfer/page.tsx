@@ -9,7 +9,7 @@ export default function BankTransferPage() {
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
       <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white dark:bg-slate-900 shadow-sm relative z-10">
         <Link href="/withdraw" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:bg-slate-800 transition-colors cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-900 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
         <h1 className="text-[17px] font-bold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">Bank Transfer</h1>
         <div className="w-8"></div>
@@ -23,7 +23,7 @@ export default function BankTransferPage() {
         <form className="flex flex-col space-y-6">
           <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col space-y-5">
             <div>
-              <label htmlFor="bank-name" className="block text-gray-800 dark:text-slate-200 text-[14px] font-medium mb-1.5 ml-1">Bank Name</label>
+              <label htmlFor="bank-name" className="block text-gray-900 dark:text-slate-200 text-[14px] font-medium mb-1.5 ml-1">Bank Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -35,7 +35,7 @@ export default function BankTransferPage() {
             </div>
 
             <div>
-              <label htmlFor="account-number" className="block text-gray-800 dark:text-slate-200 text-[14px] font-medium mb-1.5 ml-1">Account Number</label>
+              <label htmlFor="account-number" className="block text-gray-900 dark:text-slate-200 text-[14px] font-medium mb-1.5 ml-1">Account Number</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -47,7 +47,7 @@ export default function BankTransferPage() {
             </div>
 
             <div>
-              <label htmlFor="amount" className="block text-gray-800 dark:text-slate-200 text-[14px] font-medium mb-1.5 ml-1">Amount</label>
+              <label htmlFor="amount" className="block text-gray-900 dark:text-slate-200 text-[14px] font-medium mb-1.5 ml-1">Amount</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-900 dark:text-white font-bold text-[13px]">
@@ -64,11 +64,11 @@ export default function BankTransferPage() {
             
             <div className="flex flex-col space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-gray-50">
-                <span className="text-[13px] font-medium text-gray-500 dark:text-slate-400">Initial Amount</span>
+                <span className="text-[13px] font-medium text-gray-700 dark:text-slate-600">Initial Amount</span>
                 <span className="text-[14px] font-medium text-gray-900 dark:text-white">₦0.00</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-gray-50">
-                <span className="text-[13px] font-medium text-gray-500 dark:text-slate-400">Fees</span>
+                <span className="text-[13px] font-medium text-gray-700 dark:text-slate-600">Fees</span>
                 <span className="text-[14px] font-medium text-gray-900 dark:text-white">₦0.00</span>
               </div>
               <div className="flex justify-between items-center pt-1">

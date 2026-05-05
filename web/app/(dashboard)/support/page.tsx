@@ -32,9 +32,9 @@ export default function SupportPage() {
               <div className="w-[34px] h-[34px] rounded-lg bg-[#f8fafc] flex items-center justify-center text-[#4b5563] mr-4 flex-shrink-0">
                 {link.icon}
               </div>
-              <span className="text-[17px] font-semibold text-[#111827] flex-grow">{link.name}</span>
+              <span className="text-[17px] font-semibold text-black flex-grow">{link.name}</span>
               
-              <div className="flex items-center text-gray-500 dark:text-slate-400">
+              <div className="flex items-center text-gray-700 dark:text-slate-600">
                 <span className="text-[15px]">{link.handle}</span>
                 {link.showArrow && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px] ml-1.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -19,7 +19,7 @@ export default function SettingsPage() {
       {/* Header */}
       <header className="p-4 pt-10 flex items-center justify-between border-b border-gray-100 bg-white dark:bg-slate-900 shadow-sm relative z-10">
         <Link href="/profile" className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:bg-slate-800 transition-colors cursor-pointer">
-           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-900 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
         <h1 className="text-lg font-bold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">Settings</h1>
         <div className="w-8"></div> {/* Spacer for center alignment */}
@@ -33,8 +33,8 @@ export default function SettingsPage() {
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mr-4">
                 {link.icon}
               </div>
-              <span className="text-[16px] font-medium text-gray-800 dark:text-slate-200 flex-grow">{link.label}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <span className="text-[16px] font-medium text-gray-900 dark:text-slate-200 flex-grow">{link.label}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
           ))}
         </section>
@@ -46,7 +46,7 @@ export default function SettingsPage() {
               Delete Account
             </Button>
           </Link>
-          <p className="text-xs text-gray-400 dark:text-slate-500 text-center mt-3 px-4">
+          <p className="text-xs text-gray-600 dark:text-slate-700 text-center mt-3 px-4">
             This action is permanent and will completely erase all your data.
           </p>
         </section>

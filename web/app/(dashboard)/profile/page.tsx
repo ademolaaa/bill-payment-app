@@ -117,7 +117,7 @@ export default function ProfilePage() {
           <div className="relative mr-4 flex-shrink-0">
             <div className="w-[70px] h-[70px] rounded-full bg-gray-100 dark:bg-slate-800 border-2 border-gray-200 flex items-center justify-center overflow-hidden">
               {/* User silhouette SVG */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-400 dark:text-slate-500" viewBox="0 0 24 24" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-600 dark:text-slate-700" viewBox="0 0 24 24" fill="currentColor">
                 <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
               </svg>
             </div>
@@ -135,7 +135,7 @@ export default function ProfilePage() {
           {/* Name + email */}
           <div className="flex-grow min-w-0">
             <h2 className="text-[19px] font-bold text-gray-900 dark:text-white leading-tight truncate">{userName}</h2>
-            <p className="text-sm text-gray-500 dark:text-slate-400 truncate">{userEmail}</p>
+            <p className="text-sm text-gray-700 dark:text-slate-600 truncate">{userEmail}</p>
             <span className="inline-block mt-1.5 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
               ID: {userId.toUpperCase()}
             </span>
@@ -178,7 +178,7 @@ export default function ProfilePage() {
             <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0 ${link.bg} ${link.color}`}>
               {link.icon}
             </div>
-            <span className="text-[15px] font-medium text-gray-800 dark:text-slate-200 flex-grow">{link.label}</span>
+            <span className="text-[15px] font-medium text-gray-900 dark:text-slate-200 flex-grow">{link.label}</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
             </svg>
@@ -212,7 +212,7 @@ export default function ProfilePage() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Log Out?</h3>
-              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">You will need to sign back in to access your account.</p>
+              <p className="text-sm text-gray-700 dark:text-slate-600 mt-1">You will need to sign back in to access your account.</p>
             </div>
             <div className="flex flex-col space-y-3">
               <button
@@ -224,7 +224,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="w-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-800 dark:text-slate-200 font-bold rounded-2xl py-4 text-[15px] transition-colors"
+                className="w-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-900 dark:text-slate-200 font-bold rounded-2xl py-4 text-[15px] transition-colors"
               >
                 Cancel
               </button>
