@@ -83,6 +83,7 @@ export default function SignUpPage() {
       options: {
         data: {
           full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          referred_by: formData.referralCode || null,
         }
       }
     });
