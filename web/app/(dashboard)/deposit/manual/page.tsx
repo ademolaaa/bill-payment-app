@@ -126,6 +126,8 @@ export default function ManualDepositPage() {
               className="hidden" 
               ref={fileInputRef} 
               onChange={handleFileChange} 
+              aria-label="Upload Receipt"
+              title="Upload Receipt"
             />
             <button 
               onClick={() => fileInputRef.current?.click()}

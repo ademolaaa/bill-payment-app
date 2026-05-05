@@ -3,23 +3,25 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
 import { supabase } from '../../lib/supabase/client';
 
 // SVG Icons
 const MailIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
 
 const LockIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
   </svg>
 );
 
 const EyeOffIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.5-4.173M9.88 9.88a3 3 0 104.24 4.24M15 12a3 3 0 00-3-3m0 0a3 3 0 00-3 3M3 3l18 18" />
   </svg>
 );
@@ -33,6 +35,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -87,30 +90,32 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="w-full flex flex-col">
           <div className="space-y-4 mb-4">
             
-            <div className="relative flex items-center">
-              <div className="absolute left-4 z-10"><MailIcon /></div>
-              <input 
-                name="email"
-                type="email"
-                placeholder="Email Address" 
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full h-[52px] pl-[48px] pr-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
-              />
-            </div>
+            <Input 
+              name="email"
+              type="email"
+              placeholder="Email Address" 
+              value={formData.email}
+              onChange={handleChange}
+              iconLeft={<MailIcon />}
+              aria-label="Email Address"
+              required
+            />
 
-            <div className="relative flex items-center">
-              <div className="absolute left-4 z-10"><LockIcon /></div>
-              <input 
-                name="password"
-                type="password"
-                placeholder="Password" 
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full h-[52px] pl-[48px] pr-[48px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
-              />
-              <div className="absolute right-4 z-10 cursor-pointer"><EyeOffIcon /></div>
-            </div>
+            <Input 
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password" 
+              value={formData.password}
+              onChange={handleChange}
+              iconLeft={<LockIcon />}
+              iconRight={
+                <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}>
+                  <EyeOffIcon />
+                </button>
+              }
+              aria-label="Password"
+              required
+            />
             
           </div>
 
@@ -137,13 +142,13 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <button 
+          <Button 
             type="submit" 
             disabled={isLoading}
-            className="w-full h-[54px] bg-[#0047FF] hover:bg-blue-700 text-white font-bold text-[16px] rounded-[14px] transition-colors shadow-sm disabled:opacity-70"
+            className="h-[54px] bg-[#0047FF] hover:bg-blue-700 text-white font-bold text-[16px] rounded-[14px] transition-colors shadow-sm disabled:opacity-70"
           >
             {isLoading ? 'Logging In...' : 'Log In'}
-          </button>
+          </Button>
           
           <div className="text-center mt-6 mb-8">
             <p className="text-[12px] text-[#64748B] dark:text-slate-400 font-medium">

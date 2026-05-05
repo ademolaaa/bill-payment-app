@@ -2,35 +2,47 @@ import React, { InputHTMLAttributes } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  icon?: React.ReactNode;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
+  error?: string;
 }
 
 export const Input: React.FC<InputProps> = ({
   label,
-  icon,
+  iconLeft,
+  iconRight,
+  error,
   className = '',
   ...props
 }) => {
   return (
-    <div className={`mb-4 w-full ${className}`}>
+    <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-gray-900 dark:text-slate-200 text-[15px] font-bold mb-2">
+        <label className="block text-[#0F172A] dark:text-slate-200 text-[14px] font-bold mb-1.5 ml-1">
           {label}
         </label>
       )}
-      <div className="relative">
+      <div className="relative flex items-center">
+        {iconLeft && (
+          <div className="absolute left-4 z-10 text-gray-400">
+             {iconLeft}
+          </div>
+        )}
         <input
-          className={`w-full bg-gray-50 dark:bg-slate-800 border border-transparent dark:border-slate-700 rounded-2xl py-4 px-5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 text-[15px] font-medium shadow-sm ${
-            icon ? 'pr-12' : ''
-          }`}
+          className={`w-full h-[52px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)] ${
+            iconLeft ? 'pl-[48px]' : 'pl-4'
+          } ${iconRight ? 'pr-[48px]' : 'pr-4'}`}
           {...props}
         />
-        {icon && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none text-gray-600 dark:text-slate-700">
-             {icon}
+        {iconRight && (
+          <div className="absolute right-4 z-10 text-gray-400">
+             {iconRight}
           </div>
         )}
       </div>
+      {error && (
+        <p className="text-red-500 text-[12px] mt-1 ml-1 font-medium">{error}</p>
+      )}
     </div>
   );
 };

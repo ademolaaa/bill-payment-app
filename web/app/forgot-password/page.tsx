@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
 import { supabase } from '../../lib/supabase/client';
 
 const MailIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
@@ -67,26 +69,25 @@ export default function ForgotPasswordPage() {
         
         <form onSubmit={handleReset} className="w-full flex flex-col">
           <div className="space-y-4 mb-6">
-            <div className="relative flex items-center">
-              <div className="absolute left-4 z-10"><MailIcon /></div>
-              <input 
-                name="email"
-                type="email"
-                placeholder="Email Address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-[52px] pl-[48px] pr-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-[12px] text-[15px] text-[#0F172A] dark:text-white placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#0047FF]/20 focus:border-[#0047FF] transition-all shadow-[0_2px_10px_-4px_rgba(0,0,0,0.02)]"
-              />
-            </div>
+            <Input 
+              name="email"
+              type="email"
+              placeholder="Email Address" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              iconLeft={<MailIcon />}
+              aria-label="Email Address"
+              required
+            />
           </div>
 
-          <button 
+          <Button 
             type="submit" 
             disabled={isLoading}
-            className="w-full h-[54px] bg-[#0047FF] hover:bg-blue-700 text-white font-bold text-[16px] rounded-[14px] transition-colors shadow-sm disabled:opacity-70 mb-6"
+            className="h-[54px] bg-[#0047FF] hover:bg-blue-700 text-white font-bold text-[16px] rounded-[14px] transition-colors shadow-sm disabled:opacity-70 mb-6"
           >
             {isLoading ? 'Sending Link...' : 'Send Reset Link'}
-          </button>
+          </Button>
           
           <div className="text-center mb-8">
             <Link href="/login" className="text-[14px] font-medium text-[#0047FF] hover:underline flex items-center justify-center">
