@@ -132,7 +132,7 @@ export default function HomePage() {
 
           <div className="flex w-full space-x-3">
             <Link href="/deposit" className="flex-1">
-              <Button className="w-full rounded-[12px]">Deposit</Button>
+              <Button className="w-full rounded-[12px] bg-blue-600 hover:bg-blue-700 text-white">Deposit</Button>
             </Link>
             <Link href="/pay-bills" className="flex-1">
               <Button className="w-full rounded-[12px]">Pay Bills</Button>
@@ -142,30 +142,51 @@ export default function HomePage() {
 
         {/* ── Investments ──────────────────────────────────────────────────── */}
         <div>
-          <h3 className="text-[17px] font-bold text-gray-900 dark:text-white mb-4">Investments</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[17px] font-bold text-gray-900 dark:text-white">Investments</h3>
+            <Link href="/investments" className="text-[13px] font-semibold text-blue-600 hover:text-blue-700 transition">
+              View all &gt;
+            </Link>
+          </div>
           <div className="flex space-x-3">
             {/* NGN Card */}
-            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between border border-gray-100 dark:border-slate-800">
               <div>
-                <p className="text-[13px] font-bold text-gray-900 dark:text-white mb-1">NGN</p>
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-5 h-5 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+                    ₦
+                  </div>
+                  <p className="text-[13px] font-bold text-gray-900 dark:text-white">NGN</p>
+                </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
                   {mask('₦56,780.25')}
                 </h4>
               </div>
-              <p className="text-[13px] font-medium text-[#16a34a]">+5.25%</p>
+              <p className="text-[13px] font-medium text-[#16a34a] flex items-center gap-1 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V3a1 1 0 012 0v9.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)"/></svg>
+                5.25%
+              </p>
             </div>
 
-            {/* USDT Card — fixed: was showing ¥, now correctly shows ₮ */}
-            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+            {/* USDT Card */}
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between border border-gray-100 dark:border-slate-800">
               <div>
-                <p className="text-[13px] font-bold text-gray-900 dark:text-white mb-1">USDT</p>
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-5 h-5 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+                    T
+                  </div>
+                  <p className="text-[13px] font-bold text-gray-900 dark:text-white">USDT</p>
+                </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
-                  {mask('₮6,420.10')}
+                  {mask('$6,420.10')}
                 </h4>
               </div>
-              <div className="flex justify-between items-end">
-                <p className="text-[13px] font-medium text-[#16a34a]">+3.60%</p>
-                <span className="text-[10px] uppercase font-bold text-gray-600 dark:text-slate-700">TRC20</span>
+              <div className="flex justify-between items-end mt-1">
+                <p className="text-[13px] font-medium text-[#16a34a] flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V3a1 1 0 012 0v9.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)"/></svg>
+                  3.60%
+                </p>
+                <span className="text-[10px] bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded uppercase font-bold text-gray-600 dark:text-slate-400">TRC20</span>
               </div>
             </div>
           </div>
@@ -174,7 +195,7 @@ export default function HomePage() {
         {/* ── Quick Actions Row ────────────────────────────────────────────── */}
         <div className="grid grid-cols-4 gap-2 pt-2">
           {[
-            { label: 'Transfer',  href: '/transfer',    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg> },
+            { label: 'Convert',   href: '/convert',     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg> },
             { label: 'Withdraw',  href: '/withdraw',    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg> },
             { label: 'Invest',    href: '/investments', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> },
             { label: 'Wallet',    href: '/deposit',     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-[22px] w-[22px]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> },
