@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User } from '../../../types/database';
@@ -82,14 +82,23 @@ export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState('');
   const [userId, setUserId] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  // Profile picture state
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserName(user.user_metadata?.full_name || 'User');
         setUserEmail(user.email || '');
         setUserId(user.id.substring(0, 8)); // Just show first 8 chars of UUID
+        
+        // Use user metadata for avatar if exists
+        if (user.user_metadata?.avatar_url) {
+          setProfileImage(user.user_metadata.avatar_url);
+        }
       }
     };
     fetchUser();
@@ -99,6 +108,18 @@ export default function ProfilePage() {
     setIsLoggingOut(true);
     await supabase.auth.signOut();
     router.push('/login');
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+        // In a real app, you would upload this to Supabase storage here
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -116,15 +137,31 @@ export default function ProfilePage() {
           {/* Avatar with camera edit overlay */}
           <div className="relative mr-4 flex-shrink-0">
             <div className="w-[70px] h-[70px] rounded-full bg-gray-100 dark:bg-slate-800 border-2 border-gray-200 flex items-center justify-center overflow-hidden">
-              {/* User silhouette SVG */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-600 dark:text-slate-700" viewBox="0 0 24 24" fill="currentColor">
-                <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-              </svg>
+              {profileImage ? (
+                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-600 dark:text-slate-700" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                </svg>
+              )}
             </div>
+            
+            {/* Hidden file input */}
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              id="profile-image-upload"
+              title="Upload profile picture"
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+
             {/* Camera icon overlay */}
             <button
               aria-label="Change profile photo"
-              className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shadow-md border-2 border-white hover:bg-blue-700 transition"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shadow-md border-2 border-white hover:bg-blue-700 transition active:scale-95"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />

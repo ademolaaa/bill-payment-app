@@ -72,16 +72,32 @@ export default function ConvertPage() {
             <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">From</label>
             
             {/* Currency Dropdown */}
-            <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 mb-3 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
-                  {fromCurrency === 'NGN' ? '₦' : 'T'}
+            <div className="relative">
+              <select 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                value={fromCurrency}
+                onChange={(e) => {
+                  const newCurrency = e.target.value as 'NGN' | 'USDT';
+                  if (newCurrency !== fromCurrency) {
+                    handleSwap();
+                  }
+                }}
+                title="Select From Currency"
+              >
+                <option value="NGN">NGN</option>
+                <option value="USDT">USDT</option>
+              </select>
+              <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 mb-3 shadow-sm relative pointer-events-none">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+                    {fromCurrency === 'NGN' ? '₦' : 'T'}
+                  </div>
+                  <span className="text-[15px] font-medium text-[#334155] dark:text-slate-200">{fromCurrency}</span>
                 </div>
-                <span className="text-[15px] font-medium text-[#334155] dark:text-slate-200">{fromCurrency}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
 
             {/* Amount Input */}
@@ -121,16 +137,33 @@ export default function ConvertPage() {
             <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">To</label>
             
             {/* Currency Dropdown */}
-            <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
-                  {fromCurrency === 'NGN' ? 'T' : '₦'}
+            <div className="relative">
+              <select 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                value={fromCurrency === 'NGN' ? 'USDT' : 'NGN'}
+                onChange={(e) => {
+                  const newCurrency = e.target.value as 'NGN' | 'USDT';
+                  const currentToCurrency = fromCurrency === 'NGN' ? 'USDT' : 'NGN';
+                  if (newCurrency !== currentToCurrency) {
+                    handleSwap();
+                  }
+                }}
+                title="Select To Currency"
+              >
+                <option value="NGN">NGN</option>
+                <option value="USDT">USDT</option>
+              </select>
+              <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm relative pointer-events-none">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+                    {fromCurrency === 'NGN' ? 'T' : '₦'}
+                  </div>
+                  <span className="text-[15px] font-medium text-[#334155] dark:text-slate-200">{fromCurrency === 'NGN' ? 'USDT' : 'NGN'}</span>
                 </div>
-                <span className="text-[15px] font-medium text-[#334155] dark:text-slate-200">{fromCurrency === 'NGN' ? 'USDT' : 'NGN'}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
           </div>
         </div>

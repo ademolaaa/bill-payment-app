@@ -162,10 +162,9 @@ export default function HomePage() {
                   {mask('₦56,780.25')}
                 </h4>
               </div>
-              <p className="text-[13px] font-medium text-[#16a34a] flex items-center gap-1 mt-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V3a1 1 0 012 0v9.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)"/></svg>
-                5.25%
-              </p>
+              <Link href="/investments" className="text-[13px] font-bold text-[#16a34a] hover:opacity-80 transition mt-1">
+                Top Up
+              </Link>
             </div>
 
             {/* USDT Card */}
@@ -182,10 +181,9 @@ export default function HomePage() {
                 </h4>
               </div>
               <div className="flex justify-between items-end mt-1">
-                <p className="text-[13px] font-medium text-[#16a34a] flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V3a1 1 0 012 0v9.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" transform="rotate(180 10 10)"/></svg>
-                  3.60%
-                </p>
+                <Link href="/investments" className="text-[13px] font-bold text-[#16a34a] hover:opacity-80 transition">
+                  Top Up
+                </Link>
                 <span className="text-[10px] bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded uppercase font-bold text-gray-600 dark:text-slate-400">TRC20</span>
               </div>
             </div>

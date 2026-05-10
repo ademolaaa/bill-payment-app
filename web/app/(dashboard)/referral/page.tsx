@@ -28,6 +28,34 @@ export default function ReferralPage() {
     }
   }, []);
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/signup?ref=${referralCode}`;
+    const shareData = {
+      title: 'Join Kyvatron',
+      text: `Join me on Kyvatron and earn rewards! Use my referral code: ${referralCode}`,
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // Silently fail if user cancels share
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Referral link copied to clipboard!');
+      } catch (err) {
+        console.error('Error copying to clipboard:', err);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
       {/* Header section */}
@@ -43,8 +71,8 @@ export default function ReferralPage() {
           <div className="relative w-[110px] h-[110px]">
              {/* Using a structural div for the graphic area until asset is added */}
              <div className="absolute inset-0 bg-blue-100/50 rounded-2xl flex items-center justify-center overflow-hidden">
-               <span className="text-[40px]">🎁</span>
-               <div className="absolute bottom-2 left-2 w-8 h-8 bg-[#16A34A] rounded-full flex items-center justify-center border-2 border-white text-white font-bold text-[12px] shadow-sm">₮</div>
+                <span className="text-[40px]">🎁</span>
+                <div className="absolute bottom-2 left-2 w-8 h-8 bg-[#16A34A] rounded-full flex items-center justify-center border-2 border-white text-white font-bold text-[12px] shadow-sm">T</div>
              </div>
           </div>
         </div>
@@ -65,7 +93,10 @@ export default function ReferralPage() {
               <h2 className="text-[20px] font-bold text-[#0F172A] dark:text-white leading-none">{referralCode}</h2>
             </div>
           </div>
-          <Button className="px-5 py-3 rounded-[14px] bg-[#0047FF] hover:bg-blue-700 text-white text-[14px] font-bold flex items-center shadow-md">
+          <Button 
+            onClick={handleShare}
+            className="px-5 py-3 rounded-[14px] bg-[#0F172A] hover:bg-slate-800 text-white text-[14px] font-bold flex items-center shadow-md border-none !w-auto"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
