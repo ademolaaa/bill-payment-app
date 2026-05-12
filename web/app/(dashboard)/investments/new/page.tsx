@@ -107,7 +107,7 @@ export default function NewInvestmentPage() {
           <div className="flex justify-between items-center mb-4">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">Investment:</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {currency === 'NGN' ? '₦' : ''}{numAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}{currency === 'USDT' ? ' USDT' : ''}
+              {numAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} {currency}
             </span>
           </div>
           
@@ -119,7 +119,7 @@ export default function NewInvestmentPage() {
           <div className="flex justify-between items-center mb-4">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">ROI:</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {roiPercent}% ({currency === 'NGN' ? '₦' : ''}{roiAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}{currency === 'USDT' ? ' USDT' : ''})
+              {roiPercent}% ({roiAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} {currency})
             </span>
           </div>
           
@@ -128,7 +128,7 @@ export default function NewInvestmentPage() {
           <div className="flex justify-between items-center">
             <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">Total:</span>
             <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">
-              {currency === 'NGN' ? '₦' : ''}{totalAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}{currency === 'USDT' ? ' USDT' : ''}
+              {totalAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} {currency}
             </span>
           </div>
         </div>
@@ -145,80 +145,134 @@ export default function NewInvestmentPage() {
           <h3 className="text-[18px] font-bold text-[#0F172A] dark:text-white mb-4">Active Investments</h3>
           
           <div className="space-y-4">
-            {/* Investment Card 1 */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Investment Package:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white text-right">3 Months, 11% ROI</span>
+            {/* Redesigned Investment Card 1 (NGN) */}
+            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[24px] p-5 shadow-sm">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-[#16A34A] rounded-full flex items-center justify-center text-white shadow-sm">
+                    <span className="text-[20px] font-bold">₦</span>
+                  </div>
+                  <div>
+                    <h4 className="text-[16px] font-bold text-[#0F172A] dark:text-white leading-tight">3 Months, 11% ROI</h4>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 text-[10px] font-bold rounded-md">NGN</span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></div>
+                        <span className="text-[11px] font-bold text-[#16A34A]">Active</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Currency:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">NGN</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Amount Invested:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">₦500,000.00</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">ROI:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">₦55,000.00</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Total:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">₦555,000.00</span>
+                <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 rounded-xl flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
                 </div>
               </div>
-              
-              <div className="h-[1px] bg-gray-100 dark:bg-slate-800 w-full mb-4"></div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Investment Date:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">March 05, 2026</span>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-gray-400 font-medium mb-1">Amount Invested</span>
+                  <span className="text-[13px] font-bold text-[#0F172A] dark:text-white">500,000.00 NGN</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Maturity Date:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">June 05, 2026</span>
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-gray-400 font-medium mb-1">ROI</span>
+                  <span className="text-[13px] font-bold text-[#0F172A] dark:text-white">55,000.00 NGN</span>
+                </div>
+                <div className="flex flex-col bg-[#DCFCE7]/50 dark:bg-[#166534]/10 rounded-xl p-2">
+                  <span className="text-[11px] text-[#16A34A] font-medium mb-1">Total</span>
+                  <span className="text-[13px] font-bold text-[#16A34A]">555,000.00 NGN</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-gray-50 dark:border-slate-800 pt-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium">Investment Date</p>
+                    <p className="text-[12px] font-bold text-[#0F172A] dark:text-white">March 05, 2026</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium">Maturity Date</p>
+                    <p className="text-[12px] font-bold text-[#0F172A] dark:text-white">June 05, 2026</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Investment Card 2 */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Investment Package:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white text-right">12 Months, 47% ROI</span>
+            {/* Redesigned Investment Card 2 (USDT) */}
+            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[24px] p-5 shadow-sm">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-[#009393] rounded-full flex items-center justify-center text-white shadow-sm">
+                    <span className="text-[20px] font-bold">T</span>
+                  </div>
+                  <div>
+                    <h4 className="text-[16px] font-bold text-[#0F172A] dark:text-white leading-tight">12 Months, 47% ROI</h4>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 text-[10px] font-bold rounded-md">USDT</span>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></div>
+                        <span className="text-[11px] font-bold text-[#16A34A]">Active</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Currency:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">USDT</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Amount Invested:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">$2,000.00</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">ROI:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">$940.00</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Total:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">$2,940.00</span>
+                <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 rounded-xl flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
                 </div>
               </div>
-              
-              <div className="h-[1px] bg-gray-100 dark:bg-slate-800 w-full mb-4"></div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Investment Date:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">August 03, 2026</span>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-gray-400 font-medium mb-1">Amount Invested</span>
+                  <span className="text-[13px] font-bold text-[#0F172A] dark:text-white">2,000.00 USDT</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-medium text-[#64748B] dark:text-slate-400">Maturity Date:</span>
-                  <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">August 03, 2027</span>
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-gray-400 font-medium mb-1">ROI</span>
+                  <span className="text-[13px] font-bold text-[#0F172A] dark:text-white">940.00 USDT</span>
+                </div>
+                <div className="flex flex-col bg-[#DCFCE7]/50 dark:bg-[#166534]/10 rounded-xl p-2">
+                  <span className="text-[11px] text-[#16A34A] font-medium mb-1">Total</span>
+                  <span className="text-[13px] font-bold text-[#16A34A]">2,940.00 USDT</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-gray-50 dark:border-slate-800 pt-4 mt-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium">Investment Date</p>
+                    <p className="text-[12px] font-bold text-[#0F172A] dark:text-white">August 03, 2026</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-50 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#16A34A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-medium">Maturity Date</p>
+                    <p className="text-[12px] font-bold text-[#0F172A] dark:text-white">August 03, 2027</p>
+                  </div>
                 </div>
               </div>
             </div>

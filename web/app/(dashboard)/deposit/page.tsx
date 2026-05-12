@@ -57,10 +57,10 @@ export default function DepositPage() {
             <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[20px] p-6 mb-6 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-[14px] text-[#475569] dark:text-slate-400 font-medium block mb-1">NGN Balance</span>
-                <h2 className="text-[28px] font-bold text-[#0F172A] dark:text-white leading-none">₦182,300.00</h2>
+                <h2 className="text-[24px] font-bold text-[#0F172A] dark:text-white leading-none">182,300.00 NGN</h2>
               </div>
               <div className="w-12 h-12 bg-[#DCFCE7] dark:bg-[#166534]/30 rounded-full flex items-center justify-center text-[#16A34A] dark:text-[#22C55E]">
-                <span className="text-[22px] font-bold">₦</span>
+                <span className="text-[22px] font-bold">NGN</span>
               </div>
             </div>
 
@@ -69,13 +69,16 @@ export default function DepositPage() {
               <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-3">Amount</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <span className="text-gray-400 text-[18px] font-bold">₦</span>
+                <span className="text-gray-400 text-[18px] font-bold"></span>
                 </div>
                 <input 
                   type="number" 
                   placeholder="Enter amount"
-                  className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 pl-10 pr-4 text-[16px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-gray-300 shadow-sm"
+                  className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 pl-10 pr-14 text-[16px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-gray-300 shadow-sm"
                 />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <span className="text-gray-400 text-[14px] font-bold">NGN</span>
+                </div>
               </div>
             </div>
 
@@ -107,7 +110,10 @@ export default function DepositPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 to-orange-100/50 dark:from-purple-900/10 dark:to-orange-900/10 opacity-50"></div>
                     <div className="relative z-10 w-14 h-14 bg-gradient-to-br from-purple-600 to-orange-500 rounded-full flex items-center justify-center text-white mb-4 shadow-sm">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5L21 3m-7.5 7.5v9l-3-3-3 3v-9m7.5-7.5L3 21m0 0l3-3m-3 3h9" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12H4s.5-1 4-4Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 9V4s1 .5 4 4Z" />
                       </svg>
                     </div>
                     <h3 className="text-[15px] font-bold text-[#0F172A] dark:text-white mb-0.5 relative z-10">Deposit Automatically</h3>

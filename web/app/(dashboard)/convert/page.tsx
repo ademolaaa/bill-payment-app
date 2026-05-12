@@ -45,12 +45,12 @@ export default function ConvertPage() {
           
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
-                ₦
+              <div className="w-10 h-10 bg-[#E0E7FF] dark:bg-blue-900/30 rounded-full flex items-center justify-center text-[#0047FF] font-bold text-[12px]">
+                NGN
               </div>
               <span className="text-[15px] text-[#475569] dark:text-slate-300">NGN Balance</span>
             </div>
-            <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">₦250,000.00</span>
+            <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">250,000.00 NGN</span>
           </div>
           
           <div className="flex items-center justify-between">
@@ -89,8 +89,8 @@ export default function ConvertPage() {
               </select>
               <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 mb-3 shadow-sm relative pointer-events-none">
                 <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
-                    {fromCurrency === 'NGN' ? '₦' : 'T'}
+                  <div className="w-10 h-10 bg-[#E0E7FF] dark:bg-blue-900/30 rounded-full flex items-center justify-center text-[#0047FF] font-bold text-[12px]">
+                    {fromCurrency}
                   </div>
                   <span className="text-[15px] font-medium text-[#334155] dark:text-slate-200">{fromCurrency}</span>
                 </div>
@@ -101,21 +101,23 @@ export default function ConvertPage() {
             </div>
 
             {/* Amount Input */}
-            <div className="bg-white dark:bg-slate-900 border border-blue-400 dark:border-blue-500/50 rounded-2xl p-4 shadow-sm ring-1 ring-blue-100 dark:ring-blue-900/30">
-              <label className="block text-[13px] text-gray-500 dark:text-slate-400 mb-1">Enter Amount</label>
-              <div className="flex items-center relative">
-                {fromCurrency === 'NGN' && <span className="text-[22px] font-medium text-gray-400 mr-1">₦</span>}
-                <input 
-                  type="number"
-                  placeholder="0.00"
-                  className="w-full bg-transparent text-[22px] font-medium text-[#0F172A] dark:text-white focus:outline-none placeholder-gray-300 dark:placeholder-gray-500"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-                {fromCurrency === 'USDT' && (
-                  <div className="text-[22px] font-medium text-gray-400 absolute right-0">USDT</div>
-                )}
+            <div className="bg-white dark:bg-slate-900 border border-blue-400 dark:border-blue-500/50 rounded-2xl p-4 shadow-sm ring-1 ring-blue-100 dark:ring-blue-900/30 relative flex items-center">
+              <div className="flex-1">
+                <label className="block text-[13px] text-gray-500 dark:text-slate-400 mb-1">Enter Amount</label>
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#F0F5FF] dark:bg-[#1D4ED8]/20 flex items-center justify-center text-[#0047FF] dark:text-blue-400 font-bold text-[14px] mr-3">
+                    {fromCurrency === 'NGN' ? '₦' : '$'}
+                  </div>
+                  <input 
+                    type="number"
+                    placeholder="0.00"
+                    className="w-full bg-transparent text-[22px] font-bold text-[#0F172A] dark:text-white focus:outline-none placeholder-gray-300 dark:placeholder-gray-500"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </div>
               </div>
+              <div className="text-[14px] font-bold text-gray-400 ml-2">{fromCurrency}</div>
             </div>
           </div>
 
@@ -155,8 +157,8 @@ export default function ConvertPage() {
               </select>
               <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm relative pointer-events-none">
                 <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
-                    {fromCurrency === 'NGN' ? 'T' : '₦'}
+                  <div className="w-10 h-10 bg-[#E0E7FF] dark:bg-blue-900/30 rounded-full flex items-center justify-center text-[#0047FF] font-bold text-[12px]">
+                    {fromCurrency === 'NGN' ? 'USDT' : 'NGN'}
                   </div>
                   <span className="text-[15px] font-medium text-[#334155] dark:text-slate-200">{fromCurrency === 'NGN' ? 'USDT' : 'NGN'}</span>
                 </div>
@@ -187,21 +189,21 @@ export default function ConvertPage() {
           <div className="flex justify-between items-center mb-3">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">Fees ({fromCurrency})</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {fromCurrency === 'NGN' ? '₦' : ''}{fees.toLocaleString('en-NG', {minimumFractionDigits:2})}{fromCurrency === 'USDT' ? ' USDT' : ''}
+              {fees.toLocaleString('en-NG', {minimumFractionDigits:2})} {fromCurrency}
             </span>
           </div>
           
           <div className="flex justify-between items-center mb-3">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">You will convert ({fromCurrency})</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {fromCurrency === 'NGN' ? '₦' : ''}{convertAmount.toLocaleString('en-NG', {minimumFractionDigits:2})}{fromCurrency === 'USDT' ? ' USDT' : ''}
+              {convertAmount.toLocaleString('en-NG', {minimumFractionDigits:2})} {fromCurrency}
             </span>
           </div>
           
           <div className="flex justify-between items-center">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">You will receive ({fromCurrency === 'NGN' ? 'USDT' : 'NGN'})</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {fromCurrency === 'USDT' ? '₦' : ''}{receiveAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}{fromCurrency === 'NGN' ? ' USDT' : ''}
+              {receiveAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} {fromCurrency === 'NGN' ? 'USDT' : 'NGN'}
             </span>
           </div>
         </div>

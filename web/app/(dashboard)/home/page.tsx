@@ -97,11 +97,11 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{userName || 'User'} 👋</h1>
         </div>
         {/* Notification bell placeholder */}
-        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-gray-700 dark:text-slate-600 cursor-pointer hover:bg-gray-50 transition">
+        <Link href="/notifications" className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center text-gray-700 dark:text-slate-600 cursor-pointer hover:bg-gray-50 transition">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-        </div>
+        </Link>
       </header>
 
       <div className="px-5 flex flex-col space-y-6">
@@ -122,8 +122,8 @@ export default function HomePage() {
               </button>
             </div>
 
-            <h2 className="text-[34px] font-bold text-gray-900 dark:text-white tracking-tight leading-none mb-2 transition-all duration-300">
-              {mask(`₦${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
+            <h2 className="text-[28px] font-bold text-gray-900 dark:text-white tracking-tight leading-none mb-2 transition-all duration-300">
+              {mask(`${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`)}
             </h2>
             <p className="text-[15px] font-medium text-gray-700 dark:text-slate-600 mb-6">
               {mask(`${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`)}
@@ -153,13 +153,13 @@ export default function HomePage() {
             <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between border border-gray-100 dark:border-slate-800">
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-5 h-5 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
-                    ₦
+                  <div className="w-10 h-10 rounded-full bg-[#E0E7FF] dark:bg-blue-900/30 flex items-center justify-center text-[#0047FF] font-bold text-[14px]">
+                    NGN
                   </div>
                   <p className="text-[13px] font-bold text-gray-900 dark:text-white">NGN</p>
                 </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
-                  {mask('₦56,780.25')}
+                  {mask('56,780.25 NGN')}
                 </h4>
               </div>
               <Link href="/investments" className="text-[13px] font-bold text-[#16a34a] hover:opacity-80 transition mt-1">
@@ -177,7 +177,7 @@ export default function HomePage() {
                   <p className="text-[13px] font-bold text-gray-900 dark:text-white">USDT</p>
                 </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
-                  {mask('$6,420.10')}
+                  {mask('6,420.10 USDT')}
                 </h4>
               </div>
               <div className="flex justify-between items-end mt-1">

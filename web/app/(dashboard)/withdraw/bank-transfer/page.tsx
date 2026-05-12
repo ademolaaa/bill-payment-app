@@ -10,7 +10,7 @@ export default function BankTransferPage() {
   const [accountNumber, setAccountNumber] = useState('');
 
   const numAmount = parseFloat(amount) || 0;
-  const fees = numAmount > 0 ? 50 : 0; // Flat ₦50 fee for example
+  const fees = numAmount > 0 ? 50 : 0; // Flat 50 NGN fee for example
   const finalAmount = Math.max(0, numAmount - fees);
 
   return (
@@ -79,16 +79,19 @@ export default function BankTransferPage() {
           <div>
             <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Amount</label>
             <div className="relative flex items-center">
-              <div className="absolute left-3 w-8 h-8 rounded-lg bg-[#F0F5FF] dark:bg-[#1D4ED8]/20 flex items-center justify-center text-[#0047FF] dark:text-blue-400">
-                <span className="font-bold text-[14px]">₦</span>
+              <div className="absolute left-3 w-8 h-8 rounded-lg bg-[#F0F5FF] dark:bg-[#1D4ED8]/20 flex items-center justify-center text-[#0047FF] dark:text-blue-400 font-bold text-[14px]">
+                ₦
               </div>
               <input 
                 type="number"
                 placeholder="Enter amount"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl py-3.5 pl-[56px] pr-4 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow text-[#0F172A] dark:text-white placeholder-gray-400"
+                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl py-3.5 pl-[56px] pr-14 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow text-[#0F172A] dark:text-white placeholder-gray-400 font-medium"
               />
+              <div className="absolute right-4 text-gray-400 font-bold text-[13px]">
+                NGN
+              </div>
             </div>
           </div>
 
@@ -100,25 +103,21 @@ export default function BankTransferPage() {
           
           <div className="flex justify-between items-center mb-3">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">Initial Amount</span>
-            <span className="text-[14px] text-[#475569] dark:text-slate-400">
-              ₦{numAmount.toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2})}
-            </span>
+            <p className="text-[14px] font-bold text-[#0F172A] dark:text-white">
+              {numAmount.toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2})} NGN
+            </p>
           </div>
-          
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-[14px] text-[#475569] dark:text-slate-400">Fees</span>
-            <span className="text-[14px] text-[#475569] dark:text-slate-400">
-              ₦{fees.toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2})}
-            </span>
-          </div>
-          
-          <div className="h-[1px] bg-gray-200/70 dark:bg-slate-700 w-full mb-4"></div>
-          
           <div className="flex justify-between items-center">
-            <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">Final Amount</span>
-            <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">
-              ₦{finalAmount.toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2})}
-            </span>
+            <span className="text-[14px] text-gray-500">Transaction Fees</span>
+            <p className="text-[14px] font-bold text-[#0F172A] dark:text-white">
+              {fees.toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2})} NGN
+            </p>
+          </div>
+          <div className="pt-3 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center">
+            <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">Total Withdrawal</span>
+            <p className="text-[18px] font-bold text-[#0047FF]">
+              {finalAmount.toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2})} NGN
+            </p>
           </div>
         </div>
 

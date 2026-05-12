@@ -134,12 +134,12 @@ const NETWORKS = [
 ];
 
 const DATA_BUNDLES = [
-  { value: '500mb_daily', label: '500MB – Daily (₦100)' },
-  { value: '1gb_weekly', label: '1GB – Weekly (₦350)' },
-  { value: '2gb_monthly', label: '2GB – Monthly (₦1,000)' },
-  { value: '5gb_monthly', label: '5GB – Monthly (₦2,000)' },
-  { value: '10gb_monthly', label: '10GB – Monthly (₦3,500)' },
-  { value: '20gb_monthly', label: '20GB – Monthly (₦5,000)' },
+  { value: '500mb_daily', label: '500MB – Daily (100 NGN)' },
+  { value: '1gb_weekly', label: '1GB – Weekly (350 NGN)' },
+  { value: '2gb_monthly', label: '2GB – Monthly (1,000 NGN)' },
+  { value: '5gb_monthly', label: '5GB – Monthly (2,000 NGN)' },
+  { value: '10gb_monthly', label: '10GB – Monthly (3,500 NGN)' },
+  { value: '20gb_monthly', label: '20GB – Monthly (5,000 NGN)' },
 ];
 
 const TV_PROVIDERS = [
@@ -151,28 +151,28 @@ const TV_PROVIDERS = [
 
 const TV_BOUQUETS: Record<string, { value: string; label: string }[]> = {
   dstv: [
-    { value: 'padi', label: 'Padi – ₦2,500' },
-    { value: 'yanga', label: 'Yanga – ₦3,500' },
-    { value: 'confam', label: 'Confam – ₦6,200' },
-    { value: 'compact', label: 'Compact – ₦15,000' },
-    { value: 'premium', label: 'Premium – ₦29,500' },
+    { value: 'padi', label: 'Padi – 2,500 NGN' },
+    { value: 'yanga', label: 'Yanga – 3,500 NGN' },
+    { value: 'confam', label: 'Confam – 6,200 NGN' },
+    { value: 'compact', label: 'Compact – 15,000 NGN' },
+    { value: 'premium', label: 'Premium – 29,500 NGN' },
   ],
   gotv: [
-    { value: 'smallie', label: 'Smallie – ₦1,575' },
-    { value: 'jinja', label: 'Jinja – ₦2,715' },
-    { value: 'jolli', label: 'Jolli – ₦4,115' },
-    { value: 'max', label: 'Max – ₦6,200' },
+    { value: 'smallie', label: 'Smallie – 1,575 NGN' },
+    { value: 'jinja', label: 'Jinja – 2,715 NGN' },
+    { value: 'jolli', label: 'Jolli – 4,115 NGN' },
+    { value: 'max', label: 'Max – 6,200 NGN' },
   ],
   startimes: [
-    { value: 'nova', label: 'Nova – ₦1,200' },
-    { value: 'basic', label: 'Basic – ₦2,200' },
-    { value: 'smart', label: 'Smart – ₦3,000' },
-    { value: 'classic', label: 'Classic – ₦3,700' },
-    { value: 'super', label: 'Super – ₦5,300' },
+    { value: 'nova', label: 'Nova – 1,200 NGN' },
+    { value: 'basic', label: 'Basic – 2,200 NGN' },
+    { value: 'smart', label: 'Smart – 3,000 NGN' },
+    { value: 'classic', label: 'Classic – 3,700 NGN' },
+    { value: 'super', label: 'Super – 5,300 NGN' },
   ],
   showmax: [
-    { value: 'mobile', label: 'Mobile – ₦1,200' },
-    { value: 'standard', label: 'Standard – ₦3,600' },
+    { value: 'mobile', label: 'Mobile – 1,200 NGN' },
+    { value: 'standard', label: 'Standard – 3,600 NGN' },
   ],
 };
 
@@ -208,10 +208,10 @@ const WATER_PROVIDERS = [
 ];
 
 const ISP_PLANS = [
-  { value: 'spectranet_5mb', label: 'Spectranet – 5Mbps Unlimited ₦8,750' },
-  { value: 'smile_1gb', label: 'Smile – 1GB ₦1,000' },
-  { value: 'swift_10mb', label: 'Swift Networks – 10Mbps ₦15,000' },
-  { value: 'ipnx_home', label: 'IPNX – Home Starter ₦10,000' },
+  { value: 'spectranet_5mb', label: 'Spectranet – 5Mbps Unlimited 8,750 NGN' },
+  { value: 'smile_1gb', label: 'Smile – 1GB 1,000 NGN' },
+  { value: 'swift_10mb', label: 'Swift Networks – 10Mbps 15,000 NGN' },
+  { value: 'ipnx_home', label: 'IPNX – Home Starter 10,000 NGN' },
 ];
 
 const TRANSPORT_TYPES = [
@@ -229,7 +229,7 @@ function buildSummaryLines(cat: CategoryId, form: FormState): { label: string; v
       return [
         { label: 'Network', value: net },
         { label: 'Phone Number', value: form.phone },
-        { label: 'Amount', value: `₦${form.amount}` },
+        { label: 'Amount', value: `${form.amount} NGN` },
       ];
     case 'data': {
       const bundle = DATA_BUNDLES.find(b => b.value === form.bundle)?.label ?? form.bundle;
@@ -246,7 +246,7 @@ function buildSummaryLines(cat: CategoryId, form: FormState): { label: string; v
         { label: 'Provider', value: prov },
         { label: 'Meter Number', value: form.meterNumber },
         { label: 'Meter Type', value: mType },
-        { label: 'Amount', value: `₦${form.amount}` },
+        { label: 'Amount', value: `${form.amount} NGN` },
       ];
     }
     case 'tv': {
@@ -263,14 +263,14 @@ function buildSummaryLines(cat: CategoryId, form: FormState): { label: string; v
       return [
         { label: 'Platform', value: plat },
         { label: 'User ID', value: form.userId },
-        { label: 'Amount', value: `₦${form.amount}` },
+        { label: 'Amount', value: `${form.amount} NGN` },
       ];
     }
     case 'water':
       return [
         { label: 'Provider', value: WATER_PROVIDERS.find(p => p.value === form.network)?.label ?? form.network },
         { label: 'Account Number', value: form.accountNumber },
-        { label: 'Amount', value: `₦${form.amount}` },
+        { label: 'Amount', value: `${form.amount} NGN` },
       ];
     case 'internet': {
       const plan = ISP_PLANS.find(p => p.value === form.ispPlan)?.label ?? form.ispPlan;
@@ -283,13 +283,13 @@ function buildSummaryLines(cat: CategoryId, form: FormState): { label: string; v
       return [
         { label: 'School', value: form.schoolName },
         { label: 'Student ID', value: form.studentId },
-        { label: 'Amount', value: `₦${form.amount}` },
+        { label: 'Amount', value: `${form.amount} NGN` },
       ];
     case 'transport': {
       const t = TRANSPORT_TYPES.find(t => t.value === form.transportType)?.label ?? form.transportType;
       return [
         { label: 'Type', value: t },
-        { label: 'Amount', value: `₦${form.amount}` },
+        { label: 'Amount', value: `${form.amount} NGN` },
       ];
     }
     default: return [];
@@ -309,7 +309,7 @@ function FormBody({ category, form, set }: {
         <>
           <SelectField id="network" label="Network" value={form.network} onChange={v => set('network', v)} required placeholder="Select Network" options={NETWORKS} />
           <Input label="Phone Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required />
-          <Input label="Amount (₦)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
         </>
       );
     case 'data':
@@ -326,7 +326,7 @@ function FormBody({ category, form, set }: {
           <SelectField id="network" label="Distribution Company" value={form.network} onChange={v => set('network', v)} required placeholder="Select Provider" options={ELECTRICITY_PROVIDERS} />
           <Input label="Meter Number" type="text" placeholder="01023456789" value={form.meterNumber} onChange={e => set('meterNumber', e.target.value)} required />
           <SelectField id="meterType" label="Meter Type" value={form.meterType} onChange={v => set('meterType', v)} required placeholder="Prepaid or Postpaid?" options={METER_TYPES} />
-          <Input label="Amount (₦)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
         </>
       );
     case 'tv': {
@@ -344,7 +344,7 @@ function FormBody({ category, form, set }: {
         <>
           <SelectField id="platform" label="Betting Platform" value={form.platform} onChange={v => set('platform', v)} required placeholder="Select Platform" options={BETTING_PLATFORMS} />
           <Input label="User ID / Username" type="text" placeholder="Your platform username" value={form.userId} onChange={e => set('userId', e.target.value)} required />
-          <Input label="Amount (₦)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
         </>
       );
     case 'water':
@@ -352,7 +352,7 @@ function FormBody({ category, form, set }: {
         <>
           <SelectField id="network" label="Water Provider" value={form.network} onChange={v => set('network', v)} required placeholder="Select Provider" options={WATER_PROVIDERS} />
           <Input label="Account Number" type="text" placeholder="WC123456789" value={form.accountNumber} onChange={e => set('accountNumber', e.target.value)} required />
-          <Input label="Amount (₦)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
         </>
       );
     case 'internet':
@@ -367,14 +367,14 @@ function FormBody({ category, form, set }: {
         <>
           <Input label="School Name" type="text" placeholder="e.g. University of Lagos" value={form.schoolName} onChange={e => set('schoolName', e.target.value)} required />
           <Input label="Student ID / Reg. Number" type="text" placeholder="LCU/ND/22/0001" value={form.studentId} onChange={e => set('studentId', e.target.value)} required />
-          <Input label="Amount (₦)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
         </>
       );
     case 'transport':
       return (
         <>
           <SelectField id="transportType" label="Transport Type" value={form.transportType} onChange={v => set('transportType', v)} required placeholder="Select Transport Service" options={TRANSPORT_TYPES} />
-          <Input label="Amount (₦)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
         </>
       );
     default: return null;

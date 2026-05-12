@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
           
           <div className="text-center mt-auto">
             <p className="text-[12px] text-[#64748B] dark:text-slate-400 font-medium">
-              By continuing, you agree to our <Link href="/terms" className="text-[#0047FF] hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-[#0047FF] hover:underline">Privacy Policy</Link>.
+              By continuing, you agree to our <a href="https://kyvatron.com/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-[#0047FF] hover:underline">Terms of Service</a> and <a href="https://kyvatron.com/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-[#0047FF] hover:underline">Privacy Policy</a>.
             </p>
           </div>
         </form>

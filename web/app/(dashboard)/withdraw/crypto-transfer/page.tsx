@@ -79,16 +79,19 @@ export default function CryptoTransferPage() {
           <div>
             <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Amount</label>
             <div className="relative flex items-center">
-              <div className="absolute left-0 pl-4 pr-3 border-r border-gray-200 dark:border-slate-700 flex items-center justify-center text-[#0F172A] dark:text-white font-bold h-[24px]">
+              <div className="absolute left-3 w-8 h-8 rounded-lg bg-[#F0F5FF] dark:bg-[#1D4ED8]/20 flex items-center justify-center text-[#0047FF] dark:text-blue-400 font-bold text-[14px]">
                 $
               </div>
-              <input 
-                type="number"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl py-3.5 pl-[52px] pr-4 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow text-[#0F172A] dark:text-white placeholder-gray-400"
-              />
+                <input 
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl py-3.5 pl-[56px] pr-14 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow text-[#0F172A] dark:text-white placeholder-gray-400 font-medium"
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <span className="text-gray-400 text-[13px] font-bold">USDT</span>
+                </div>
             </div>
           </div>
 
@@ -101,14 +104,14 @@ export default function CryptoTransferPage() {
           <div className="flex justify-between items-center mb-3">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">Initial Amount</span>
             <span className="text-[14px] text-[#475569] dark:text-slate-400">
-              ${numAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}
+              {numAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USDT
             </span>
           </div>
           
           <div className="flex justify-between items-center mb-4">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">Fees</span>
             <span className="text-[14px] text-[#475569] dark:text-slate-400">
-              ${fees.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}
+              {fees.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USDT
             </span>
           </div>
           
@@ -117,7 +120,7 @@ export default function CryptoTransferPage() {
           <div className="flex justify-between items-center">
             <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">Final Amount</span>
             <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">
-              ${finalAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}
+              {finalAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USDT
             </span>
           </div>
         </div>

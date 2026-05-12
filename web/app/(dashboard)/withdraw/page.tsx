@@ -16,9 +16,9 @@ export default function WithdrawPage() {
   const finalAmount = numAmount - fees > 0 ? numAmount - fees : 0;
   
   const formatCurrency = (val: number) => {
-    return currency === 'NGN' 
-      ? `₦${val.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-      : `${val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT`;
+    return val === null 
+      ? `0.00 ${currency}`
+      : `${val.toLocaleString(currency === 'NGN' ? 'en-NG' : 'en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${currency}`;
   };
 
   return (
@@ -39,7 +39,7 @@ export default function WithdrawPage() {
           >
             <div className="flex items-center space-x-3">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[12px] ${currency === 'NGN' ? 'bg-[#16a34a]' : 'bg-[#26A17B]'}`}>
-                {currency === 'NGN' ? '₦' : 'T'}
+                {currency}
               </div>
               <span className="text-[15px] font-medium text-[#334155] dark:text-slate-300">
                 {currency === 'NGN' ? 'NGN' : 'USDT (TRC20)'}
@@ -57,14 +57,14 @@ export default function WithdrawPage() {
                 className="flex items-center space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer"
                 onClick={() => { setCurrency('NGN'); setIsDropdownOpen(false); }}
               >
-                <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[12px]">₦</div>
+                <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[12px]">NGN</div>
                 <span className="text-[15px] font-medium text-[#334155] dark:text-slate-300">NGN</span>
               </div>
               <div 
                 className="flex items-center space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer"
                 onClick={() => { setCurrency('USDT'); setIsDropdownOpen(false); }}
               >
-                <div className="w-6 h-6 bg-[#26A17B] rounded-full flex items-center justify-center text-white font-bold text-[12px]">T</div>
+                <div className="w-6 h-6 bg-[#26A17B] rounded-full flex items-center justify-center text-white font-bold text-[12px]">USDT</div>
                 <span className="text-[15px] font-medium text-[#334155] dark:text-slate-300">USDT (TRC20)</span>
               </div>
             </div>
@@ -75,19 +75,17 @@ export default function WithdrawPage() {
         <div>
           <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Amount</label>
           <div className="relative flex items-center">
-            <div className="absolute left-4 text-gray-400 font-medium text-[18px]">
+            <div className="absolute left-3 w-8 h-8 rounded-lg bg-[#F0F5FF] dark:bg-[#1D4ED8]/20 flex items-center justify-center text-[#0047FF] dark:text-blue-400 font-bold text-[14px]">
               {currency === 'NGN' ? '₦' : '$'}
             </div>
             <input 
               type="number"
               placeholder="Enter amount"
-              className="w-full bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/50 rounded-2xl py-4 pl-10 pr-16 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow shadow-sm text-gray-900 dark:text-white placeholder-gray-400"
+              className="w-full bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/50 rounded-2xl py-4 pl-14 pr-16 text-[15px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow shadow-sm text-gray-900 dark:text-white placeholder-gray-400 font-medium"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-            {currency === 'USDT' && (
-              <div className="absolute right-4 text-gray-500 dark:text-slate-400 font-medium text-[14px]">USDT</div>
-            )}
+            <div className="absolute right-4 text-gray-400 font-bold text-[13px] uppercase">{currency}</div>
           </div>
         </div>
 

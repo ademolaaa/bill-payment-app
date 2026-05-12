@@ -34,7 +34,7 @@ const typeOptions = [
     label: 'Withdrawals',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010-18z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>
     ),
     color: 'text-[#0047FF]'
@@ -68,12 +68,135 @@ const typeOptions = [
   }
 ];
 
+// Date helper functions
+const formatDate = (date: Date | null) => {
+  if (!date) return 'Select Date';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+const DatePicker = ({ 
+  startDate, setStartDate, endDate, setEndDate 
+}: { 
+  startDate: Date | null, setStartDate: (d: Date | null) => void,
+  endDate: Date | null, setEndDate: (d: Date | null) => void
+}) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+
+  const renderMonth = (date: Date, showPrevArrow: boolean, showNextArrow: boolean) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const daysInMonth = getDaysInMonth(year, month);
+    const firstDay = getFirstDayOfMonth(year, month);
+    
+    const days = [];
+    const prevMonthDays = getDaysInMonth(year, month - 1);
+    for (let i = firstDay - 1; i >= 0; i--) {
+      days.push({ day: prevMonthDays - i, isCurrentMonth: false, date: new Date(year, month - 1, prevMonthDays - i) });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({ day: i, isCurrentMonth: true, date: new Date(year, month, i) });
+    }
+    const remainingDays = 42 - days.length; 
+    for (let i = 1; i <= remainingDays; i++) {
+      days.push({ day: i, isCurrentMonth: false, date: new Date(year, month + 1, i) });
+    }
+
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-4 px-1">
+          {showPrevArrow ? (
+            <button onClick={prevMonth} aria-label="Previous Month" title="Previous Month" className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+          ) : <div className="w-6"/>}
+          <span className="text-[12px] sm:text-[13px] font-bold text-[#0F172A] dark:text-white">
+            {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </span>
+          {showNextArrow ? (
+            <button onClick={nextMonth} aria-label="Next Month" title="Next Month" className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </button>
+          ) : <div className="w-6"/>}
+        </div>
+        <div className="grid grid-cols-7 gap-y-2 gap-x-0 sm:gap-x-1 text-center text-[10px] sm:text-[11px]">
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <span key={d} className="text-gray-400 font-medium pb-2">{d}</span>)}
+          {days.map((d, idx) => {
+            const isSelectedStart = startDate && d.date.getTime() === startDate.getTime();
+            const isSelectedEnd = endDate && d.date.getTime() === endDate.getTime();
+            const isSelected = isSelectedStart || isSelectedEnd;
+            const isBetween = startDate && endDate && d.date > startDate && d.date < endDate;
+            
+            const handleDayClick = () => {
+              if (!startDate || (startDate && endDate)) {
+                setStartDate(d.date);
+                setEndDate(null);
+              } else if (startDate && !endDate) {
+                if (d.date < startDate) {
+                  setEndDate(startDate);
+                  setStartDate(d.date);
+                } else {
+                  setEndDate(d.date);
+                }
+              }
+            };
+
+            return (
+              <div key={idx} className="relative z-10 py-0.5" onClick={handleDayClick}>
+                {isBetween && <div className="absolute inset-y-0 left-0 right-0 bg-blue-50 dark:bg-blue-900/30 -z-10"></div>}
+                {isSelectedStart && startDate && endDate && <div className="absolute inset-y-0 right-0 left-1/2 bg-blue-50 dark:bg-blue-900/30 -z-10"></div>}
+                {isSelectedEnd && startDate && endDate && <div className="absolute inset-y-0 left-0 right-1/2 bg-blue-50 dark:bg-blue-900/30 -z-10"></div>}
+                
+                <span className={`w-6 h-6 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-full cursor-pointer transition-colors ${
+                  isSelected ? 'bg-[#0047FF] text-white font-bold shadow-md' :
+                  isBetween ? 'text-[#0F172A] dark:text-white' :
+                  d.isCurrentMonth ? 'text-[#0F172A] dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800' : 'text-gray-300 dark:text-slate-600'
+                }`}>
+                  {d.day}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const nextMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+  return (
+    <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+        {renderMonth(currentDate, true, false)}
+        <div className="hidden sm:block">
+          {renderMonth(nextMonthDate, false, true)}
+        </div>
+      </div>
+      <div className="sm:hidden flex justify-between items-center -mt-4 mb-4 px-2">
+        <button onClick={prevMonth} className="text-gray-500 text-[12px] font-bold p-2">&larr; Prev</button>
+        <button onClick={nextMonth} className="text-blue-600 text-[12px] font-bold p-2">Next &rarr;</button>
+      </div>
+    </div>
+  );
+};
+
 export default function HistoryPage() {
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [selectedTime, setSelectedTime] = useState('All Time');
   const [showCalendar, setShowCalendar] = useState(false);
   const [showDownloadCalendar, setShowDownloadCalendar] = useState(false);
   
+  const [filterStartDate, setFilterStartDate] = useState<Date | null>(new Date(2024, 4, 1)); // May 1, 2024
+  const [filterEndDate, setFilterEndDate] = useState<Date | null>(new Date(2024, 4, 28)); // May 28, 2024
+
+  const [downloadStartDate, setDownloadStartDate] = useState<Date | null>(new Date());
+  const [downloadEndDate, setDownloadEndDate] = useState<Date | null>(null);
+
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [selectedType, setSelectedType] = useState('All Transactions');
 
@@ -248,7 +371,7 @@ export default function HistoryPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">May 1, 2024</span>
+                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(filterStartDate)}</span>
                 </div>
               </div>
               <div className="pt-5 text-gray-400 flex-shrink-0">
@@ -258,95 +381,27 @@ export default function HistoryPage() {
               </div>
               <div className="flex-1">
                 <label className="text-[12px] text-[#64748B] mb-1 block font-medium">To</label>
-                <div className="border border-blue-500 rounded-xl p-3 flex items-center space-x-2 ring-1 ring-blue-500">
+                <div className={`border ${!filterEndDate && filterStartDate ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 dark:border-slate-800'} rounded-xl p-3 flex items-center space-x-2`}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">May 28, 2024</span>
+                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(filterEndDate)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Mock Calendar Grid */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-8">
-              {/* May 2024 */}
-              <div>
-                <div className="flex justify-between items-center mb-4 px-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span className="text-[12px] sm:text-[13px] font-bold text-[#0F172A] dark:text-white">May 2024</span>
-                  <div className="w-4" /> {/* Spacer */}
-                </div>
-                <div className="grid grid-cols-7 gap-y-2 gap-x-0 sm:gap-x-1 text-center text-[10px] sm:text-[11px]">
-                  {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <span key={d} className="text-gray-400 font-medium">{d}</span>)}
-                  <span className="text-gray-300">28</span><span className="text-gray-300">29</span><span className="text-gray-300">30</span>
-                  <div className="relative z-10"><div className="absolute inset-y-0 right-0 left-1/2 bg-blue-50 dark:bg-blue-900/20 -z-10"></div><span className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-[#0047FF] text-white rounded-full mx-auto">1</span></div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center">2</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center">3</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-r-lg">4</div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">5</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">6</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">7</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">8</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">9</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">10</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1 rounded-r-lg">11</div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">12</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">13</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">14</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">15</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">16</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">17</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1 rounded-r-lg">18</div>
-
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">19</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">20</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">21</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">22</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">23</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">24</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1 rounded-r-lg">25</div>
-
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">26</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">27</div>
-                  <div className="relative z-10 py-1"><div className="absolute inset-y-0 left-0 right-1/2 bg-blue-50 dark:bg-blue-900/20 -z-10"></div><span className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-[#0047FF] text-white rounded-full mx-auto">28</span></div>
-                  <span className="text-[#0F172A] dark:text-white py-1">29</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">30</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">31</span>
-                  <span className="text-gray-300 py-1">1</span>
-                </div>
-              </div>
-              
-              {/* June 2024 */}
-              <div>
-                <div className="flex justify-between items-center mb-4 px-1">
-                  <div className="w-4" /> {/* Spacer */}
-                  <span className="text-[12px] sm:text-[13px] font-bold text-[#0F172A] dark:text-white">June 2024</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <div className="grid grid-cols-7 gap-y-2 gap-x-0 sm:gap-x-1 text-center text-[10px] sm:text-[11px]">
-                  {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <span key={d} className="text-gray-400 font-medium">{d}</span>)}
-                  <span className="text-gray-300 py-1">26</span><span className="text-gray-300 py-1">27</span><span className="text-gray-300 py-1">28</span><span className="text-gray-300 py-1">29</span><span className="text-gray-300 py-1">30</span><span className="text-gray-300 py-1">31</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">1</span>
-                  
-                  <span className="text-[#0F172A] dark:text-white py-1">2</span><span className="text-[#0F172A] dark:text-white py-1">3</span><span className="text-[#0F172A] dark:text-white py-1">4</span><span className="text-[#0F172A] dark:text-white py-1">5</span><span className="text-[#0F172A] dark:text-white py-1">6</span><span className="text-[#0F172A] dark:text-white py-1">7</span><span className="text-[#0F172A] dark:text-white py-1">8</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">9</span><span className="text-[#0F172A] dark:text-white py-1">10</span><span className="text-[#0F172A] dark:text-white py-1">11</span><span className="text-[#0F172A] dark:text-white py-1">12</span><span className="text-[#0F172A] dark:text-white py-1">13</span><span className="text-[#0F172A] dark:text-white py-1">14</span><span className="text-[#0F172A] dark:text-white py-1">15</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">16</span><span className="text-[#0F172A] dark:text-white py-1">17</span><span className="text-[#0F172A] dark:text-white py-1">18</span><span className="text-[#0F172A] dark:text-white py-1">19</span><span className="text-[#0F172A] dark:text-white py-1">20</span><span className="text-[#0F172A] dark:text-white py-1">21</span><span className="text-[#0F172A] dark:text-white py-1">22</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">23</span><span className="text-[#0F172A] dark:text-white py-1">24</span><span className="text-[#0F172A] dark:text-white py-1">25</span><span className="text-[#0F172A] dark:text-white py-1">26</span><span className="text-[#0F172A] dark:text-white py-1">27</span><span className="text-[#0F172A] dark:text-white py-1">28</span><span className="text-[#0F172A] dark:text-white py-1">29</span>
-                  <span className="text-gray-900 dark:text-white font-bold py-1">30</span><span className="text-gray-300 py-1">1</span><span className="text-gray-300 py-1">2</span><span className="text-gray-300 py-1">3</span><span className="text-gray-300 py-1">4</span><span className="text-gray-300 py-1">5</span><span className="text-gray-300 py-1">6</span>
-                </div>
-              </div>
-            </div>
+            {/* Interactive Calendar */}
+            <DatePicker 
+              startDate={filterStartDate} setStartDate={setFilterStartDate}
+              endDate={filterEndDate} setEndDate={setFilterEndDate}
+            />
 
             <button 
               onClick={() => {
-                setSelectedTime('May 1 - May 28');
-                setShowCalendar(false);
+                if (filterStartDate && filterEndDate) {
+                  setSelectedTime(`${formatDate(filterStartDate)} - ${formatDate(filterEndDate)}`);
+                  setShowCalendar(false);
+                }
               }}
               className="w-full bg-[#0047FF] hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px]"
             >
@@ -382,7 +437,7 @@ export default function HistoryPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">May 1, 2024</span>
+                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(downloadStartDate)}</span>
                 </div>
               </div>
               <div className="pt-5 text-gray-400 flex-shrink-0">
@@ -392,98 +447,32 @@ export default function HistoryPage() {
               </div>
               <div className="flex-1">
                 <label className="text-[12px] text-[#64748B] mb-1 block font-medium">To</label>
-                <div className="border border-gray-200 dark:border-slate-800 rounded-xl p-3 flex items-center space-x-2 bg-white dark:bg-slate-900">
+                <div className={`border ${!downloadEndDate && downloadStartDate ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 dark:border-slate-800'} rounded-xl p-3 flex items-center space-x-2 bg-white dark:bg-slate-900`}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">May 28, 2024</span>
+                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(downloadEndDate)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Mock Calendar Grid */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-8">
-              {/* May 2024 */}
-              <div>
-                <div className="flex justify-between items-center mb-4 px-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span className="text-[12px] sm:text-[13px] font-bold text-[#0F172A] dark:text-white">May 2024</span>
-                  <div className="w-4" /> {/* Spacer */}
-                </div>
-                <div className="grid grid-cols-7 gap-y-2 gap-x-0 sm:gap-x-1 text-center text-[10px] sm:text-[11px]">
-                  {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <span key={d} className="text-gray-400 font-medium">{d}</span>)}
-                  <span className="text-gray-300">28</span><span className="text-gray-300">29</span><span className="text-gray-300">30</span>
-                  <div className="relative z-10"><div className="absolute inset-y-0 right-0 left-1/2 bg-blue-50 dark:bg-blue-900/20 -z-10"></div><span className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-[#0047FF] text-white rounded-full mx-auto">1</span></div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center">2</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center">3</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-r-lg">4</div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">5</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">6</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">7</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">8</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">9</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">10</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1 rounded-r-lg">11</div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">12</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">13</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">14</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">15</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">16</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">17</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1 rounded-r-lg">18</div>
-
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">19</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">20</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">21</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">22</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">23</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">24</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1 rounded-r-lg">25</div>
-
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center rounded-l-lg py-1">26</div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-[#0F172A] dark:text-white flex items-center justify-center py-1">27</div>
-                  <div className="relative z-10 py-1"><div className="absolute inset-y-0 left-0 right-1/2 bg-blue-50 dark:bg-blue-900/20 -z-10"></div><span className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-[#0047FF] text-white rounded-full mx-auto">28</span></div>
-                  <span className="text-[#0F172A] dark:text-white py-1">29</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">30</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">31</span>
-                  <span className="text-gray-300 py-1">1</span>
-                </div>
-              </div>
-              
-              {/* June 2024 */}
-              <div>
-                <div className="flex justify-between items-center mb-4 px-1">
-                  <div className="w-4" /> {/* Spacer */}
-                  <span className="text-[12px] sm:text-[13px] font-bold text-[#0F172A] dark:text-white">June 2024</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <div className="grid grid-cols-7 gap-y-2 gap-x-0 sm:gap-x-1 text-center text-[10px] sm:text-[11px]">
-                  {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <span key={d} className="text-gray-400 font-medium">{d}</span>)}
-                  <span className="text-gray-300 py-1">26</span><span className="text-gray-300 py-1">27</span><span className="text-gray-300 py-1">28</span><span className="text-gray-300 py-1">29</span><span className="text-gray-300 py-1">30</span><span className="text-gray-300 py-1">31</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">1</span>
-                  
-                  <span className="text-[#0F172A] dark:text-white py-1">2</span><span className="text-[#0F172A] dark:text-white py-1">3</span><span className="text-[#0F172A] dark:text-white py-1">4</span><span className="text-[#0F172A] dark:text-white py-1">5</span><span className="text-[#0F172A] dark:text-white py-1">6</span><span className="text-[#0F172A] dark:text-white py-1">7</span><span className="text-[#0F172A] dark:text-white py-1">8</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">9</span><span className="text-[#0F172A] dark:text-white py-1">10</span><span className="text-[#0F172A] dark:text-white py-1">11</span><span className="text-[#0F172A] dark:text-white py-1">12</span><span className="text-[#0F172A] dark:text-white py-1">13</span><span className="text-[#0F172A] dark:text-white py-1">14</span><span className="text-[#0F172A] dark:text-white py-1">15</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">16</span><span className="text-[#0F172A] dark:text-white py-1">17</span><span className="text-[#0F172A] dark:text-white py-1">18</span><span className="text-[#0F172A] dark:text-white py-1">19</span><span className="text-[#0F172A] dark:text-white py-1">20</span><span className="text-[#0F172A] dark:text-white py-1">21</span><span className="text-[#0F172A] dark:text-white py-1">22</span>
-                  <span className="text-[#0F172A] dark:text-white py-1">23</span><span className="text-[#0F172A] dark:text-white py-1">24</span><span className="text-[#0F172A] dark:text-white py-1">25</span><span className="text-[#0F172A] dark:text-white py-1">26</span><span className="text-[#0F172A] dark:text-white py-1">27</span><span className="text-[#0F172A] dark:text-white py-1">28</span><span className="text-[#0F172A] dark:text-white py-1">29</span>
-                  <span className="text-gray-900 dark:text-white font-bold py-1">30</span><span className="text-gray-300 py-1">1</span><span className="text-gray-300 py-1">2</span><span className="text-gray-300 py-1">3</span><span className="text-gray-300 py-1">4</span><span className="text-gray-300 py-1">5</span><span className="text-gray-300 py-1">6</span>
-                </div>
-              </div>
-            </div>
+            {/* Interactive Calendar */}
+            <DatePicker 
+              startDate={downloadStartDate} setStartDate={setDownloadStartDate}
+              endDate={downloadEndDate} setEndDate={setDownloadEndDate}
+            />
 
             <button 
               onClick={() => {
-                setShowDownloadCalendar(false);
-                // Here we'd actually trigger a download or logic
-                alert('Statement downloaded successfully!');
+                if (downloadStartDate && downloadEndDate) {
+                  setShowDownloadCalendar(false);
+                  // Here we'd actually trigger a download or logic
+                  alert('Statement downloaded successfully for ' + formatDate(downloadStartDate) + ' to ' + formatDate(downloadEndDate) + '!');
+                } else {
+                  alert('Please select both a start and end date.');
+                }
               }}
-              className="w-full bg-[#0047FF] hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px]"
+              className={`w-full font-bold py-3.5 rounded-2xl transition-colors text-[15px] ${downloadStartDate && downloadEndDate ? 'bg-[#0047FF] hover:bg-blue-700 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
             >
               Download Statement
             </button>
