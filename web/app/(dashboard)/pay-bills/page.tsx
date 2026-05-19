@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
+import { supabase } from '../../../lib/supabase/client';
+import { useFlutterwaveCheckout, FlutterwavePaymentData } from '../../../hooks/useFlutterwaveCheckout';
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -387,6 +390,7 @@ export default function PayBillsPage() {
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const setField = (k: keyof FormState, v: string) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -396,6 +400,7 @@ export default function PayBillsPage() {
     setActiveCategory(null);
     setForm(INITIAL_FORM);
     setStep('form');
+    setIsProcessing(false);
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -403,8 +408,46 @@ export default function PayBillsPage() {
     setStep('confirm');
   };
 
-  const handleConfirm = () => {
-    setStep('success');
+  const { initiatePayment } = useFlutterwaveCheckout({
+    onSuccess: (_payment: FlutterwavePaymentData) => {
+      setStep('success');
+      setIsProcessing(false);
+    },
+    onCancel: () => {
+      setIsProcessing(false);
+    },
+  });
+
+  const handleConfirm = async () => {
+    setIsProcessing(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsProcessing(false);
+      return;
+    }
+
+    const amount = parseFloat(form.amount) || 0;
+    if (amount <= 0) {
+      setIsProcessing(false);
+      return;
+    }
+
+    // Generate a unique, non-guessable transaction reference
+    const txRef = `kyvatron-${activeCategory}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+    initiatePayment({
+      txRef,
+      amount,
+      currency: 'NGN',
+      customerEmail: user.email!,
+      customerName: user.user_metadata?.full_name || user.email!,
+      description: `${activeConfig?.name} Payment`,
+      meta: {
+        user_id: user.id,
+        category: activeCategory,
+        form_data: form,
+      },
+    });
   };
 
   const summaryLines = activeCategory ? buildSummaryLines(activeCategory, form) : [];
@@ -498,8 +541,10 @@ export default function PayBillsPage() {
                 </div>
 
                 <div className="flex flex-col space-y-3">
-                  <Button type="button" variant="primary" onClick={handleConfirm}>Confirm Payment</Button>
-                  <Button type="button" variant="outline" onClick={() => setStep('form')}>← Edit Details</Button>
+                  <Button type="button" variant="primary" onClick={handleConfirm} disabled={isProcessing}>
+                    {isProcessing ? 'Opening Checkout...' : 'Confirm & Pay'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setStep('form')} disabled={isProcessing}>← Edit Details</Button>
                 </div>
               </>
             )}

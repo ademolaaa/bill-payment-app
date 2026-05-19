@@ -1,0 +1,146 @@
+'use client';
+
+import { useEffect, useCallback } from 'react';
+
+// Extend the Window interface to include FlutterwaveCheckout
+declare global {
+  interface Window {
+    FlutterwaveCheckout: (options: FlutterwaveOptions) => { close: () => void };
+  }
+}
+
+interface FlutterwaveOptions {
+  public_key: string;
+  tx_ref: string;
+  amount: number;
+  currency: string;
+  customer: {
+    email: string;
+    name: string;
+    phone_number?: string;
+  };
+  meta?: Record<string, unknown>;
+  payment_options?: string;
+  customizations?: {
+    title?: string;
+    description?: string;
+    logo?: string;
+  };
+  callback: (payment: FlutterwavePaymentData) => void;
+  onclose: (incomplete: boolean) => void;
+}
+
+export interface FlutterwavePaymentData {
+  amount: number;
+  currency: string;
+  customer: { name: string; email: string; phone_number: string };
+  flw_ref: string;
+  status: string;
+  tx_ref: string;
+  transaction_id: number;
+}
+
+interface UseFlutterwaveCheckoutProps {
+  onSuccess: (payment: FlutterwavePaymentData) => void;
+  onCancel: () => void;
+}
+
+const SCRIPT_ID = 'flutterwave-v3-script';
+
+export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCheckoutProps) {
+  // Load the Flutterwave script once on mount
+  useEffect(() => {
+    if (document.getElementById(SCRIPT_ID)) return;
+
+    const script = document.createElement('script');
+    script.id = SCRIPT_ID;
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      const existingScript = document.getElementById(SCRIPT_ID);
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
+  }, []);
+
+  const initiatePayment = useCallback(
+    ({
+      txRef,
+      amount,
+      currency = 'NGN',
+      customerEmail,
+      customerName,
+      customerPhone,
+      description,
+      meta,
+    }: {
+      txRef: string;
+      amount: number;
+      currency?: string;
+      customerEmail: string;
+      customerName: string;
+      customerPhone?: string;
+      description?: string;
+      meta?: Record<string, unknown>;
+    }) => {
+      if (!window.FlutterwaveCheckout) {
+        console.error('Flutterwave script not loaded yet. Please wait and try again.');
+        return;
+      }
+
+      const publicKey = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || '';
+      if (!publicKey) {
+        console.error('NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY is not set.');
+        return;
+      }
+
+      const modal = window.FlutterwaveCheckout({
+        public_key: publicKey,
+        tx_ref: txRef,
+        amount,
+        currency,
+        payment_options: 'card,ussd,banktransfer',
+        customer: {
+          email: customerEmail,
+          name: customerName,
+          phone_number: customerPhone,
+        },
+        meta,
+        customizations: {
+          title: 'Kyvatron',
+          description: description || 'Bill Payment',
+          logo: '/logo.png',
+        },
+        callback: (payment: FlutterwavePaymentData) => {
+          modal.close();
+          // Always verify server-side before crediting user
+          fetch('/api/payments/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transaction_id: payment.transaction_id, tx_ref: payment.tx_ref }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                onSuccess(payment);
+              } else {
+                console.error('Payment verification failed:', data.error);
+              }
+            })
+            .catch((err) => console.error('Verification request failed:', err));
+        },
+        onclose: (incomplete: boolean) => {
+          if (incomplete) {
+            onCancel();
+          }
+        },
+      });
+    },
+    [onSuccess, onCancel]
+  );
+
+  return { initiatePayment };
+}

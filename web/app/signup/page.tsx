@@ -79,7 +79,7 @@ export default function SignUpPage() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
@@ -90,10 +90,19 @@ export default function SignUpPage() {
       }
     });
     
-    if (error) {
-      setError(error.message);
+    if (signUpError) {
+      setError(signUpError.message);
       setIsLoading(false);
-    } else {
+    } else if (signUpData.user) {
+      // If sign up is successful, try to set up the wallet
+      // Note: We ignore errors here so the user can still log in even if wallet creation fails temporarily
+      try {
+        await fetch('/api/user/setup-wallet', {
+          method: 'POST',
+        });
+      } catch (e) {
+        console.error('Initial wallet setup failed:', e);
+      }
       router.push('/home');
     }
   };
