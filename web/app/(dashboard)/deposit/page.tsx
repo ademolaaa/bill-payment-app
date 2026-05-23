@@ -1,18 +1,94 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
+import { supabase } from '../../../lib/supabase/client';
+import { useFlutterwaveCheckout, FlutterwavePaymentData } from '../../../hooks/useFlutterwaveCheckout';
 
 export default function DepositPage() {
   const [activeTab, setActiveTab] = useState<'NGN' | 'USDT'>('NGN');
   const [copied, setCopied] = useState(false);
+  const [amount, setAmount] = useState<string>('');
+  const [balanceNGN, setBalanceNGN] = useState<number>(0);
+  const [balanceUSDT, setBalanceUSDT] = useState<number>(0);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const fetchBalances = async () => {
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) return;
+      setUser(currentUser);
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('balance_ngn, balance_usdt')
+        .eq('id', currentUser.id)
+        .single();
+        
+      if (profile) {
+        setBalanceNGN(Number(profile.balance_ngn) || 0);
+        setBalanceUSDT(Number(profile.balance_usdt) || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching balances:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBalances();
+  }, []);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText('TLg8B5...,....');
+    navigator.clipboard.writeText('TSwL9vQQZWPZbdMaWgV4B2Lizyu5Yw1rHp');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const { initiatePayment } = useFlutterwaveCheckout({
+    onSuccess: async (payment: FlutterwavePaymentData) => {
+      setFeedback({ 
+        type: 'success', 
+        message: `Wallet successfully credited with ${parseFloat(amount).toLocaleString('en-NG')} NGN!` 
+      });
+      setAmount('');
+      await fetchBalances(); // Reload dynamic balance
+    },
+    onclose: () => {
+      // Clean up fallback or state if needed
+    },
+    onCancel: () => {
+      setFeedback({ type: 'error', message: 'Automatic deposit was cancelled.' });
+    },
+  });
+
+  const handleAutomaticDeposit = async () => {
+    setFeedback(null);
+    const depositAmt = parseFloat(amount);
+    if (isNaN(depositAmt) || depositAmt <= 0) {
+      setFeedback({ type: 'error', message: 'Please enter a valid deposit amount greater than zero.' });
+      return;
+    }
+
+    if (!user) {
+      setFeedback({ type: 'error', message: 'You must be logged in to deposit.' });
+      return;
+    }
+
+    const txRef = `kyvatron-deposit-${user.id}-${Date.now()}`;
+    initiatePayment({
+      txRef,
+      amount: depositAmt,
+      currency: 'NGN',
+      customerEmail: user.email!,
+      customerName: user.user_metadata?.full_name || user.email!,
+      description: 'Kyvatron Wallet Automatic Deposit',
+    });
   };
 
   return (
@@ -57,12 +133,25 @@ export default function DepositPage() {
             <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[20px] p-6 mb-6 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-[14px] text-[#475569] dark:text-slate-400 font-medium block mb-1">NGN Balance</span>
-                <h2 className="text-[24px] font-bold text-[#0F172A] dark:text-white leading-none">182,300.00 NGN</h2>
+                <h2 className="text-[24px] font-bold text-[#0F172A] dark:text-white leading-none">
+                  {loading ? '...' : `${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2 })} NGN`}
+                </h2>
               </div>
               <div className="w-12 h-12 bg-[#DCFCE7] dark:bg-[#166534]/30 rounded-full flex items-center justify-center text-[#16A34A] dark:text-[#22C55E]">
                 <span className="text-[22px] font-bold">NGN</span>
               </div>
             </div>
+
+            {/* Feedback Message */}
+            {feedback && (
+              <div className={`p-4 rounded-2xl text-[13px] font-bold text-center mb-6 border ${
+                feedback.type === 'success' 
+                  ? 'bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30' 
+                  : 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30'
+              }`}>
+                {feedback.message}
+              </div>
+            )}
 
             {/* Amount Form */}
             <div className="mb-8">
@@ -74,6 +163,8 @@ export default function DepositPage() {
                 <input 
                   type="number" 
                   placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
                   className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 pl-10 pr-14 text-[16px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-gray-300 shadow-sm"
                 />
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -88,7 +179,7 @@ export default function DepositPage() {
               
               <div className="grid grid-cols-2 gap-4">
                 
-                {/* Manual Method (Selected) */}
+                {/* Manual Method */}
                 <Link href="/deposit/manual" className="block">
                   <div className="bg-[#F0F5FF] dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 text-center flex flex-col items-center h-full transition-all">
                     <div className="w-14 h-14 bg-[#1D4ED8] rounded-full flex items-center justify-center text-white mb-4 shadow-sm">
@@ -104,8 +195,8 @@ export default function DepositPage() {
                   </div>
                 </Link>
 
-                {/* Automatic Method (Unselected) */}
-                <button className="block w-full text-left focus:outline-none">
+                {/* Automatic Method */}
+                <button onClick={handleAutomaticDeposit} className="block w-full text-left focus:outline-none">
                   <div className="bg-gradient-to-br from-[#F8FAFC] to-white dark:from-slate-800 dark:to-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-5 text-center flex flex-col items-center h-full shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 to-orange-100/50 dark:from-purple-900/10 dark:to-orange-900/10 opacity-50"></div>
                     <div className="relative z-10 w-14 h-14 bg-gradient-to-br from-purple-600 to-orange-500 rounded-full flex items-center justify-center text-white mb-4 shadow-sm">
@@ -221,7 +312,9 @@ export default function DepositPage() {
                   </div>
                   <span className="text-[14px] text-[#475569] dark:text-slate-300">USDT Balance:</span>
                 </div>
-                <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">1,250.75 USDT</span>
+                <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">
+                  {loading ? '...' : `${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`}
+                </span>
               </div>
 
               <div className="flex items-start">

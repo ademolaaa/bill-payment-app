@@ -116,16 +116,23 @@ export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCh
         },
         callback: (payment: FlutterwavePaymentData) => {
           modal.close();
+          const transactionId = payment.transaction_id || (payment as any).id;
+          const txRef = payment.tx_ref || (payment as any).txRef;
+
           // Always verify server-side before crediting user
           fetch('/api/payments/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transaction_id: payment.transaction_id, tx_ref: payment.tx_ref }),
+            body: JSON.stringify({ transaction_id: transactionId, tx_ref: txRef }),
           })
             .then((res) => res.json())
             .then((data) => {
               if (data.success) {
-                onSuccess(payment);
+                onSuccess({
+                  ...payment,
+                  transaction_id: transactionId,
+                  tx_ref: txRef
+                });
               } else {
                 console.error('Payment verification failed:', data.error);
               }

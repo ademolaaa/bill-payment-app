@@ -5,14 +5,19 @@ import crypto from 'crypto';
 export async function POST(request: Request) {
   const ipnSecret = process.env.NOWPAYMENTS_IPN_SECRET;
 
+  if (!ipnSecret) {
+    console.error('NOWPayments IPN: NOWPAYMENTS_IPN_SECRET is not configured.');
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+
   // 1. Validate the HMAC-SHA512 signature from NOWPayments
   const receivedSignature = request.headers.get('x-nowpayments-sig');
-  const rawBody = await request.text();
-
-  if (!receivedSignature || !ipnSecret) {
-    console.warn('NOWPayments IPN: missing signature or IPN secret.');
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!receivedSignature) {
+    console.warn('NOWPayments IPN: missing signature header.');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const rawBody = await request.text();
 
   const expectedSignature = crypto
     .createHmac('sha512', ipnSecret)

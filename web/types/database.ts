@@ -27,6 +27,7 @@ export interface Transaction {
   amount: number;
   currency: string;
   status: TransactionStatus;
+  providerReference?: string;
   metadata?: Record<string, unknown>;
   created_at: string;
 }

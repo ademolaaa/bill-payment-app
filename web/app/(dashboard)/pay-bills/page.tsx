@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Button } from '../../../components/Button';
 import { Input } from '../../../components/Input';
 import { supabase } from '../../../lib/supabase/client';
-import { useFlutterwaveCheckout, FlutterwavePaymentData } from '../../../hooks/useFlutterwaveCheckout';
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -391,6 +390,7 @@ export default function PayBillsPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
   const setField = (k: keyof FormState, v: string) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -401,53 +401,66 @@ export default function PayBillsPage() {
     setForm(INITIAL_FORM);
     setStep('form');
     setIsProcessing(false);
+    setErrorMsg('');
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
     setStep('confirm');
   };
 
-  const { initiatePayment } = useFlutterwaveCheckout({
-    onSuccess: (_payment: FlutterwavePaymentData) => {
-      setStep('success');
-      setIsProcessing(false);
-    },
-    onCancel: () => {
-      setIsProcessing(false);
-    },
-  });
-
   const handleConfirm = async () => {
     setIsProcessing(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    setErrorMsg('');
+
+    try {
+      // Find the selected item's amount (for Data/TV/etc. with fixed plan prices)
+      let amount = parseFloat(form.amount) || 0;
+      if (activeCategory === 'data') {
+        const bundle = DATA_BUNDLES.find(b => b.value === form.bundle);
+        if (bundle) {
+          const match = bundle.label.match(/\((\d+(?:,\d+)?)\s*NGN\)/);
+          if (match) amount = parseFloat(match[1].replace(/,/g, ''));
+        }
+      } else if (activeCategory === 'tv') {
+        const bouquets = TV_BOUQUETS[form.network] || [];
+        const bq = bouquets.find(b => b.value === form.bouquet);
+        if (bq) {
+          const match = bq.label.match(/–\s*([\d,]+)\s*NGN/);
+          if (match) amount = parseFloat(match[1].replace(/,/g, ''));
+        }
+      }
+
+      if (amount <= 0) {
+        setErrorMsg('Please enter or select a valid payment amount.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const res = await fetch('/api/bills/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: activeCategory,
+          amount,
+          form,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setErrorMsg(data.error || 'Payment processing failed. Please try again.');
+        setIsProcessing(false);
+      } else {
+        setStep('success');
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      console.error('Confirmation error:', err);
+      setErrorMsg('An unexpected connection error occurred.');
       setIsProcessing(false);
-      return;
     }
-
-    const amount = parseFloat(form.amount) || 0;
-    if (amount <= 0) {
-      setIsProcessing(false);
-      return;
-    }
-
-    // Generate a unique, non-guessable transaction reference
-    const txRef = `kyvatron-${activeCategory}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-    initiatePayment({
-      txRef,
-      amount,
-      currency: 'NGN',
-      customerEmail: user.email!,
-      customerName: user.user_metadata?.full_name || user.email!,
-      description: `${activeConfig?.name} Payment`,
-      meta: {
-        user_id: user.id,
-        category: activeCategory,
-        form_data: form,
-      },
-    });
   };
 
   const summaryLines = activeCategory ? buildSummaryLines(activeCategory, form) : [];
@@ -540,9 +553,15 @@ export default function PayBillsPage() {
                   ))}
                 </div>
 
+                {errorMsg && (
+                  <div className="bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 p-4 rounded-2xl text-[13px] font-bold text-center mb-5 border border-red-100 dark:border-red-900/30">
+                    {errorMsg}
+                  </div>
+                )}
+
                 <div className="flex flex-col space-y-3">
                   <Button type="button" variant="primary" onClick={handleConfirm} disabled={isProcessing}>
-                    {isProcessing ? 'Opening Checkout...' : 'Confirm & Pay'}
+                    {isProcessing ? 'Processing Payment...' : 'Confirm & Pay'}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setStep('form')} disabled={isProcessing}>← Edit Details</Button>
                 </div>
