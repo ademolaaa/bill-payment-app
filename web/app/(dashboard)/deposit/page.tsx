@@ -59,11 +59,11 @@ export default function DepositPage() {
       setAmount('');
       await fetchBalances(); // Reload dynamic balance
     },
-    onclose: () => {
-      // Clean up fallback or state if needed
-    },
     onCancel: () => {
       setFeedback({ type: 'error', message: 'Automatic deposit was cancelled.' });
+    },
+    onError: (errorMsg: string) => {
+      setFeedback({ type: 'error', message: errorMsg });
     },
   });
 

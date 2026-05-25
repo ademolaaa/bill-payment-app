@@ -43,11 +43,12 @@ export interface FlutterwavePaymentData {
 interface UseFlutterwaveCheckoutProps {
   onSuccess: (payment: FlutterwavePaymentData) => void;
   onCancel: () => void;
+  onError?: (error: string) => void;
 }
 
 const SCRIPT_ID = 'flutterwave-v3-script';
 
-export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCheckoutProps) {
+export function useFlutterwaveCheckout({ onSuccess, onCancel, onError }: UseFlutterwaveCheckoutProps) {
   // Load the Flutterwave script once on mount
   useEffect(() => {
     if (document.getElementById(SCRIPT_ID)) return;
@@ -58,12 +59,7 @@ export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCh
     script.async = true;
     document.body.appendChild(script);
 
-    return () => {
-      const existingScript = document.getElementById(SCRIPT_ID);
-      if (existingScript) {
-        document.body.removeChild(existingScript);
-      }
-    };
+    // Keep the script in the DOM so that navigation doesn't force re-downloading it and causing race conditions
   }, []);
 
   const initiatePayment = useCallback(
@@ -87,13 +83,21 @@ export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCh
       meta?: Record<string, unknown>;
     }) => {
       if (!window.FlutterwaveCheckout) {
-        console.error('Flutterwave script not loaded yet. Please wait and try again.');
+        const errorMsg = 'Flutterwave script not loaded yet or blocked by your browser/adblocker. Please wait a moment, disable ad-blockers, and try again.';
+        console.error(errorMsg);
+        if (onError) {
+          onError(errorMsg);
+        }
         return;
       }
 
       const publicKey = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || '';
       if (!publicKey) {
-        console.error('NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY is not set.');
+        const errorMsg = 'Flutterwave public key (NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY) is not configured in the application environment.';
+        console.error(errorMsg);
+        if (onError) {
+          onError(errorMsg);
+        }
         return;
       }
 
@@ -135,9 +139,17 @@ export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCh
                 });
               } else {
                 console.error('Payment verification failed:', data.error);
+                if (onError) {
+                  onError(`Payment verification failed: ${data.error || 'Unknown error'}`);
+                }
               }
             })
-            .catch((err) => console.error('Verification request failed:', err));
+            .catch((err) => {
+              console.error('Verification request failed:', err);
+              if (onError) {
+                onError('Failed to verify payment with server. Please contact support.');
+              }
+            });
         },
         onclose: (incomplete: boolean) => {
           if (incomplete) {
@@ -146,7 +158,7 @@ export function useFlutterwaveCheckout({ onSuccess, onCancel }: UseFlutterwaveCh
         },
       });
     },
-    [onSuccess, onCancel]
+    [onSuccess, onCancel, onError]
   );
 
   return { initiatePayment };

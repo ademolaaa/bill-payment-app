@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     // 5. Idempotent & Race-Safe wallet crediting via database RPC
     const { error: rpcError } = await supabase.rpc('confirm_deposit', {
       p_user_id: userId,
-      p_flw_transaction_id: BigInt(verificationData.id),
+      p_flw_transaction_id: Number(verificationData.id),
       p_tx_ref: data.tx_ref,
       p_amount: amount,
       p_currency: 'NGN',

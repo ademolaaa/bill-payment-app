@@ -39,7 +39,9 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Ensure non-negative constraints and columns exist if table already exists
 ALTER TABLE profiles 
   ADD COLUMN IF NOT EXISTS balance_ngn NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-  ADD COLUMN IF NOT EXISTS balance_usdt NUMERIC(18, 8) NOT NULL DEFAULT 0.00000000;
+  ADD COLUMN IF NOT EXISTS balance_usdt NUMERIC(18, 8) NOT NULL DEFAULT 0.00000000,
+  ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(),
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- Apply constraints safely if they don't exist
 DO $$
@@ -235,6 +237,7 @@ AS $$
 DECLARE
   v_tx_status TEXT;
   v_tx_user_id UUID;
+  v_tx_exists BOOLEAN := FALSE;
   v_current_balance NUMERIC(12, 2);
   v_new_balance NUMERIC(12, 2);
 BEGIN
@@ -249,8 +252,11 @@ BEGIN
   WHERE tx_ref = p_tx_ref
   FOR UPDATE;
 
+  -- Track whether a transaction row already exists
+  v_tx_exists := FOUND;
+
   -- Idempotency check: if transaction already successful, bypass credit and return current balance
-  IF FOUND AND v_tx_status = 'successful' THEN
+  IF v_tx_exists AND v_tx_status = 'successful' THEN
     SELECT balance_ngn INTO v_current_balance FROM profiles WHERE id = v_tx_user_id;
     RETURN v_current_balance;
   END IF;
@@ -274,7 +280,7 @@ BEGIN
   WHERE id = p_user_id;
 
   -- Log transaction record update or insertion
-  IF FOUND THEN
+  IF v_tx_exists THEN
     -- If it existed (e.g. as pending), transition status to successful
     UPDATE transactions
     SET status = 'successful',

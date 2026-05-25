@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     // 5. Invoke transaction-safe atomic database credit function
     const { data: newBalance, error: rpcError } = await supabase.rpc('confirm_deposit', {
       p_user_id: user.id,
-      p_flw_transaction_id: BigInt(transactionData.id),
+      p_flw_transaction_id: Number(transactionData.id),
       p_tx_ref: tx_ref,
       p_amount: amount,
       p_currency: 'NGN',
