@@ -101,9 +101,9 @@ CREATE TABLE IF NOT EXISTS transactions (
   flw_transaction_id BIGINT UNIQUE,
   tx_ref TEXT UNIQUE NOT NULL,
   amount NUMERIC(12, 2) NOT NULL CONSTRAINT amount_positive CHECK (amount > 0.00),
-  currency TEXT NOT NULL DEFAULT 'NGN' CONSTRAINT currency_is_ngn CHECK (currency = 'NGN'),
+  currency TEXT NOT NULL DEFAULT 'NGN',
   status TEXT NOT NULL DEFAULT 'pending' CONSTRAINT status_enum CHECK (status IN ('pending', 'successful', 'failed', 'reversed')),
-  type TEXT NOT NULL CONSTRAINT type_enum CHECK (type IN ('deposit', 'bill_payment', 'withdrawal', 'refund')),
+  type TEXT NOT NULL CONSTRAINT type_enum CHECK (type IN ('deposit', 'bill_payment', 'withdrawal', 'refund', 'conversion')),
   description TEXT,
   metadata JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -112,15 +112,24 @@ CREATE TABLE IF NOT EXISTS transactions (
 -- Apply status and type check constraints safely
 DO $$
 BEGIN
+  -- Drop check constraints to recreate them updated
+  ALTER TABLE transactions DROP CONSTRAINT IF EXISTS type_enum;
+  ALTER TABLE transactions DROP CONSTRAINT IF EXISTS currency_is_ngn;
+  ALTER TABLE transactions DROP CONSTRAINT IF EXISTS currency_supported;
+
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'status_enum') THEN
     ALTER TABLE transactions ADD CONSTRAINT status_enum CHECK (status IN ('pending', 'successful', 'failed', 'reversed'));
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'type_enum') THEN
-    ALTER TABLE transactions ADD CONSTRAINT type_enum CHECK (type IN ('deposit', 'bill_payment', 'withdrawal', 'refund'));
-  END IF;
+  
+  -- Add updated type constraint supporting conversion
+  ALTER TABLE transactions ADD CONSTRAINT type_enum CHECK (type IN ('deposit', 'bill_payment', 'withdrawal', 'refund', 'conversion'));
+  
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'amount_positive') THEN
     ALTER TABLE transactions ADD CONSTRAINT amount_positive CHECK (amount > 0.00);
   END IF;
+  
+  -- Add a new currency check constraint to support NGN and USDT
+  ALTER TABLE transactions ADD CONSTRAINT currency_supported CHECK (currency IN ('NGN', 'USDT'));
 END $$;
 
 -- ── 6. ROW LEVEL SECURITY (RLS) FOR TRANSACTIONS ──────────
@@ -425,3 +434,283 @@ BEGIN
   RETURN v_new_balance;
 END;
 $$;
+
+
+-- ── 9. INVESTMENTS TABLE ─────────────────────────────────
+CREATE TABLE IF NOT EXISTS investments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'NGN',
+  amount NUMERIC(18, 8) NOT NULL CONSTRAINT inv_amount_positive CHECK (amount > 0),
+  duration_months INTEGER NOT NULL CONSTRAINT inv_duration_valid CHECK (duration_months IN (3, 6, 12)),
+  roi_percent NUMERIC(5, 2) NOT NULL,
+  roi_amount NUMERIC(18, 8) NOT NULL,
+  total_amount NUMERIC(18, 8) NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CONSTRAINT inv_status_enum CHECK (status IN ('active', 'matured', 'cancelled')),
+  invested_at TIMESTAMPTZ DEFAULT NOW(),
+  maturity_date TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── 10. RLS FOR INVESTMENTS ───────────────────────────────
+ALTER TABLE investments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own investments" ON investments;
+CREATE POLICY "Users can view own investments"
+  ON investments FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Users cannot insert/update/delete investments directly; only via RPC.
+
+-- ── 11. INDEXES FOR INVESTMENTS ───────────────────────────
+CREATE INDEX IF NOT EXISTS idx_investments_user_id ON investments(user_id);
+CREATE INDEX IF NOT EXISTS idx_investments_status ON investments(status);
+CREATE INDEX IF NOT EXISTS idx_investments_maturity ON investments(maturity_date);
+
+-- ── 12. ATOMIC CREATE INVESTMENT RPC ──────────────────────
+DROP FUNCTION IF EXISTS create_investment;
+
+CREATE OR REPLACE FUNCTION create_investment(
+  p_user_id UUID,
+  p_currency TEXT,
+  p_amount NUMERIC(18, 8),
+  p_duration_months INTEGER,
+  p_roi_percent NUMERIC(5, 2)
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_current_balance NUMERIC;
+  v_new_balance NUMERIC;
+  v_roi_amount NUMERIC(18, 8);
+  v_total_amount NUMERIC(18, 8);
+  v_maturity_date TIMESTAMPTZ;
+  v_investment_id UUID;
+BEGIN
+  -- Authorization check
+  IF auth.role() <> 'service_role' AND auth.uid() <> p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized context for investment creation';
+  END IF;
+
+  -- Validate duration
+  IF p_duration_months NOT IN (3, 6, 12) THEN
+    RAISE EXCEPTION 'Invalid investment duration: must be 3, 6, or 12 months';
+  END IF;
+
+  -- Validate amount (minimum 1000 NGN or 10 USDT)
+  IF p_currency = 'NGN' AND p_amount < 1000 THEN
+    RAISE EXCEPTION 'Minimum NGN investment is 1,000';
+  END IF;
+  IF p_currency = 'USDT' AND p_amount < 10 THEN
+    RAISE EXCEPTION 'Minimum USDT investment is 10';
+  END IF;
+
+  -- Calculate ROI
+  v_roi_amount := (p_amount * p_roi_percent) / 100;
+  v_total_amount := p_amount + v_roi_amount;
+  v_maturity_date := NOW() + (p_duration_months || ' months')::INTERVAL;
+
+  -- Lock profile and deduct balance
+  IF p_currency = 'NGN' THEN
+    SELECT balance_ngn INTO v_current_balance
+    FROM profiles WHERE id = p_user_id FOR UPDATE;
+  ELSIF p_currency = 'USDT' THEN
+    SELECT balance_usdt INTO v_current_balance
+    FROM profiles WHERE id = p_user_id FOR UPDATE;
+  ELSE
+    RAISE EXCEPTION 'Unsupported currency: %', p_currency;
+  END IF;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'User profile not found';
+  END IF;
+
+  IF v_current_balance < p_amount THEN
+    RAISE EXCEPTION 'Insufficient balance';
+  END IF;
+
+  v_new_balance := v_current_balance - p_amount;
+
+  -- Update balance
+  IF p_currency = 'NGN' THEN
+    UPDATE profiles SET balance_ngn = v_new_balance, updated_at = NOW() WHERE id = p_user_id;
+  ELSE
+    UPDATE profiles SET balance_usdt = v_new_balance, updated_at = NOW() WHERE id = p_user_id;
+  END IF;
+
+  -- Create investment record
+  INSERT INTO investments (
+    user_id, currency, amount, duration_months, roi_percent,
+    roi_amount, total_amount, status, maturity_date
+  ) VALUES (
+    p_user_id, p_currency, p_amount, p_duration_months, p_roi_percent,
+    v_roi_amount, v_total_amount, 'active', v_maturity_date
+  ) RETURNING id INTO v_investment_id;
+
+  -- Log as a transaction for history
+  INSERT INTO transactions (
+    user_id, tx_ref, amount, currency, status, type, description, metadata
+  ) VALUES (
+    p_user_id,
+    'kyvatron-invest-' || v_investment_id::TEXT,
+    p_amount,
+    p_currency,
+    'successful',
+    'withdrawal',
+    'Investment: ' || p_duration_months || ' months at ' || p_roi_percent || '% ROI',
+    jsonb_build_object('investment_id', v_investment_id, 'roi_percent', p_roi_percent, 'maturity_date', v_maturity_date)
+  );
+
+  RETURN v_investment_id;
+END;
+$$;
+
+-- ── 13. ATOMIC CONVERT CURRENCY RPC ──────────────────────
+DROP FUNCTION IF EXISTS convert_currency;
+
+CREATE OR REPLACE FUNCTION convert_currency(
+  p_user_id UUID,
+  p_from_currency TEXT,
+  p_amount NUMERIC(18, 8),
+  p_exchange_rate NUMERIC(12, 2),
+  p_fees NUMERIC(18, 8)
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_from_balance NUMERIC;
+  v_to_balance NUMERIC;
+  v_from_new_balance NUMERIC;
+  v_to_new_balance NUMERIC;
+  v_to_currency TEXT;
+  v_receive_amount NUMERIC(18, 8);
+  v_tx_out_id UUID;
+  v_tx_in_id UUID;
+  v_result JSONB;
+BEGIN
+  -- Authorization check
+  IF auth.role() <> 'service_role' AND auth.uid() <> p_user_id THEN
+    RAISE EXCEPTION 'Unauthorized context for currency conversion';
+  END IF;
+
+  -- Validate currencies
+  IF p_from_currency NOT IN ('NGN', 'USDT') THEN
+    RAISE EXCEPTION 'Invalid source currency: must be NGN or USDT';
+  END IF;
+
+  IF p_from_currency = 'NGN' THEN
+    v_to_currency := 'USDT';
+  ELSE
+    v_to_currency := 'NGN';
+  END IF;
+
+  -- Validate amount and fees
+  IF p_amount <= 0 THEN
+    RAISE EXCEPTION 'Amount must be positive';
+  END IF;
+  IF p_fees < 0 OR p_fees >= p_amount THEN
+    RAISE EXCEPTION 'Fees must be non-negative and less than amount';
+  END IF;
+
+  -- Calculate receive amount based on direction
+  IF p_from_currency = 'NGN' THEN
+    v_receive_amount := (p_amount - p_fees) / p_exchange_rate;
+  ELSE
+    v_receive_amount := (p_amount - p_fees) * p_exchange_rate;
+  END IF;
+
+  IF v_receive_amount <= 0 THEN
+    RAISE EXCEPTION 'Resulting conversion amount must be positive';
+  END IF;
+
+  -- Lock profile row
+  IF p_from_currency = 'NGN' THEN
+    SELECT balance_ngn, balance_usdt INTO v_from_balance, v_to_balance
+    FROM profiles WHERE id = p_user_id FOR UPDATE;
+  ELSE
+    SELECT balance_usdt, balance_ngn INTO v_from_balance, v_to_balance
+    FROM profiles WHERE id = p_user_id FOR UPDATE;
+  END IF;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'User profile not found';
+  END IF;
+
+  IF v_from_balance < p_amount THEN
+    RAISE EXCEPTION 'Insufficient balance to convert';
+  END IF;
+
+  -- Calculate new balances
+  v_from_new_balance := v_from_balance - p_amount;
+  v_to_new_balance := v_to_balance + v_receive_amount;
+
+  -- Update profile balances
+  IF p_from_currency = 'NGN' THEN
+    UPDATE profiles 
+    SET balance_ngn = v_from_new_balance,
+        balance_usdt = v_to_new_balance,
+        updated_at = NOW()
+    WHERE id = p_user_id;
+  ELSE
+    UPDATE profiles 
+    SET balance_usdt = v_from_new_balance,
+        balance_ngn = v_to_new_balance,
+        updated_at = NOW()
+    WHERE id = p_user_id;
+  END IF;
+
+  -- Log the transaction outflow
+  INSERT INTO transactions (
+    user_id, tx_ref, amount, currency, status, type, description, metadata
+  ) VALUES (
+    p_user_id,
+    'kyvatron-conv-out-' || gen_random_uuid()::TEXT,
+    p_amount,
+    p_from_currency,
+    'successful',
+    'conversion',
+    'Converted to ' || v_to_currency,
+    jsonb_build_object(
+      'direction', 'out',
+      'exchange_rate', p_exchange_rate,
+      'fees', p_fees,
+      'converted_amount', v_receive_amount,
+      'target_currency', v_to_currency
+    )
+  ) RETURNING id INTO v_tx_out_id;
+
+  -- Log the transaction inflow
+  INSERT INTO transactions (
+    user_id, tx_ref, amount, currency, status, type, description, metadata
+  ) VALUES (
+    p_user_id,
+    'kyvatron-conv-in-' || gen_random_uuid()::TEXT,
+    v_receive_amount,
+    v_to_currency,
+    'successful',
+    'conversion',
+    'Converted from ' || p_from_currency,
+    jsonb_build_object(
+      'direction', 'in',
+      'exchange_rate', p_exchange_rate,
+      'converted_from_amount', p_amount,
+      'source_currency', p_from_currency
+    )
+  ) RETURNING id INTO v_tx_in_id;
+
+  v_result := jsonb_build_object(
+    'from_new_balance', v_from_new_balance,
+    'to_new_balance', v_to_new_balance,
+    'receive_amount', v_receive_amount
+  );
+
+  RETURN v_result;
+END;
+$$;
+

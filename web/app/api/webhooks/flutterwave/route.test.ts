@@ -239,7 +239,7 @@ describe('Flutterwave Webhook Route (POST /api/webhooks/flutterwave)', () => {
 
     expect(mockSupabase.rpc).toHaveBeenCalledWith('confirm_deposit', {
       p_user_id: 'user-123',
-      p_flw_transaction_id: BigInt(12345),
+      p_flw_transaction_id: 12345,
       p_tx_ref: txRef,
       p_amount: 5000,
       p_currency: 'NGN',

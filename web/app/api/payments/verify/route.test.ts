@@ -246,7 +246,7 @@ describe('Payment Verification Route (POST /api/payments/verify)', () => {
     // Ensure database was called with the correct parameters
     expect(mockSupabase.rpc).toHaveBeenCalledWith('confirm_deposit', {
       p_user_id: 'user-123',
-      p_flw_transaction_id: BigInt(998877),
+      p_flw_transaction_id: 998877,
       p_tx_ref: txRef,
       p_amount: 5000,
       p_currency: 'NGN',

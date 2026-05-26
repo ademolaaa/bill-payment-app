@@ -1,72 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-const mockTransactions = [
-  { id: '1', type: 'Deposit', subtype: 'USDT (TRC20)', amount: '+1,250.75 USDT', date: 'May 28, 2024 • 10:35 AM', isPositive: true },
-  { id: '2', type: 'Withdrawal', subtype: 'Bank Transfer', amount: '-50,000.00 NGN', date: 'May 27, 2024 • 4:20 PM', isPositive: false },
-  { id: '3', type: 'Withdrawal', subtype: 'To: John Doe', amount: '-1,500.00 USDT', date: 'May 27, 2024 • 11:15 AM', isPositive: false },
-  { id: '4', type: 'Deposit', subtype: 'NGN', amount: '+25,000.00 NGN', date: 'May 26, 2024 • 9:10 AM', isPositive: true },
-  { id: '5', type: 'Withdrawal', subtype: 'USDT (TRC20)', amount: '-200.00 USDT', date: 'May 25, 2024 • 6:45 PM', isPositive: false },
-];
-
-const typeOptions = [
-  {
-    label: 'All Transactions',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-      </svg>
-    ),
-    color: 'text-gray-400'
-  },
-  {
-    label: 'Deposits',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
-      </svg>
-    ),
-    color: 'text-[#16A34A]'
-  },
-  {
-    label: 'Withdrawals',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-      </svg>
-    ),
-    color: 'text-[#0047FF]'
-  },
-  {
-    label: 'Conversions',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-    ),
-    color: 'text-purple-500'
-  },
-  {
-    label: 'Investments',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    ),
-    color: 'text-gray-500'
-  },
-  {
-    label: 'Bill Payments',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-      </svg>
-    ),
-    color: 'text-gray-500'
-  }
-];
+import { supabase } from '../../../lib/supabase/client';
 
 // Date helper functions
 const formatDate = (date: Date | null) => {
@@ -185,20 +121,105 @@ const DatePicker = ({
   );
 };
 
+const typeOptions = [
+  {
+    label: 'All Transactions',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+      </svg>
+    ),
+    color: 'text-gray-400'
+  },
+  {
+    label: 'Deposits',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
+      </svg>
+    ),
+    color: 'text-[#16A34A]'
+  },
+  {
+    label: 'Withdrawals',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+    ),
+    color: 'text-[#0047FF]'
+  },
+  {
+    label: 'Conversions',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    ),
+    color: 'text-purple-500'
+  },
+  {
+    label: 'Investments',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    ),
+    color: 'text-gray-500'
+  },
+  {
+    label: 'Bill Payments',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
+    color: 'text-gray-500'
+  }
+];
+
 export default function HistoryPage() {
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [selectedTime, setSelectedTime] = useState('All Time');
   const [showCalendar, setShowCalendar] = useState(false);
   const [showDownloadCalendar, setShowDownloadCalendar] = useState(false);
   
-  const [filterStartDate, setFilterStartDate] = useState<Date | null>(new Date(2024, 4, 1)); // May 1, 2024
-  const [filterEndDate, setFilterEndDate] = useState<Date | null>(new Date(2024, 4, 28)); // May 28, 2024
+  const [filterStartDate, setFilterStartDate] = useState<Date | null>(new Date());
+  const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
 
   const [downloadStartDate, setDownloadStartDate] = useState<Date | null>(new Date());
   const [downloadEndDate, setDownloadEndDate] = useState<Date | null>(null);
 
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [selectedType, setSelectedType] = useState('All Transactions');
+
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setTransactions(data || []);
+      } catch (err) {
+        console.error('Error fetching history:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   const handleTimeSelect = (option: string) => {
     if (option === 'Custom Date Range') {
@@ -214,6 +235,42 @@ export default function HistoryPage() {
     setSelectedType(option);
     setShowTypeDropdown(false);
   };
+
+  // Filter transactions dynamically
+  const getFilteredTransactions = () => {
+    return transactions.filter(tx => {
+      // 1. Filter by Type
+      if (selectedType !== 'All Transactions') {
+        const typeLower = tx.type.toLowerCase();
+        if (selectedType === 'Deposits' && typeLower !== 'deposit' && typeLower !== 'refund') return false;
+        if (selectedType === 'Withdrawals' && typeLower !== 'withdrawal') return false;
+        if (selectedType === 'Conversions' && typeLower !== 'conversion') return false;
+        if (selectedType === 'Investments' && (typeLower !== 'withdrawal' || !tx.tx_ref?.startsWith('kyvatron-invest'))) return false;
+        if (selectedType === 'Bill Payments' && typeLower !== 'bill_payment') return false;
+      }
+
+      // 2. Filter by Date
+      if (selectedTime === 'Custom Date Range' && filterStartDate) {
+        const txDate = new Date(tx.created_at);
+        // Start of start date
+        const start = new Date(filterStartDate);
+        start.setHours(0, 0, 0, 0);
+        
+        if (txDate < start) return false;
+
+        if (filterEndDate) {
+          // End of end date
+          const end = new Date(filterEndDate);
+          end.setHours(23, 59, 59, 999);
+          if (txDate > end) return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const filteredTransactions = getFilteredTransactions();
 
   return (
     <div className="flex flex-col p-5 pt-12 min-h-screen bg-slate-50 dark:bg-slate-950 pb-10">
@@ -318,33 +375,84 @@ export default function HistoryPage() {
 
       {/* Transactions List */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden flex-grow mb-6">
-        <div className="divide-y divide-gray-100 dark:divide-slate-800">
-          {mockTransactions.map((tx) => (
-            <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${tx.isPositive ? 'bg-[#16A34A]' : 'bg-[#0047FF]'}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={tx.isPositive ? "M5 10l7-7m0 0l7 7m-7-7v18" : "M19 14l-7 7m0 0l-7-7m7 7V3"} />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-[15px] font-bold text-[#0F172A] dark:text-white mb-0.5">{tx.type}</h4>
-                  <p className="text-[13px] text-[#475569] dark:text-slate-400 mb-0.5">{tx.subtype}</p>
-                  <p className="text-[11px] text-[#64748B] dark:text-slate-500">{tx.date}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="text-right flex flex-col items-end">
-                  <p className={`text-[15px] font-bold mb-1 ${tx.isPositive ? 'text-[#16A34A]' : 'text-[#0F172A] dark:text-white'}`}>{tx.amount}</p>
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded ${tx.isPositive ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#EF4444]'}`}>Completed</span>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-xs text-gray-500 dark:text-slate-400">Fetching transaction logs...</p>
+          </div>
+        ) : filteredTransactions.length > 0 ? (
+          <div className="divide-y divide-gray-100 dark:divide-slate-800">
+            {filteredTransactions.map((tx) => {
+              const isPositive = tx.type === 'deposit' || tx.type === 'refund';
+              const formattedAmount = tx.currency === 'USDT'
+                ? `$${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
+                : new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(tx.amount));
+              
+              const isSuccess = tx.status === 'successful' || tx.status === 'completed';
+              const isPending = tx.status === 'pending';
+
+              const txDateStr = new Date(tx.created_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+
+              // Custom provider descriptions
+              let displayDescription = tx.description || 'Transaction';
+              if (tx.type === 'deposit') displayDescription = 'Deposit';
+              if (tx.type === 'conversion') displayDescription = `Convert ${tx.currency}`;
+              if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
+
+              return (
+                <Link 
+                  href={`/history/${tx.id}`} 
+                  key={tx.id} 
+                  className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer block"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${
+                      isPositive ? 'bg-[#16A34A]' : 'bg-[#0047FF]'
+                    }`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={isPositive ? "M5 10l7-7m0 0l7 7m-7-7v18" : "M19 14l-7 7m0 0l-7-7m7 7V3"} />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-[15px] font-bold text-[#0F172A] dark:text-white mb-0.5 capitalize">
+                        {tx.type === 'conversion' ? 'Conversion' : tx.type === 'bill_payment' ? 'Bill Payment' : tx.type}
+                      </h4>
+                      <p className="text-[13px] text-[#475569] dark:text-slate-400 mb-0.5">{displayDescription}</p>
+                      <p className="text-[11px] text-[#64748B] dark:text-slate-500">{txDateStr}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right flex flex-col items-end">
+                      <p className={`text-[15px] font-bold mb-1 ${isPositive ? 'text-[#16A34A]' : 'text-[#0F172A] dark:text-white'}`}>
+                        {isPositive ? '+' : '-'}{formattedAmount}
+                      </p>
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded capitalize ${
+                        isSuccess ? 'bg-[#DCFCE7] text-[#16A34A]' :
+                        isPending ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-600'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16 text-[#64748B] text-[14px]">
+            No transactions found matching your criteria.
+          </div>
+        )}
       </div>
 
       <div className="text-center text-[#64748B] text-[13px] font-medium">
@@ -403,7 +511,7 @@ export default function HistoryPage() {
                   setShowCalendar(false);
                 }
               }}
-              className="w-full bg-[#0047FF] hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px]"
+              className="w-full bg-[#0047FF] hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px] mt-4"
             >
               Apply
             </button>
@@ -466,13 +574,12 @@ export default function HistoryPage() {
               onClick={() => {
                 if (downloadStartDate && downloadEndDate) {
                   setShowDownloadCalendar(false);
-                  // Here we'd actually trigger a download or logic
                   alert('Statement downloaded successfully for ' + formatDate(downloadStartDate) + ' to ' + formatDate(downloadEndDate) + '!');
                 } else {
                   alert('Please select both a start and end date.');
                 }
               }}
-              className={`w-full font-bold py-3.5 rounded-2xl transition-colors text-[15px] ${downloadStartDate && downloadEndDate ? 'bg-[#0047FF] hover:bg-blue-700 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+              className={`w-full font-bold py-3.5 rounded-2xl transition-colors text-[15px] mt-4 ${downloadStartDate && downloadEndDate ? 'bg-[#0047FF] hover:bg-blue-700 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
             >
               Download Statement
             </button>
@@ -483,4 +590,3 @@ export default function HistoryPage() {
     </div>
   );
 }
-

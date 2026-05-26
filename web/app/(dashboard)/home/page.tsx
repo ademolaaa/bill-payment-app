@@ -38,6 +38,8 @@ export default function HomePage() {
   const [userName, setUserName] = useState('');
   const [balanceNGN, setBalanceNGN] = useState<number>(0);
   const [balanceUSDT, setBalanceUSDT] = useState<number>(0);
+  const [investedNGN, setInvestedNGN] = useState<number>(0);
+  const [investedUSDT, setInvestedUSDT] = useState<number>(0);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
 
   useEffect(() => {
@@ -62,6 +64,24 @@ export default function HomePage() {
         setBalanceUSDT(Number(profile.balance_usdt) || 0);
       }
 
+      // Fetch investment balances
+      const { data: activeInvs } = await supabase
+        .from('investments')
+        .select('amount, currency')
+        .eq('user_id', user.id)
+        .eq('status', 'active');
+      
+      if (activeInvs) {
+        const totalNGN = activeInvs
+          .filter(i => i.currency === 'NGN')
+          .reduce((sum, i) => sum + Number(i.amount), 0);
+        const totalUSDT = activeInvs
+          .filter(i => i.currency === 'USDT')
+          .reduce((sum, i) => sum + Number(i.amount), 0);
+        setInvestedNGN(totalNGN);
+        setInvestedUSDT(totalUSDT);
+      }
+
       // Fetch recent transactions
       const { data: txs } = await supabase
         .from('transactions')
@@ -75,6 +95,7 @@ export default function HomePage() {
           id: tx.id,
           type: tx.type,
           amount: Number(tx.amount),
+          currency: tx.currency,
           status: tx.status,
           providerReference: tx.description || tx.provider_reference || (tx.type === 'deposit' ? 'Account Deposit' : 'Transaction'),
           dateStr: new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -159,7 +180,7 @@ export default function HomePage() {
                   <p className="text-[13px] font-bold text-gray-900 dark:text-white">NGN</p>
                 </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
-                  {mask('56,780.25 NGN')}
+                  {mask(`${investedNGN.toLocaleString('en-NG', { minimumFractionDigits: 2 })} NGN`)}
                 </h4>
               </div>
               <Link href="/investments" className="text-[13px] font-bold text-[#16a34a] hover:opacity-80 transition mt-1">
@@ -177,7 +198,7 @@ export default function HomePage() {
                   <p className="text-[13px] font-bold text-gray-900 dark:text-white">USDT</p>
                 </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
-                  {mask('6,420.10 USDT')}
+                  {mask(`${investedUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`)}
                 </h4>
               </div>
               <div className="flex justify-between items-end mt-1">

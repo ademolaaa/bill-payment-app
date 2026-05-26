@@ -1,28 +1,115 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '../../../components/Button';
+import { supabase } from '../../../lib/supabase/client';
 
 export default function ConvertPage() {
   const [fromCurrency, setFromCurrency] = useState<'NGN' | 'USDT'>('NGN');
   const [amount, setAmount] = useState('');
+  const [balanceNGN, setBalanceNGN] = useState<number>(0);
+  const [balanceUSDT, setBalanceUSDT] = useState<number>(0);
+  const [loadingBalances, setLoadingBalances] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Fixed dummy values for UI preview
+  // Fixed dummy exchange rate
   const exchangeRate = 1215.00;
   const numAmount = parseFloat(amount) || 0;
   
   // Calculate preview
   const convertAmount = Math.max(0, numAmount);
-  // Using dynamic fee calculation to look realistic (e.g., 2% for USDT, flat 500 for NGN)
+  // Fee calculation: 2% for USDT, flat 500 NGN for NGN
   const fees = fromCurrency === 'NGN' ? (convertAmount > 0 ? 500 : 0) : (convertAmount > 0 ? convertAmount * 0.02 : 0);
   const receiveAmount = fromCurrency === 'NGN' 
     ? (convertAmount > fees ? (convertAmount - fees) / exchangeRate : 0)
     : (convertAmount > fees ? (convertAmount - fees) * exchangeRate : 0);
 
+  const fetchBalances = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('balance_ngn, balance_usdt')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile) {
+        setBalanceNGN(Number(profile.balance_ngn) || 0);
+        setBalanceUSDT(Number(profile.balance_usdt) || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching balances:', err);
+    } finally {
+      setLoadingBalances(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBalances();
+  }, []);
+
   const handleSwap = () => {
     setFromCurrency(prev => prev === 'NGN' ? 'USDT' : 'NGN');
     setAmount('');
+    setMessage(null);
+  };
+
+  const handleConvert = async () => {
+    if (!amount || numAmount <= 0) {
+      setMessage({ type: 'error', text: 'Please enter a valid amount to convert' });
+      return;
+    }
+
+    const currentBalance = fromCurrency === 'NGN' ? balanceNGN : balanceUSDT;
+    if (numAmount > currentBalance) {
+      setMessage({ type: 'error', text: `Insufficient ${fromCurrency} balance to convert ${numAmount.toLocaleString()} ${fromCurrency}` });
+      return;
+    }
+
+    if (numAmount <= fees) {
+      setMessage({ type: 'error', text: `Amount must be greater than the conversion fee of ${fees.toLocaleString()} ${fromCurrency}` });
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch('/api/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from_currency: fromCurrency,
+          amount: numAmount,
+          exchange_rate: exchangeRate,
+          fees: fees
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to convert currency');
+      }
+
+      const receivedText = fromCurrency === 'NGN' 
+        ? `${data.receive_amount.toLocaleString('en-US', { minimumFractionDigits: 4 })} USDT`
+        : `${data.receive_amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} NGN`;
+
+      setMessage({ 
+        type: 'success', 
+        text: `Successfully converted ${numAmount.toLocaleString()} ${fromCurrency}! Received ${receivedText}` 
+      });
+      setAmount('');
+      await fetchBalances();
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Something went wrong' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -50,7 +137,9 @@ export default function ConvertPage() {
               </div>
               <span className="text-[15px] text-[#475569] dark:text-slate-300">NGN Balance</span>
             </div>
-            <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">250,000.00 NGN</span>
+            <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">
+              {loadingBalances ? 'Loading...' : `${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2 })} NGN`}
+            </span>
           </div>
           
           <div className="flex items-center justify-between">
@@ -60,7 +149,9 @@ export default function ConvertPage() {
               </div>
               <span className="text-[15px] text-[#475569] dark:text-slate-300">USDT Balance</span>
             </div>
-            <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">250.00 USDT</span>
+            <span className="text-[15px] font-medium text-[#0F172A] dark:text-white">
+              {loadingBalances ? 'Loading...' : `${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`}
+            </span>
           </div>
         </div>
 
@@ -114,6 +205,7 @@ export default function ConvertPage() {
                     className="w-full bg-transparent text-[22px] font-bold text-[#0F172A] dark:text-white focus:outline-none placeholder-gray-300 dark:placeholder-gray-500"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
+                    disabled={submitting}
                   />
                 </div>
               </div>
@@ -125,7 +217,8 @@ export default function ConvertPage() {
           <div className="relative h-4 flex justify-center items-center z-10">
             <button 
               onClick={handleSwap}
-              className="absolute bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-md rounded-full px-4 py-2 flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
+              disabled={submitting}
+              className="absolute bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-md rounded-full px-4 py-2 flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
@@ -177,10 +270,7 @@ export default function ConvertPage() {
           <div className="flex justify-between items-center mb-4">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">Current Exchange Rate</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {fromCurrency === 'NGN' 
-                ? `1 USDT = ${exchangeRate.toLocaleString('en-NG', {minimumFractionDigits:2})} NGN`
-                : `1 USDT = ${exchangeRate.toLocaleString('en-NG', {minimumFractionDigits:2})} NGN`
-              }
+              {`1 USDT = ${exchangeRate.toLocaleString('en-NG', {minimumFractionDigits:2})} NGN`}
             </span>
           </div>
           
@@ -203,18 +293,33 @@ export default function ConvertPage() {
           <div className="flex justify-between items-center">
             <span className="text-[14px] text-[#475569] dark:text-slate-400">You will receive ({fromCurrency === 'NGN' ? 'USDT' : 'NGN'})</span>
             <span className="text-[14px] font-medium text-[#0F172A] dark:text-white">
-              {receiveAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} {fromCurrency === 'NGN' ? 'USDT' : 'NGN'}
+              {receiveAmount.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:4})} {fromCurrency === 'NGN' ? 'USDT' : 'NGN'}
             </span>
           </div>
         </div>
 
+        {/* Success/Error Message */}
+        {message && (
+          <div className={`p-4 rounded-2xl text-[14px] font-semibold border ${
+            message.type === 'success' 
+              ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:border-green-900/30 dark:text-green-400' 
+              : 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
         {/* Confirm Button */}
         <div className="pt-2">
-          <Button className="w-full rounded-[14px] bg-[#0047FF] hover:bg-blue-700 py-4 flex items-center justify-center text-[16px]">
+          <Button 
+            onClick={handleConvert}
+            disabled={submitting}
+            className="w-full rounded-[14px] bg-[#0047FF] hover:bg-blue-700 py-4 flex items-center justify-center text-[16px] disabled:opacity-50"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            Confirm Conversion
+            {submitting ? 'Converting...' : 'Confirm Conversion'}
           </Button>
         </div>
 
