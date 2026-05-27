@@ -41,72 +41,170 @@ export default function HomePage() {
   const [investedNGN, setInvestedNGN] = useState<number>(0);
   const [investedUSDT, setInvestedUSDT] = useState<number>(0);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      if (user.user_metadata?.full_name) {
-        const firstName = user.user_metadata.full_name.split(' ')[0];
-        setUserName(firstName);
-      }
-
-      // Fetch profile balances
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('balance_ngn, balance_usdt')
-        .eq('id', user.id)
-        .single();
+      try {
+        setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         
-      if (profile) {
-        setBalanceNGN(Number(profile.balance_ngn) || 0);
-        setBalanceUSDT(Number(profile.balance_usdt) || 0);
-      }
+        if (user.user_metadata?.full_name) {
+          const firstName = user.user_metadata.full_name.split(' ')[0];
+          setUserName(firstName);
+        }
 
-      // Fetch investment balances
-      const { data: activeInvs } = await supabase
-        .from('investments')
-        .select('amount, currency')
-        .eq('user_id', user.id)
-        .eq('status', 'active');
-      
-      if (activeInvs) {
-        const totalNGN = activeInvs
-          .filter(i => i.currency === 'NGN')
-          .reduce((sum, i) => sum + Number(i.amount), 0);
-        const totalUSDT = activeInvs
-          .filter(i => i.currency === 'USDT')
-          .reduce((sum, i) => sum + Number(i.amount), 0);
-        setInvestedNGN(totalNGN);
-        setInvestedUSDT(totalUSDT);
-      }
+        // Fetch profile balances
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('balance_ngn, balance_usdt')
+          .eq('id', user.id)
+          .single();
+          
+        if (profile) {
+          setBalanceNGN(Number(profile.balance_ngn) || 0);
+          setBalanceUSDT(Number(profile.balance_usdt) || 0);
+        }
 
-      // Fetch recent transactions
-      const { data: txs } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(3);
+        // Fetch investment balances
+        const { data: activeInvs } = await supabase
+          .from('investments')
+          .select('amount, currency')
+          .eq('user_id', user.id)
+          .eq('status', 'active');
         
-      if (txs && txs.length > 0) {
-        const formattedTxs = txs.map(tx => ({
-          id: tx.id,
-          type: tx.type,
-          amount: Number(tx.amount),
-          currency: tx.currency,
-          status: tx.status,
-          providerReference: tx.description || tx.provider_reference || (tx.type === 'deposit' ? 'Account Deposit' : 'Transaction'),
-          dateStr: new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        }));
-        setRecentTransactions(formattedTxs);
+        if (activeInvs) {
+          const totalNGN = activeInvs
+            .filter(i => i.currency === 'NGN')
+            .reduce((sum, i) => sum + Number(i.amount), 0);
+          const totalUSDT = activeInvs
+            .filter(i => i.currency === 'USDT')
+            .reduce((sum, i) => sum + Number(i.amount), 0);
+          setInvestedNGN(totalNGN);
+          setInvestedUSDT(totalUSDT);
+        }
+
+        // Fetch recent transactions
+        const { data: txs } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(3);
+          
+        if (txs && txs.length > 0) {
+          const formattedTxs = txs.map(tx => ({
+            id: tx.id,
+            type: tx.type,
+            amount: Number(tx.amount),
+            currency: tx.currency,
+            status: tx.status,
+            providerReference: tx.description || tx.provider_reference || (tx.type === 'deposit' ? 'Account Deposit' : 'Transaction'),
+            dateStr: new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          }));
+          setRecentTransactions(formattedTxs);
+        }
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchDashboardData();
   }, []);
 
   const mask = (value: string) => (balanceVisible ? value : '••••••');
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
+        {/* Header Skeleton */}
+        <header className="px-5 pt-12 pb-4 flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+            <div className="h-8 w-44 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse"></div>
+        </header>
+
+        <div className="px-5 flex flex-col space-y-6">
+          {/* Balance Card Skeleton */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-gray-50 dark:border-slate-800/80 flex flex-col space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="h-4 w-24 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse"></div>
+            </div>
+            <div className="h-8 w-56 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+            <div className="h-5 w-40 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+            <div className="flex space-x-3 pt-2">
+              <div className="flex-1 h-12 bg-gray-150 dark:bg-slate-800 rounded-[12px] animate-pulse"></div>
+              <div className="flex-1 h-12 bg-gray-150 dark:bg-slate-800 rounded-[12px] animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Investments Skeleton */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <div className="h-6 w-24 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+              <div className="h-4 w-16 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+            </div>
+            <div className="flex space-x-3">
+              <div className="flex-1 h-28 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse"></div>
+                  <div className="h-4 w-12 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+                </div>
+                <div className="h-6 w-28 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+              </div>
+              <div className="flex-1 h-28 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse"></div>
+                  <div className="h-4 w-12 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+                </div>
+                <div className="h-6 w-28 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions Skeleton */}
+          <div className="grid grid-cols-4 gap-2 pt-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex flex-col items-center space-y-2">
+                <div className="w-[52px] h-[52px] rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse"></div>
+                <div className="h-3 w-12 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent Transactions Skeleton */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="h-6 w-36 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+              <div className="h-4 w-16 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-16 bg-white dark:bg-slate-900 border border-gray-50 dark:border-slate-800 rounded-xl p-3 flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse"></div>
+                    <div className="space-y-1">
+                      <div className="h-4 w-28 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+                      <div className="h-3 w-16 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-1 flex flex-col items-end">
+                    <div className="h-4 w-16 bg-gray-300 dark:bg-slate-700 rounded-md animate-pulse"></div>
+                    <div className="h-3 w-12 bg-gray-200 dark:bg-slate-800 rounded-md animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
