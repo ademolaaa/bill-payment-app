@@ -300,25 +300,27 @@ function buildSummaryLines(cat: CategoryId, form: FormState): { label: string; v
 
 // ─── Dynamic Form Body ────────────────────────────────────────────────────────
 
-function FormBody({ category, form, set }: {
+function FormBody({ category, form, set, phoneError, amountError }: {
   category: CategoryId;
   form: FormState;
   set: (k: keyof FormState, v: string) => void;
+  phoneError?: string;
+  amountError?: string;
 }) {
   switch (category) {
     case 'airtime':
       return (
         <>
           <SelectField id="network" label="Network" value={form.network} onChange={v => set('network', v)} required placeholder="Select Network" options={NETWORKS} />
-          <Input label="Phone Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required />
-          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Phone Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required error={phoneError} minLength={11} maxLength={11} />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required error={amountError} />
         </>
       );
     case 'data':
       return (
         <>
           <SelectField id="network" label="Network" value={form.network} onChange={v => set('network', v)} required placeholder="Select Network" options={NETWORKS} />
-          <Input label="Phone Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required />
+          <Input label="Phone Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required error={phoneError} minLength={11} maxLength={11} />
           <SelectField id="bundle" label="Select Bundle" value={form.bundle} onChange={v => set('bundle', v)} required placeholder="Choose a data bundle" options={DATA_BUNDLES} />
         </>
       );
@@ -328,7 +330,7 @@ function FormBody({ category, form, set }: {
           <SelectField id="network" label="Distribution Company" value={form.network} onChange={v => set('network', v)} required placeholder="Select Provider" options={ELECTRICITY_PROVIDERS} />
           <Input label="Meter Number" type="text" placeholder="01023456789" value={form.meterNumber} onChange={e => set('meterNumber', e.target.value)} required />
           <SelectField id="meterType" label="Meter Type" value={form.meterType} onChange={v => set('meterType', v)} required placeholder="Prepaid or Postpaid?" options={METER_TYPES} />
-          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required error={amountError} />
         </>
       );
     case 'tv': {
@@ -346,7 +348,7 @@ function FormBody({ category, form, set }: {
         <>
           <SelectField id="platform" label="Betting Platform" value={form.platform} onChange={v => set('platform', v)} required placeholder="Select Platform" options={BETTING_PLATFORMS} />
           <Input label="User ID / Username" type="text" placeholder="Your platform username" value={form.userId} onChange={e => set('userId', e.target.value)} required />
-          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required error={amountError} />
         </>
       );
     case 'water':
@@ -354,14 +356,14 @@ function FormBody({ category, form, set }: {
         <>
           <SelectField id="network" label="Water Provider" value={form.network} onChange={v => set('network', v)} required placeholder="Select Provider" options={WATER_PROVIDERS} />
           <Input label="Account Number" type="text" placeholder="WC123456789" value={form.accountNumber} onChange={e => set('accountNumber', e.target.value)} required />
-          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required error={amountError} />
         </>
       );
     case 'internet':
       return (
         <>
           <SelectField id="ispPlan" label="Internet Plan" value={form.ispPlan} onChange={v => set('ispPlan', v)} required placeholder="Select a Plan" options={ISP_PLANS} />
-          <Input label="Phone / Account Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required />
+          <Input label="Phone / Account Number" type="tel" placeholder="0801 234 5678" value={form.phone} onChange={e => set('phone', e.target.value)} required error={phoneError} minLength={11} maxLength={11} />
         </>
       );
     case 'school':
@@ -369,14 +371,14 @@ function FormBody({ category, form, set }: {
         <>
           <Input label="School Name" type="text" placeholder="e.g. University of Lagos" value={form.schoolName} onChange={e => set('schoolName', e.target.value)} required />
           <Input label="Student ID / Reg. Number" type="text" placeholder="LCU/ND/22/0001" value={form.studentId} onChange={e => set('studentId', e.target.value)} required />
-          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required error={amountError} />
         </>
       );
     case 'transport':
       return (
         <>
           <SelectField id="transportType" label="Transport Type" value={form.transportType} onChange={v => set('transportType', v)} required placeholder="Select Transport Service" options={TRANSPORT_TYPES} />
-          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required />
+          <Input label="Amount (NGN)" type="number" placeholder="0.00" value={form.amount} onChange={e => set('amount', e.target.value)} required error={amountError} />
         </>
       );
     default: return null;
@@ -391,6 +393,8 @@ export default function PayBillsPage() {
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string>('');
+  const [amountError, setAmountError] = useState<string>('');
 
   const setField = (k: keyof FormState, v: string) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -402,10 +406,88 @@ export default function PayBillsPage() {
     setStep('form');
     setIsProcessing(false);
     setErrorMsg('');
+    setPhoneError('');
+    setAmountError('');
   };
+
+  React.useEffect(() => {
+    if (!activeCategory) return;
+
+    // Validate Phone Number
+    const needsPhone = activeCategory === 'airtime' || activeCategory === 'data' || activeCategory === 'internet';
+    if (needsPhone) {
+      if (!form.phone) {
+        setPhoneError('');
+      } else {
+        const cleanPhone = form.phone.replace(/\s+/g, '');
+        const hasSpecialOrLetters = /[^\d]/.test(cleanPhone);
+        if (cleanPhone.length !== 11 || hasSpecialOrLetters) {
+          setPhoneError('Please enter a valid 11-digit Nigerian phone number.');
+        } else {
+          setPhoneError('');
+        }
+      }
+    } else {
+      setPhoneError('');
+    }
+
+    // Validate Amount
+    const needsAmount = activeCategory === 'airtime' || activeCategory === 'electricity' || activeCategory === 'betting' || activeCategory === 'water' || activeCategory === 'school' || activeCategory === 'transport';
+    if (needsAmount) {
+      if (!form.amount) {
+        setAmountError('');
+      } else {
+        const amt = parseFloat(form.amount);
+        if (isNaN(amt) || amt <= 0) {
+          setAmountError('Please enter a valid amount greater than ₦0.');
+        } else {
+          setAmountError('');
+        }
+      }
+    } else {
+      setAmountError('');
+    }
+  }, [form.phone, form.amount, activeCategory]);
+
+  const hasErrors = React.useMemo(() => {
+    if (!activeCategory) return false;
+
+    // Check Phone validation
+    const needsPhone = activeCategory === 'airtime' || activeCategory === 'data' || activeCategory === 'internet';
+    if (needsPhone) {
+      const cleanPhone = form.phone.replace(/\s+/g, '');
+      const hasSpecialOrLetters = /[^\d]/.test(cleanPhone);
+      if (cleanPhone.length !== 11 || hasSpecialOrLetters) {
+        return true;
+      }
+    }
+
+    // Check Amount validation
+    const needsAmount = activeCategory === 'airtime' || activeCategory === 'electricity' || activeCategory === 'betting' || activeCategory === 'water' || activeCategory === 'school' || activeCategory === 'transport';
+    if (needsAmount) {
+      const amt = parseFloat(form.amount);
+      if (isNaN(amt) || amt <= 0) {
+        return true;
+      }
+    }
+
+    // Check general required fields
+    if (activeCategory === 'airtime' && (!form.network || !form.phone || !form.amount)) return true;
+    if (activeCategory === 'data' && (!form.network || !form.phone || !form.bundle)) return true;
+    if (activeCategory === 'electricity' && (!form.network || !form.meterNumber || !form.meterType || !form.amount)) return true;
+    if (activeCategory === 'tv' && (!form.network || !form.smartCardNumber || !form.bouquet)) return true;
+    if (activeCategory === 'betting' && (!form.platform || !form.userId || !form.amount)) return true;
+    if (activeCategory === 'water' && (!form.network || !form.accountNumber || !form.amount)) return true;
+    if (activeCategory === 'internet' && (!form.ispPlan || !form.phone)) return true;
+    if (activeCategory === 'school' && (!form.schoolName || !form.studentId || !form.amount)) return true;
+    if (activeCategory === 'transport' && (!form.transportType || !form.amount)) return true;
+
+    return false;
+  }, [activeCategory, form, phoneError, amountError]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (hasErrors) return;
     setErrorMsg('');
     setStep('confirm');
   };
@@ -520,9 +602,9 @@ export default function PayBillsPage() {
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{activeConfig.name} Payment</h3>
                 </div>
                 <form onSubmit={handleFormSubmit}>
-                  <FormBody category={activeCategory} form={form} set={setField} />
+                  <FormBody category={activeCategory} form={form} set={setField} phoneError={phoneError} amountError={amountError} />
                   <div className="flex flex-col space-y-3 mt-2">
-                    <Button type="submit" variant="primary">Review Payment</Button>
+                    <Button type="submit" variant="primary" disabled={hasErrors}>Review Payment</Button>
                     <Button type="button" variant="text" onClick={closeModal}>Cancel</Button>
                   </div>
                 </form>

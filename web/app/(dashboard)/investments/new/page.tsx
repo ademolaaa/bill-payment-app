@@ -24,6 +24,7 @@ export default function NewInvestmentPage() {
   const [currency, setCurrency] = useState('NGN');
   const [packageType, setPackageType] = useState('3');
   const [amount, setAmount] = useState('');
+  const [amountError, setAmountError] = useState<string>('');
   
   // Balances
   const [balanceNGN, setBalanceNGN] = useState<number>(0);
@@ -36,6 +37,35 @@ export default function NewInvestmentPage() {
   // Action states
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!amount) {
+      setAmountError('');
+      return;
+    }
+    const num = parseFloat(amount);
+    if (isNaN(num)) {
+      setAmountError('Please enter a valid number.');
+      return;
+    }
+    if (num <= 0) {
+      if (currency === 'NGN') {
+        setAmountError('Please enter a valid amount greater than ₦0.');
+      } else {
+        setAmountError('Please enter a valid amount greater than 0 USDT.');
+      }
+      return;
+    }
+    const currentBalance = currency === 'NGN' ? balanceNGN : balanceUSDT;
+    if (num > currentBalance) {
+      const formattedBalance = currency === 'NGN'
+        ? `₦${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : `${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
+      setAmountError(`Amount exceeds your available balance of ${formattedBalance}`);
+    } else {
+      setAmountError('');
+    }
+  }, [amount, currency, balanceNGN, balanceUSDT]);
 
   // Package logic
   let roiPercent = 11;
@@ -90,6 +120,11 @@ export default function NewInvestmentPage() {
   const handleConfirm = async () => {
     if (!amount || numAmount <= 0) {
       setMessage({ type: 'error', text: 'Please enter a valid amount' });
+      return;
+    }
+
+    if (amountError) {
+      setMessage({ type: 'error', text: amountError });
       return;
     }
 
@@ -226,8 +261,15 @@ export default function NewInvestmentPage() {
             placeholder={currency === 'NGN' ? 'Min: 1,000 NGN' : 'Min: 10 USDT'}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 px-4 text-[15px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow shadow-sm placeholder-gray-400"
+            className={`w-full bg-white dark:bg-slate-900 border rounded-2xl py-4 px-4 text-[15px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:ring-1 transition-shadow shadow-sm placeholder-gray-400 ${
+              amountError
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-gray-100 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500'
+            }`}
           />
+          {amountError && (
+            <p className="text-red-500 text-[12px] mt-1.5 ml-1 font-medium">{amountError}</p>
+          )}
         </div>
 
         {/* Preview Card */}
@@ -278,7 +320,7 @@ export default function NewInvestmentPage() {
         <div className="pt-2">
           <Button 
             onClick={handleConfirm}
-            disabled={submitting}
+            disabled={submitting || !!amountError || !amount || numAmount <= 0}
             className="w-full rounded-[14px] bg-[#0047FF] hover:bg-blue-700 py-4 text-[16px] font-bold flex items-center justify-center disabled:opacity-50"
           >
             {submitting ? 'Processing...' : 'Confirm'}

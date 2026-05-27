@@ -82,6 +82,7 @@ export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState('');
   const [userId, setUserId] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Profile picture state
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -89,16 +90,22 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserName(user.user_metadata?.full_name || 'User');
-        setUserEmail(user.email || '');
-        setUserId(user.id.substring(0, 8)); // Just show first 8 chars of UUID
-        
-        // Use user metadata for avatar if exists
-        if (user.user_metadata?.avatar_url) {
-          setProfileImage(user.user_metadata.avatar_url);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserName(user.user_metadata?.full_name || 'User');
+          setUserEmail(user.email || '');
+          setUserId(user.id.substring(0, 8)); // Just show first 8 chars of UUID
+          
+          // Use user metadata for avatar if exists
+          if (user.user_metadata?.avatar_url) {
+            setProfileImage(user.user_metadata.avatar_url);
+          }
         }
+      } catch (err) {
+        console.error('Error fetching user:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchUser();
@@ -133,51 +140,65 @@ export default function ProfilePage() {
       <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col mb-5">
 
         {/* Avatar row */}
-        <div className="flex items-center mb-5">
-          {/* Avatar with camera edit overlay */}
-          <div className="relative mr-4 flex-shrink-0">
-            <div className="w-[70px] h-[70px] rounded-full bg-gray-100 dark:bg-slate-800 border-2 border-gray-200 flex items-center justify-center overflow-hidden">
-              {profileImage ? (
-                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-600 dark:text-slate-700" viewBox="0 0 24 24" fill="currentColor">
-                  <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-                </svg>
-              )}
-            </div>
+        {isLoading ? (
+          <div className="flex items-center mb-5 animate-pulse">
+            {/* Avatar skeleton */}
+            <div className="w-[70px] h-[70px] rounded-full bg-gray-200 dark:bg-slate-800 mr-4 flex-shrink-0" />
             
-            {/* Hidden file input */}
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              id="profile-image-upload"
-              title="Upload profile picture"
-              className="hidden"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-
-            {/* Camera icon overlay */}
-            <button
-              aria-label="Change profile photo"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shadow-md border-2 border-white hover:bg-blue-700 transition active:scale-95"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-              </svg>
-            </button>
+            {/* Name + Email skeleton */}
+            <div className="flex-grow space-y-2">
+              <div className="h-5 bg-gray-200 dark:bg-slate-800 rounded w-2/3" />
+              <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded w-1/2" />
+              <div className="h-4 bg-gray-200 dark:bg-slate-800 rounded-full w-1/4 mt-1" />
+            </div>
           </div>
+        ) : (
+          <div className="flex items-center mb-5">
+            {/* Avatar with camera edit overlay */}
+            <div className="relative mr-4 flex-shrink-0">
+              <div className="w-[70px] h-[70px] rounded-full bg-gray-100 dark:bg-slate-800 border-2 border-gray-200 flex items-center justify-center overflow-hidden">
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-600 dark:text-slate-700" viewBox="0 0 24 24" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              
+              {/* Hidden file input */}
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                id="profile-image-upload"
+                title="Upload profile picture"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
 
-          {/* Name + email */}
-          <div className="flex-grow min-w-0">
-            <h2 className="text-[19px] font-bold text-gray-900 dark:text-white leading-tight truncate">{userName}</h2>
-            <p className="text-sm text-gray-700 dark:text-slate-600 truncate">{userEmail}</p>
-            <span className="inline-block mt-1.5 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-              ID: {userId.toUpperCase()}
-            </span>
+              {/* Camera icon overlay */}
+              <button
+                aria-label="Change profile photo"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shadow-md border-2 border-white hover:bg-blue-700 transition active:scale-95"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Name + email */}
+            <div className="flex-grow min-w-0">
+              <h2 className="text-[19px] font-bold text-gray-900 dark:text-white leading-tight truncate">{userName}</h2>
+              <p className="text-sm text-gray-700 dark:text-slate-600 truncate">{userEmail}</p>
+              <span className="inline-block mt-1.5 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                ID: {userId.toUpperCase()}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* KYC Badge */}
         <Link

@@ -510,8 +510,13 @@ export default function HistoryPage() {
               onClick={() => {
                 if (filterStartDate && filterEndDate) {
                   setSelectedTime(`${formatDate(filterStartDate)} - ${formatDate(filterEndDate)}`);
-                  setShowCalendar(false);
+                } else if (filterStartDate) {
+                  setFilterEndDate(filterStartDate);
+                  setSelectedTime(`${formatDate(filterStartDate)} - ${formatDate(filterStartDate)}`);
+                } else {
+                  setSelectedTime('All Time');
                 }
+                setShowCalendar(false);
               }}
               className="w-full bg-[#0047FF] hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition-colors text-[15px] mt-4"
             >
@@ -577,10 +582,9 @@ export default function HistoryPage() {
                 if (downloadStartDate && downloadEndDate) {
                   setShowDownloadCalendar(false);
                   alert('Statement downloaded successfully for ' + formatDate(downloadStartDate) + ' to ' + formatDate(downloadEndDate) + '!');
-                } else {
-                  alert('Please select both a start and end date.');
                 }
               }}
+              disabled={!downloadStartDate || !downloadEndDate}
               className={`w-full font-bold py-3.5 rounded-2xl transition-colors text-[15px] mt-4 ${downloadStartDate && downloadEndDate ? 'bg-[#0047FF] hover:bg-blue-700 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
             >
               Download Statement

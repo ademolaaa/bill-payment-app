@@ -26,7 +26,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`${baseStyles} ${widthStyles} ${variantStyles} ${className}`}
+      className={`${baseStyles} ${widthStyles} ${variantStyles} ${className} disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none`}
       {...props}
     >
       {children}
