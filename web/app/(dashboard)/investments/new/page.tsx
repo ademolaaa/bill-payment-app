@@ -56,6 +56,15 @@ export default function NewInvestmentPage() {
       }
       return;
     }
+
+    if (currency === 'NGN') {
+      const MAX_INVEST = 5000000;
+      if (num > MAX_INVEST) {
+        setAmountError(`Maximum investment is ₦${MAX_INVEST.toLocaleString()}`);
+        return;
+      }
+    }
+
     const currentBalance = currency === 'NGN' ? balanceNGN : balanceUSDT;
     if (num > currentBalance) {
       const formattedBalance = currency === 'NGN'
@@ -126,6 +135,14 @@ export default function NewInvestmentPage() {
     if (amountError) {
       setMessage({ type: 'error', text: amountError });
       return;
+    }
+
+    if (currency === 'NGN') {
+      const MAX_INVEST = 5000000;
+      if (numAmount > MAX_INVEST) {
+        setMessage({ type: 'error', text: `Maximum investment is ₦${MAX_INVEST.toLocaleString()}` });
+        return;
+      }
     }
 
     const currentBalance = currency === 'NGN' ? balanceNGN : balanceUSDT;

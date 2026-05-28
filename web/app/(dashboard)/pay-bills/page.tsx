@@ -420,9 +420,8 @@ export default function PayBillsPage() {
         setPhoneError('');
       } else {
         const cleanPhone = form.phone.replace(/\s+/g, '');
-        const hasSpecialOrLetters = /[^\d]/.test(cleanPhone);
-        if (cleanPhone.length !== 11 || hasSpecialOrLetters) {
-          setPhoneError('Please enter a valid 11-digit Nigerian phone number.');
+        if (cleanPhone.length !== 11 || !cleanPhone.startsWith('0')) {
+          setPhoneError('Enter a valid 11-digit Nigerian phone number');
         } else {
           setPhoneError('');
         }
@@ -439,7 +438,7 @@ export default function PayBillsPage() {
       } else {
         const amt = parseFloat(form.amount);
         if (isNaN(amt) || amt <= 0) {
-          setAmountError('Please enter a valid amount greater than ₦0.');
+          setAmountError('Amount must be greater than ₦0');
         } else {
           setAmountError('');
         }
@@ -456,8 +455,7 @@ export default function PayBillsPage() {
     const needsPhone = activeCategory === 'airtime' || activeCategory === 'data' || activeCategory === 'internet';
     if (needsPhone) {
       const cleanPhone = form.phone.replace(/\s+/g, '');
-      const hasSpecialOrLetters = /[^\d]/.test(cleanPhone);
-      if (cleanPhone.length !== 11 || hasSpecialOrLetters) {
+      if (cleanPhone.length !== 11 || !cleanPhone.startsWith('0')) {
         return true;
       }
     }
