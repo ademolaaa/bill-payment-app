@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useDashboardStats } from '../../../hooks/useDashboardStats';
 import {
-  providers as apiProviders,
-  subscribe,
   updateProviderStatus,
   updateProviderDetails,
   simulateHealthPing
@@ -13,16 +12,7 @@ import { ProviderCard } from '../../../components/admin/ProviderCard';
 import { Cpu, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function ProvidersPage() {
-  const [providers, setProviders] = useState<Provider[]>([]);
-
-  // Sync provider states dynamically from mockStore pub-sub
-  useEffect(() => {
-    const syncProviders = () => {
-      setProviders([...apiProviders]);
-    };
-    syncProviders();
-    return subscribe(syncProviders);
-  }, []);
+  const { providers } = useDashboardStats();
 
   const handleToggleStatus = (id: string) => {
     const prov = providers.find((p) => p.id === id);

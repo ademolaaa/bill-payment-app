@@ -28,6 +28,7 @@ function TransactionsPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [serviceFilter, setServiceFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dateRangeFilter, setDateRangeFilter] = useState<'all' | 'today' | 'yesterday' | '7days' | '30days'>('all');
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,7 +76,29 @@ function TransactionsPageContent() {
     const matchesService = serviceFilter === 'all' || t.serviceType === serviceFilter;
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
 
-    return matchesSearch && matchesService && matchesStatus;
+    let matchesDate = true;
+    if (dateRangeFilter !== 'all') {
+      const txDate = new Date(t.createdAt);
+      // Fallback base date to May 29, 2026 if today is in the future, so that mock data always renders
+      const now = new Date().getFullYear() > 2026 ? new Date('2026-05-29T23:59:59Z') : new Date();
+      
+      const diffTime = now.getTime() - txDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+      if (dateRangeFilter === 'today') {
+        matchesDate = txDate.toDateString() === now.toDateString();
+      } else if (dateRangeFilter === 'yesterday') {
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        matchesDate = txDate.toDateString() === yesterday.toDateString();
+      } else if (dateRangeFilter === '7days') {
+        matchesDate = diffDays <= 7 && diffDays >= 0;
+      } else if (dateRangeFilter === '30days') {
+        matchesDate = diffDays <= 30 && diffDays >= 0;
+      }
+    }
+
+    return matchesSearch && matchesService && matchesStatus && matchesDate;
   });
 
   // Pagination bounds
@@ -87,7 +110,7 @@ function TransactionsPageContent() {
   // Reset page bounds on filter adjustments
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, serviceFilter, statusFilter]);
+  }, [searchQuery, serviceFilter, statusFilter, dateRangeFilter]);
 
   return (
     <div className="space-y-6">
@@ -165,6 +188,29 @@ function TransactionsPageContent() {
       {/* 3. TRANSACTION DATA GRID */}
       <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4">
         
+        {/* Date Filter Button Group */}
+        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-50/50 dark:bg-[#0d1117]/30 border border-slate-100 dark:border-slate-800/80 rounded-xl w-fit">
+          {[
+            { id: 'all', label: 'All Time' },
+            { id: 'today', label: 'Today' },
+            { id: 'yesterday', label: 'Yesterday' },
+            { id: '7days', label: 'Last 7 Days' },
+            { id: '30days', label: 'Last 30 Days' }
+          ].map((range) => (
+            <button
+              key={range.id}
+              onClick={() => setDateRangeFilter(range.id as any)}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                dateRangeFilter === range.id
+                  ? 'bg-cyan-500 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/40'
+              }`}
+            >
+              {range.label}
+            </button>
+          ))}
+        </div>
+
         <div className="overflow-hidden border border-slate-100 dark:border-slate-800/80 rounded-xl">
           <table className="w-full text-xs text-left border-collapse">
             <thead className="bg-slate-50 dark:bg-[#1c2128] text-slate-400 uppercase select-none font-bold">

@@ -17,7 +17,8 @@ import {
   Search,
   CheckCircle,
   ToggleRight,
-  ToggleLeft
+  ToggleLeft,
+  Download
 } from 'lucide-react';
 
 function SettingsPageContent() {
@@ -28,6 +29,45 @@ function SettingsPageContent() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [logQuery, setLogQuery] = useState('');
+
+  // Filter audit logs
+  const filteredLogs = logs.filter((log) => {
+    return (
+      log.adminName.toLowerCase().includes(logQuery.toLowerCase()) ||
+      log.action.toLowerCase().includes(logQuery.toLowerCase()) ||
+      log.details.toLowerCase().includes(logQuery.toLowerCase())
+    );
+  });
+
+  const handleExportAuditLogs = () => {
+    // Generate high-fidelity CSV rows
+    const headers = ['ID', 'Admin Name', 'Timestamp', 'Action', 'Target', 'IP Address', 'Details'];
+    const rows = filteredLogs.map((log) => [
+      log.id,
+      log.adminName,
+      log.timestamp,
+      log.action,
+      log.target,
+      log.ipAddress || '102.89.34.1', // fallback if empty
+      log.details.replace(/"/g, '""') // escape double quotes for CSV safety
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${val}"`).join(','))
+    ].join('\n');
+
+    // Create browser download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `billadmin_audit_logs_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Sync state with mockStore
   useEffect(() => {
@@ -49,15 +89,6 @@ function SettingsPageContent() {
   const handleTogglePermission = (adminId: string, permission: string) => {
     alert(`Toggled permission "${permission}" for admin ID ${adminId}!`);
   };
-
-  // Filter audit logs
-  const filteredLogs = logs.filter((log) => {
-    return (
-      log.adminName.toLowerCase().includes(logQuery.toLowerCase()) ||
-      log.action.toLowerCase().includes(logQuery.toLowerCase()) ||
-      log.details.toLowerCase().includes(logQuery.toLowerCase())
-    );
-  });
 
   return (
     <div className="space-y-6">
@@ -206,20 +237,35 @@ function SettingsPageContent() {
         {/* TAB B: SYSTEM AUDIT TRAIL */}
         {activeTab === 'logs' && (
           <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4 animate-fade-in">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 select-none">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest w-full">
-                Operations Audit Trails
-              </h3>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 select-none w-full pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  Operations Audit Trails
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Track administrative actions and security overrides
+                </p>
+              </div>
               
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter logs by operator name or action details..."
-                  value={logQuery}
-                  onChange={(e) => setLogQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-[#0d1117] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-cyan-500"
-                />
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-grow md:w-64">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Filter logs by operator or action..."
+                    value={logQuery}
+                    onChange={(e) => setLogQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-[#0d1117] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+                
+                <button
+                  onClick={handleExportAuditLogs}
+                  className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Export CSV
+                </button>
               </div>
             </div>
 

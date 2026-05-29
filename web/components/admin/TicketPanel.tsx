@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SupportTicket } from '../../types/admin';
-import { supportTickets, resolveTicket, subscribe, addTicketMessage } from '../../lib/admin/mockStore';
+import { resolveTicket, addTicketMessage, escalateTicketToProvider } from '../../lib/admin/mockStore';
+import { useDashboardStats } from '../../hooks/useDashboardStats';
 import {
   MessageSquare,
   Search,
@@ -16,25 +17,21 @@ import {
 } from 'lucide-react';
 
 export const TicketPanel: React.FC = () => {
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const { tickets } = useDashboardStats();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'active' | 'resolved'>('active');
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState<Record<string, string>>({});
 
-  // Sync tickets with global mockStore pub-sub
-  useEffect(() => {
-    const syncTickets = () => {
-      setTickets([...supportTickets]);
-    };
-    syncTickets();
-    return subscribe(syncTickets);
-  }, []);
-
   const handleResolve = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     resolveTicket(id);
+  };
+
+  const handleEscalate = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    escalateTicketToProvider(id);
   };
 
   const handleSendReply = (ticketId: string, e: React.FormEvent) => {
@@ -250,6 +247,16 @@ export const TicketPanel: React.FC = () => {
 
                   <div className="flex items-center gap-2">
                     {/* Action buttons */}
+                    {tkt.status !== 'resolved' && tkt.category === 'failed_bill' && !tkt.escalated && (
+                      <button
+                        onClick={(e) => handleEscalate(tkt.id, e)}
+                        className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold uppercase rounded-lg transition-colors flex items-center gap-1 select-none"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Escalate to Provider
+                      </button>
+                    )}
+
                     {tkt.status !== 'resolved' && (
                       <button
                         onClick={(e) => handleResolve(tkt.id, e)}

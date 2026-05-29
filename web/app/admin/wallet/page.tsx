@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import {
   updateUserStatus,
@@ -81,10 +83,23 @@ export default function WalletPage() {
   };
 
   const filteredUsers = users.filter(u => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+
+    const matchesSpecialKyc = ['verified', 'pending', 'rejected', 'unverified'].includes(q);
+    const matchesSpecialStatus = ['active', 'suspended'].includes(q);
+
+    if (matchesSpecialKyc) {
+      return u.kycStatus.toLowerCase() === q;
+    }
+    if (matchesSpecialStatus) {
+      return u.status.toLowerCase() === q;
+    }
+
     return (
-      u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.phone.includes(searchQuery)
+      u.fullName.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.phone.includes(q)
     );
   });
 

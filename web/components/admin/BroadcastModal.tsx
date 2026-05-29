@@ -13,18 +13,11 @@ import {
   History,
   TrendingUp
 } from 'lucide-react';
-
-interface BroadcastHistoryItem {
-  id: string;
-  type: 'maintenance' | 'alert' | 'promo';
-  subject: string;
-  audience: string;
-  sentAt: string;
-  recipientsCount: number;
-  clickRate: number;
-}
+import { sendNotification } from '../../lib/admin/mockStore';
+import { useDashboardStats } from '../../hooks/useDashboardStats';
 
 export const BroadcastModal: React.FC = () => {
+  const { notificationLogs } = useDashboardStats();
   const [type, setType] = useState<'maintenance' | 'alert' | 'promo'>('maintenance');
   const [audience, setAudience] = useState<string>('all');
   const [subject, setSubject] = useState('');
@@ -34,37 +27,6 @@ export const BroadcastModal: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dispatchSuccess, setDispatchSuccess] = useState(false);
-
-  // Local state for broadcast dispatch history
-  const [history, setHistory] = useState<BroadcastHistoryItem[]>([
-    {
-      id: 'bc-1',
-      type: 'maintenance',
-      subject: 'Scheduled Database Optimization Downtime',
-      audience: 'All Customers',
-      sentAt: '2026-05-27T02:00:00Z',
-      recipientsCount: 24500,
-      clickRate: 88.5
-    },
-    {
-      id: 'bc-2',
-      type: 'promo',
-      subject: '₦100 Cashback on Level-2 KYC Verify Airtime',
-      audience: 'KYC Level 1 Only',
-      sentAt: '2026-05-24T14:30:00Z',
-      recipientsCount: 9200,
-      clickRate: 42.1
-    },
-    {
-      id: 'bc-3',
-      type: 'alert',
-      subject: 'Vtpass API Service Outage Alert - MTN Data',
-      audience: 'All Customers',
-      sentAt: '2026-05-21T08:12:00Z',
-      recipientsCount: 22400,
-      clickRate: 94.6
-    }
-  ]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,17 +48,14 @@ export const BroadcastModal: React.FC = () => {
             setIsSending(false);
             setDispatchSuccess(true);
             
-            // Add new broadcast to history list
-            const newRecord: BroadcastHistoryItem = {
-              id: `bc-${Date.now()}`,
-              type,
-              subject,
-              audience: audience === 'all' ? 'All Customers' : audience === 'kyc1' ? 'KYC Level 1 Only' : 'KYC Level 2 Only',
-              sentAt: new Date().toISOString(),
-              recipientsCount: audience === 'all' ? 25000 : audience === 'kyc1' ? 9500 : 15500,
-              clickRate: 0.0 // new
-            };
-            setHistory((prevHistory) => [newRecord, ...prevHistory]);
+            // Dispatch to global store!
+            sendNotification({
+              title: subject,
+              body: content,
+              targetAudience: audience === 'all' ? 'all' : audience === 'kyc1' ? 'unverified' : 'verified',
+              sentBy: 'Super Admin Dele',
+              recipientCount: audience === 'all' ? 25000 : audience === 'kyc1' ? 9500 : 15500
+            });
 
             // Clear form
             setSubject('');
@@ -258,49 +217,60 @@ export const BroadcastModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-3.5">
-            {history.map((item) => (
-              <div
-                key={item.id}
-                className="p-4 border border-slate-100 dark:border-slate-800 rounded-xl space-y-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors"
-              >
-                <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1">
-                    {getBroadcastIcon(item.type)}
-                    <span className="uppercase text-slate-400 font-mono">{item.type}</span>
-                  </span>
-                  <span className="text-slate-400 font-mono">
-                    {new Date(item.sentAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </span>
+          <div className="space-y-3.5 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+            {notificationLogs && notificationLogs.length > 0 ? (
+              notificationLogs.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 border border-slate-100 dark:border-slate-800 rounded-xl space-y-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-bold">
+                    <span className="flex items-center gap-1">
+                      <Megaphone className="w-3.5 h-3.5 text-cyan-500" />
+                      <span className="uppercase text-slate-400 font-mono">BROADCAST</span>
+                    </span>
+                    <span className="text-slate-400 font-mono">
+                      {new Date(item.sentAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 leading-snug">
+                      {item.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                      {item.body}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 text-[9px] font-bold select-none text-slate-400">
+                    <div className="flex flex-col">
+                      <span>Recipients</span>
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-350 mt-0.5 font-mono">
+                        {item.recipientCount.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span>Sent By</span>
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-350 mt-0.5 truncate">
+                        {item.sentBy}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span>Target Cohort</span>
+                      <span className="text-xs font-extrabold text-cyan-500 mt-0.5 truncate uppercase">
+                        {item.targetAudience}
+                      </span>
+                    </div>
+                  </div>
+
                 </div>
-
-                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 leading-snug">
-                  {item.subject}
-                </h4>
-
-                <div className="grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 text-[9px] font-bold select-none text-slate-400">
-                  <div className="flex flex-col">
-                    <span>Recipients</span>
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-350 mt-0.5 font-mono">
-                      {item.recipientsCount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span>Delivery Ratio</span>
-                    <span className="text-xs font-extrabold text-emerald-500 mt-0.5 font-mono">
-                      100.0%
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span>Target Cohort</span>
-                    <span className="text-xs font-extrabold text-cyan-500 mt-0.5 truncate">
-                      {item.audience}
-                    </span>
-                  </div>
-                </div>
-
+              ))
+            ) : (
+              <div className="text-center p-8 text-slate-400 text-xs italic">
+                No notification broadcast campaigns deployed.
               </div>
-            ))}
+            )}
           </div>
 
         </div>

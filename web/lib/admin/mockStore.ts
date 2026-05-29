@@ -602,6 +602,42 @@ export const addTicketMessage = (ticketId: string, message: Omit<TicketMessage, 
   return ticket;
 };
 
+export const escalateTicketToProvider = (ticketId: string): SupportTicket => {
+  const ticket = supportTickets.find(t => t.id === ticketId);
+  if (!ticket) throw new Error('Ticket not found');
+  
+  ticket.escalated = true;
+  ticket.priority = 'critical';
+  ticket.status = 'in_progress';
+  
+  // Find related transaction to see the provider name
+  const relatedTx = transactions.find(t => t.id === ticket.transactionId || t.reference === ticket.reference);
+  const providerName = relatedTx ? relatedTx.provider : 'MTN VTU API';
+  
+  const providerRef = `Prov-${providerName.substring(0, 3).toUpperCase()}-${Math.floor(100000 + Math.random() * 900000)}`;
+  
+  // Add internal support comment
+  ticket.messages.push({
+    id: `msg-${ticketId}-esc-${ticket.messages.length + 1}`,
+    sender: 'admin',
+    content: `Automated Provider Escalation dispatched to ${providerName}. Provider Ref: ${providerRef}`,
+    timestamp: new Date().toISOString(),
+    adminName: 'System Escalation Engine'
+  });
+  
+  addAuditLog({
+    adminId: 'adm-system',
+    adminName: 'Escalation Engine',
+    action: 'Provider Escalation',
+    target: ticketId,
+    details: `Escalated ticket ${ticket.reference} to provider ${providerName}. Reference: ${providerRef}`,
+    ipAddress: 'system'
+  });
+  
+  notify();
+  return ticket;
+};
+
 export const updateProviderStatus = (providerId: string, status: Provider['status']): Provider => {
   const provider = providers.find(p => p.id === providerId);
   if (!provider) throw new Error('Provider not found');
@@ -655,12 +691,18 @@ export const updateProviderDetails = (providerId: string, details: Partial<Provi
   if (!provider) throw new Error('Provider not found');
   Object.assign(provider, details);
   
+  const actionType = details.manualOverride !== undefined 
+    ? 'Gateway Override Switch' 
+    : 'Provider Details Tuning';
+
   addAuditLog({
     adminId: 'adm-current',
     adminName: 'Operations Admin',
-    action: 'Provider Details Tuning',
+    action: actionType,
     target: providerId,
-    details: `Updated configurations for ${provider.name}: ${JSON.stringify(details)}`,
+    details: details.manualOverride !== undefined 
+      ? `Manual routing override toggled to ${details.manualOverride ? 'ON' : 'OFF'} for ${provider.name}`
+      : `Updated configurations for ${provider.name}: ${JSON.stringify(details)}`,
     ipAddress: '102.89.34.99'
   });
   

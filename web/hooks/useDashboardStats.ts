@@ -8,10 +8,11 @@ import {
   systemAlerts,
   transactions,
   auditLogs,
-  subscribe,
-  recalculateStats
+  providers,
+  notificationLogs,
+  subscribe
 } from '../lib/admin/mockStore';
-import { DashboardStats, CustomerUser, SupportTicket, SystemAlert, Transaction, AuditLog } from '../types/admin';
+import { DashboardStats, CustomerUser, SupportTicket, SystemAlert, Transaction, AuditLog, Provider, NotificationLog } from '../types/admin';
 
 export function useDashboardStats() {
   const [stats, setStats] = useState<DashboardStats>({ ...dashboardStats });
@@ -20,16 +21,19 @@ export function useDashboardStats() {
   const [alerts, setAlerts] = useState<SystemAlert[]>([...systemAlerts]);
   const [txs, setTxs] = useState<Transaction[]>([...transactions]);
   const [logs, setLogs] = useState<AuditLog[]>([...auditLogs]);
+  const [apiProviders, setApiProviders] = useState<Provider[]>([...providers]);
+  const [notifications, setNotifications] = useState<NotificationLog[]>([...notificationLogs]);
 
   useEffect(() => {
     const sync = () => {
-      recalculateStats();
       setStats({ ...dashboardStats });
       setUsers([...customerUsers]);
       setTickets([...supportTickets]);
       setAlerts([...systemAlerts]);
       setTxs([...transactions]);
       setLogs([...auditLogs]);
+      setApiProviders([...providers]);
+      setNotifications([...notificationLogs]);
     };
     // Sync initially on client load
     sync();
@@ -41,8 +45,10 @@ export function useDashboardStats() {
     stats,
     users,
     tickets,
-    alerts,
+    alerts: alerts || [],
     transactions: txs,
-    auditLogs: logs
+    auditLogs: logs,
+    providers: apiProviders,
+    notificationLogs: notifications
   };
 }
