@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SupportTicket } from '../../types/admin';
-import { supportTickets, resolveTicket, subscribe } from '../../lib/admin/mockStore';
+import { supportTickets, resolveTicket, subscribe, addTicketMessage } from '../../lib/admin/mockStore';
 import {
   MessageSquare,
   Search,
@@ -19,8 +19,9 @@ export const TicketPanel: React.FC = () => {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'open' | 'in_progress' | 'resolved'>('open');
+  const [activeTab, setActiveTab] = useState<'active' | 'resolved'>('active');
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState<Record<string, string>>({});
 
   // Sync tickets with global mockStore pub-sub
   useEffect(() => {
@@ -36,6 +37,25 @@ export const TicketPanel: React.FC = () => {
     resolveTicket(id);
   };
 
+  const handleSendReply = (ticketId: string, e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const text = replyText[ticketId]?.trim();
+    if (!text) return;
+
+    try {
+      addTicketMessage(ticketId, {
+        sender: 'admin',
+        content: text,
+        timestamp: new Date().toISOString(),
+        adminName: 'Support Agent Bola'
+      });
+      setReplyText(prev => ({ ...prev, [ticketId]: '' }));
+    } catch (err: any) {
+      alert(err.message || 'Failed to dispatch reply.');
+    }
+  };
+
   // Sort: escalated tickets float to top
   const filteredTickets = tickets.filter((t) => {
     const matchesSearch =
@@ -44,7 +64,9 @@ export const TicketPanel: React.FC = () => {
       t.userEmail.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory = filterCategory === 'all' || t.category === filterCategory;
-    const matchesStatus = t.status === activeTab;
+    const matchesStatus = activeTab === 'active'
+      ? (t.status === 'open' || t.status === 'in_progress')
+      : (t.status === 'resolved' || t.status === 'closed');
 
     return matchesSearch && matchesCategory && matchesStatus;
   }).sort((a, b) => {
@@ -93,33 +115,19 @@ export const TicketPanel: React.FC = () => {
   return (
     <div className="w-full font-sans select-none space-y-6">
       
-      {/* 1. TOP STATS HEADER BAR */}
+      {/* 1. TOP STATS HEADER BAR - Parity Unified */}
       <div className="grid grid-cols-3 gap-3 md:gap-4">
         <button
-          onClick={() => setActiveTab('open')}
+          onClick={() => setActiveTab('active')}
           className={`p-4 rounded-2xl border text-left transition-all ${
-            activeTab === 'open'
-              ? 'border-cyan-500/30 bg-cyan-500/5 dark:bg-cyan-500/10 shadow-sm'
+            activeTab === 'active'
+              ? 'border-cyan-500/30 bg-cyan-500/5 dark:bg-cyan-500/10 shadow-sm animate-fade-in'
               : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161b22] hover:bg-slate-50'
-          }`}
+          } col-span-2`}
         >
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Open Dispute Queue</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Active Dispute Queue</span>
           <span className="text-xl md:text-2xl font-black font-mono mt-1 text-slate-850 dark:text-slate-100">
-            {tickets.filter(t => t.status === 'open').length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('in_progress')}
-          className={`p-4 rounded-2xl border text-left transition-all ${
-            activeTab === 'in_progress'
-              ? 'border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 shadow-sm'
-              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161b22] hover:bg-slate-50'
-          }`}
-        >
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Under Investigation</span>
-          <span className="text-xl md:text-2xl font-black font-mono mt-1 text-slate-850 dark:text-slate-100">
-            {tickets.filter(t => t.status === 'in_progress').length}
+            {tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length}
           </span>
         </button>
 
@@ -127,13 +135,13 @@ export const TicketPanel: React.FC = () => {
           onClick={() => setActiveTab('resolved')}
           className={`p-4 rounded-2xl border text-left transition-all ${
             activeTab === 'resolved'
-              ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 shadow-sm'
+              ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 shadow-sm animate-fade-in'
               : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161b22] hover:bg-slate-50'
-          }`}
+          } col-span-1`}
         >
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Closed Resolved Cases</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Closed Cases</span>
           <span className="text-xl md:text-2xl font-black font-mono mt-1 text-slate-850 dark:text-slate-100">
-            {tickets.filter(t => t.status === 'resolved').length}
+            {tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length}
           </span>
         </button>
       </div>
@@ -184,7 +192,7 @@ export const TicketPanel: React.FC = () => {
                 
                 {/* Visual Overview Row */}
                 <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex items-center flex-wrap gap-2 text-xs">
                       <span className="font-mono font-bold text-cyan-600 dark:text-cyan-500">
                         {tkt.reference}
@@ -205,13 +213,22 @@ export const TicketPanel: React.FC = () => {
                           AUTO-CLASSIFIED
                         </span>
                       )}
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
+                        tkt.status === 'open' 
+                          ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
+                          : tkt.status === 'in_progress'
+                            ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                            : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                      }`}>
+                        {tkt.status === 'open' ? 'Pending Reply' : tkt.status === 'in_progress' ? 'Investigating' : 'Resolved'}
+                      </span>
                     </div>
 
                     <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100">
                       {tkt.subject}
                     </h4>
                     
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap">
                       <User className="w-3.5 h-3.5" />
                       <span>{tkt.userEmail}</span>
                       <span>•</span>
@@ -221,8 +238,8 @@ export const TicketPanel: React.FC = () => {
                         return (
                           <>
                             <span>•</span>
-                            <span className={`font-bold ${sla.overdue ? 'text-rose-500' : 'text-amber-500'}`}>
-                              <Clock className="w-3 h-3 inline mr-0.5" />
+                            <span className={`font-bold ${sla.overdue ? 'text-rose-500' : 'text-amber-500'} flex items-center gap-0.5`}>
+                              <Clock className="w-3 h-3" />
                               SLA: {sla.text}
                             </span>
                           </>
@@ -259,57 +276,64 @@ export const TicketPanel: React.FC = () => {
                     <div className="space-y-3">
                       <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
                         <MessageSquare className="w-3.5 h-3.5 text-cyan-500" />
-                        Dispute Logs Stream
+                        Dispute Correspondence Stream
                       </h5>
 
                       <div className="p-4 bg-slate-50 dark:bg-[#0d1117]/30 border border-slate-100 dark:border-slate-850 rounded-xl space-y-3.5">
-                        <div className="flex gap-2">
-                          <div className="w-6 h-6 rounded-full bg-cyan-600 text-white font-bold flex items-center justify-center text-[10px]">
-                            C
-                          </div>
-                          <div className="flex-1 text-xs">
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">Customer User</span>
-                            <p className="text-slate-500 dark:text-slate-400 mt-1 leading-relaxed bg-white dark:bg-[#161b22] p-3 rounded-lg border border-slate-200/50 dark:border-slate-800">
-                              Please resolve this quickly, my wallet was debited but the electricity token was never generated or texted to me.
-                            </p>
-                          </div>
-                        </div>
-
-                        {tkt.status === 'resolved' && (
-                          <div className="flex gap-2 justify-end text-right">
+                        {tkt.messages.map((msg) => (
+                          <div key={msg.id} className={`flex gap-2.5 ${msg.sender === 'admin' ? 'justify-end text-right' : ''}`}>
+                            {msg.sender !== 'admin' && (
+                              <div className="w-6 h-6 rounded-full bg-cyan-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 shadow-sm mt-1">
+                                C
+                              </div>
+                            )}
                             <div className="flex-1 text-xs">
-                              <span className="font-semibold text-slate-800 dark:text-slate-200">System Autopilot</span>
-                              <p className="text-emerald-600 dark:text-emerald-400 mt-1 leading-relaxed bg-emerald-500/5 dark:bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 inline-block text-left">
-                                Dispute resolved. Re-routed failed dispatch manually and generated token #0912-3949. Refunded fee margins.
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                                {msg.sender === 'admin' ? (msg.adminName || 'Support Agent Bola') : 'Customer User'}
+                              </span>
+                              <span className="text-[9px] text-slate-400 font-semibold block mt-0.5 uppercase tracking-wide">
+                                {new Intl.DateTimeFormat('en-NG', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(msg.timestamp))}
+                              </span>
+                              <p className={`mt-1.5 leading-relaxed p-3 rounded-xl border text-left inline-block max-w-[85%] ${
+                                msg.sender === 'admin'
+                                  ? 'bg-emerald-50 dark:bg-[#161b22] border-emerald-500/20 dark:border-emerald-500/20 text-slate-800 dark:text-slate-200 font-medium'
+                                  : 'bg-white dark:bg-[#0d1117] border-slate-200/50 dark:border-slate-800 text-slate-650 dark:text-slate-350'
+                              }`}>
+                                {msg.content}
                               </p>
                             </div>
-                            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px]">
-                              S
-                            </div>
+                            {msg.sender === 'admin' && (
+                              <div className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0 shadow-sm mt-1">
+                                A
+                              </div>
+                            )}
                           </div>
-                        )}
+                        ))}
                       </div>
                     </div>
 
-                    {/* Quick Reply Form simulation */}
+                    {/* Dynamic Reply Form */}
                     {tkt.status !== 'resolved' && (
-                      <div className="flex gap-2">
+                      <form onSubmit={(e) => handleSendReply(tkt.id, e)} className="flex gap-2 w-full">
                         <input
                           type="text"
                           placeholder="Type internal system notes or quick support reply..."
+                          value={replyText[tkt.id] || ''}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setReplyText(prev => ({ ...prev, [tkt.id]: e.target.value }));
+                          }}
                           onClick={(e) => e.stopPropagation()}
-                          className="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-[#0d1117] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none"
+                          className="flex-1 px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#0d1117] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-cyan-500 font-bold"
                         />
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            alert('Simulated administrative reply sent!');
-                          }}
-                          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors"
+                          type="submit"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-5 py-2.5 bg-slate-850 hover:bg-slate-750 dark:bg-slate-800 dark:hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors uppercase tracking-wider"
                         >
                           Send
                         </button>
-                      </div>
+                      </form>
                     )}
 
                   </div>

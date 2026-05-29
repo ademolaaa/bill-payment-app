@@ -1,15 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  dashboardStats,
-  transactions,
-  auditLogs,
-  subscribe,
-  recalculateStats,
   getDailySuccessRateData,
   getServiceCategoryWithFees
 } from '../../lib/admin/mockStore';
+import { useDashboardStats } from '../../hooks/useDashboardStats';
 import { DashboardStats, Transaction, AuditLog } from '../../types/admin';
 import { StatCards } from '../../components/admin/StatCards';
 import { AtRiskBanner } from '../../components/admin/AtRiskBanner';
@@ -32,36 +28,19 @@ import {
 } from 'lucide-react';
 
 export default function AdminOverviewPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentTxs, setRecentTxs] = useState<Transaction[]>([]);
-  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const { stats, transactions, auditLogs } = useDashboardStats();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  // Sync data dynamically from mockStore on subscription notify
-  useEffect(() => {
-    const syncStore = () => {
-      // Refresh statistics recalculation on each store transaction mutation
-      recalculateStats();
-      setStats({ ...dashboardStats });
-      
-      // Sort and get the top 6 most recent transactions
-      const sortedTxs = [...transactions]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 6);
-      setRecentTxs(sortedTxs);
+  // Sort and get the top 6 most recent transactions
+  const recentTxs = [...transactions]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 6);
 
-      // Sort and get recent admin audit activity logs
-      const sortedLogs = [...auditLogs]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, 5);
-      setLogs(sortedLogs);
-    };
+  // Sort and get recent admin audit activity logs
+  const logs = [...auditLogs]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 5);
 
-    syncStore();
-    return subscribe(syncStore);
-  }, []);
-
-  if (!stats) return null;
 
   // Mock revenue chart coordinates
   const revenueData = [

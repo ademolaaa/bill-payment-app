@@ -105,8 +105,10 @@ export default function ServicesPage() {
   const handleToggleGlobalService = (category: string, currentStatus: 'active' | 'inactive') => {
     // Toggling service globally will toggle all providers matching that service type
     const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const targetCategory = category === 'scratch_card' ? 'pins' : category;
+    
     providers.forEach(p => {
-      if (p.serviceTypes.includes(category as any) || p.serviceType === category) {
+      if (p.serviceTypes.includes(targetCategory as any) || p.serviceType === targetCategory) {
         updateProviderStatus(p.id, nextStatus);
       }
     });

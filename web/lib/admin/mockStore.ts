@@ -714,6 +714,32 @@ export const reverseTransaction = (transactionId: string): Transaction => {
   return tx;
 };
 
+export const adjustUserBalance = (userId: string, amount: number, type: 'credit' | 'debit', reason: string): CustomerUser => {
+  const user = customerUsers.find(u => u.id === userId);
+  if (!user) throw new Error('User not found');
+  if (type === 'credit') {
+    user.walletBalance += amount;
+  } else {
+    if (user.walletBalance < amount) {
+      throw new Error('Insufficient wallet float balance to execute debit deduction!');
+    }
+    user.walletBalance -= amount;
+  }
+
+  addAuditLog({
+    adminId: 'adm-current',
+    adminName: 'Finance Admin',
+    action: type === 'credit' ? 'Wallet Credit' : 'Wallet Debit',
+    target: userId,
+    details: `Manually ${type === 'credit' ? 'credited' : 'debited'} ₦${amount.toLocaleString()} to ${user.fullName} (${user.email}). Reason: "${reason}"`,
+    ipAddress: '102.89.34.99'
+  });
+
+  notify();
+  return user;
+};
+
+
 export const acknowledgeAlert = (alertId: string): SystemAlert => {
   const alert = systemAlerts.find(a => a.id === alertId);
   if (!alert) throw new Error('Alert not found');

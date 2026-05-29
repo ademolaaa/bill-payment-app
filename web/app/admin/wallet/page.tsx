@@ -1,12 +1,9 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  customerUsers,
-  subscribe,
   updateUserStatus,
-  addAuditLog
+  adjustUserBalance
 } from '../../../lib/admin/mockStore';
+import { useDashboardStats } from '../../../hooks/useDashboardStats';
 import { CustomerUser } from '../../../types/admin';
 import {
   Wallet,
@@ -22,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function WalletPage() {
-  const [users, setUsers] = useState<CustomerUser[]>([]);
+  const { users, stats } = useDashboardStats();
   const [searchQuery, setSearchQuery] = useState('');
   
   // Selection & Form state
@@ -31,16 +28,9 @@ export default function WalletPage() {
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustReason, setAdjustReason] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  useEffect(() => {
-    const syncUsers = () => {
-      setUsers([...customerUsers]);
-    };
-    syncUsers();
-    return subscribe(syncUsers);
-  }, []);
-
-  const totalFloat = users.reduce((sum, u) => sum + u.walletBalance, 0);
+  const totalFloat = stats.walletFloat;
   const selectedUser = users.find(u => u.id === selectedUserId);
 
   const handleAdjustBalance = (e: React.FormEvent) => {
@@ -59,37 +49,35 @@ export default function WalletPage() {
       return;
     }
 
-    const u = customerUsers.find(cust => cust.id === selectedUserId);
+    const u = users.find(cust => cust.id === selectedUserId);
     if (!u) return;
 
-    if (adjustType === 'credit') {
-      u.walletBalance += amountNum;
-    } else {
-      if (u.walletBalance < amountNum) {
-        alert('Insufficient wallet float balance to execute debit deduction!');
-        return;
-      }
-      u.walletBalance -= amountNum;
+    if (adjustType === 'debit' && u.walletBalance < amountNum) {
+      alert('Insufficient wallet float balance to execute debit deduction!');
+      return;
     }
 
-    // Log this event to the Audit Trail
-    addAuditLog({
-      adminId: 'adm-current',
-      adminName: 'Finance Admin',
-      action: adjustType === 'credit' ? 'Wallet Credit' : 'Wallet Debit',
-      target: selectedUserId,
-      details: `Manually ${adjustType === 'credit' ? 'credited' : 'debited'} ₦${amountNum.toLocaleString()} to ${u.fullName} (${u.email}). Reason: "${adjustReason}"`,
-      ipAddress: '102.89.34.99'
-    });
+    setShowConfirmModal(true);
+  };
 
-    setSuccessMsg(`Wallet successfully ${adjustType === 'credit' ? 'credited' : 'debited'} by ₦${amountNum.toLocaleString()}!`);
-    setAdjustAmount('');
-    setAdjustReason('');
-    
-    // Clear message after 3 seconds
-    setTimeout(() => {
-      setSuccessMsg('');
-    }, 3000);
+  const executeAdjustment = () => {
+    if (!selectedUserId) return;
+    const amountNum = parseFloat(adjustAmount);
+    try {
+      adjustUserBalance(selectedUserId, amountNum, adjustType, adjustReason);
+      setSuccessMsg(`Wallet successfully ${adjustType === 'credit' ? 'credited' : 'debited'} by ₦${amountNum.toLocaleString()}!`);
+      setAdjustAmount('');
+      setAdjustReason('');
+      setShowConfirmModal(false);
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setSuccessMsg('');
+      }, 3000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to adjust balance.');
+      setShowConfirmModal(false);
+    }
   };
 
   const filteredUsers = users.filter(u => {
@@ -311,6 +299,81 @@ export default function WalletPage() {
         </div>
 
       </div>
+
+      {/* 4. ATOMIC CONFIRMATION GATE MODAL */}
+      {showConfirmModal && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in font-sans">
+          <div className="w-full max-w-md bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-2xl ${
+                adjustType === 'credit' 
+                  ? 'bg-emerald-500/10 text-emerald-500' 
+                  : 'bg-rose-500/10 text-rose-500'
+              }`}>
+                {adjustType === 'credit' ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownRight className="w-6 h-6" />}
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-850 dark:text-slate-100 uppercase tracking-wide">
+                  Confirm Wallet {adjustType === 'credit' ? 'Credit' : 'Debit'}
+                </h3>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mt-0.5">
+                  High-Risk Financial Action Gate
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 dark:bg-[#0d1117]/30 border border-slate-100 dark:border-slate-800 rounded-2xl space-y-3.5 text-xs font-semibold text-slate-650 dark:text-slate-350">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Target User:</span>
+                <span className="font-extrabold text-slate-800 dark:text-slate-200">{selectedUser.fullName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Email Address:</span>
+                <span className="font-bold text-slate-500 dark:text-slate-400">{selectedUser.email}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3">
+                <span className="text-slate-400">Action Type:</span>
+                <span className={`uppercase font-black ${
+                  adjustType === 'credit' ? 'text-emerald-500' : 'text-rose-500'
+                }`}>
+                  Manual Wallet {adjustType === 'credit' ? 'Credit' : 'Debit'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Amount to {adjustType === 'credit' ? 'Credit' : 'Debit'}:</span>
+                <span className="font-mono font-black text-slate-850 dark:text-slate-100 text-sm">
+                  ₦{parseFloat(adjustAmount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-start border-t border-slate-100 dark:border-slate-800 pt-3">
+                <span className="text-slate-400">Audit Reason:</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200 italic break-all max-w-[200px] text-right">
+                  "{adjustReason}"
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold uppercase rounded-xl border border-slate-200 dark:border-slate-800 transition-colors text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeAdjustment}
+                className={`flex-1 py-3 text-white font-bold uppercase rounded-xl shadow-sm transition-colors text-xs ${
+                  adjustType === 'credit'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-rose-600 hover:bg-rose-700'
+                }`}
+              >
+                Execute Adjustment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
