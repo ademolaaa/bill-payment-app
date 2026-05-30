@@ -17,7 +17,9 @@ import {
   ChevronRight,
   X,
   FileWarning,
-  Server
+  Server,
+  ShieldCheck,
+  RefreshCw
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -35,42 +37,15 @@ export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen } = useLayout();
 
-  const navigation: SidebarGroup[] = [
-    {
-      title: 'OVERVIEW',
-      items: [
-        { name: 'Dashboard', href: '/admin', icon: LayoutDashboard }
-      ]
-    },
-    {
-      title: 'OPERATIONS',
-      items: [
-        { name: 'Users', href: '/admin/users', icon: Users },
-        { name: 'Transactions', href: '/admin/transactions', icon: ArrowLeftRight },
-        { name: 'Providers', href: '/admin/providers', icon: Server },
-        { name: 'Services', href: '/admin/services', icon: Zap }
-      ]
-    },
-    {
-      title: 'FINANCE',
-      items: [
-        { name: 'Wallet / Finance', href: '/admin/wallet', icon: Wallet }
-      ]
-    },
-    {
-      title: 'SUPPORT',
-      items: [
-        { name: 'Help Desk', href: '/admin/support', icon: Headphones },
-        { name: 'Notifications', href: '/admin/notifications', icon: Bell }
-      ]
-    },
-    {
-      title: 'SYSTEM',
-      items: [
-        { name: 'Error Logs', href: '/admin/logs', icon: FileWarning },
-        { name: 'Settings', href: '/admin/settings', icon: Settings }
-      ]
-    }
+  const navigation: SidebarItem[] = [
+    { name: 'Cockpit Overview', href: '/admin', icon: LayoutDashboard },
+    { name: 'User Directory', href: '/admin/users', icon: Users },
+    { name: 'Transaction Ledger', href: '/admin/transactions', icon: ArrowLeftRight },
+    { name: 'Gateway Routing', href: '/admin/gateway-routing', icon: Server },
+    { name: 'Reconciliation', href: '/admin/reconciliation', icon: RefreshCw },
+    { name: 'Active Support', href: '/admin/support', icon: Headphones },
+    { name: 'Audit Trail', href: '/admin/logs', icon: FileWarning },
+    { name: 'System Settings', href: '/admin/settings', icon: Settings }
   ];
 
   // Check if link is active
@@ -108,56 +83,40 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* 2. NAVIGATION LINKS */}
-      <div className="flex-1 overflow-y-auto py-6 px-3 space-y-7 custom-scrollbar">
-        {navigation.map((group, idx) => (
-          <div key={idx} className="space-y-2">
-            {/* Group Label */}
-            {!sidebarCollapsed ? (
-              <h5 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider select-none">
-                {group.title}
-              </h5>
-            ) : (
-              <div className="h-px bg-slate-800 mx-2 select-none" />
-            )}
+      <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1.5 custom-scrollbar">
+        {navigation.map((item) => {
+          const active = isActive(item.href);
+          const Icon = item.icon;
 
-            {/* Group Items */}
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const active = isActive(item.href);
-                const Icon = item.icon;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              onClick={() => setMobileSidebarOpen(false)}
+              className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                active
+                  ? 'bg-cyan-500/10 text-cyan-400 font-semibold border-l-2 border-cyan-400'
+                  : 'hover:bg-slate-800/60 hover:text-white'
+              }`}
+            >
+              <Icon className={`w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-105 ${active ? 'text-cyan-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
+              
+              {!sidebarCollapsed && (
+                <span className="truncate">{item.name}</span>
+              )}
 
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      active
-                        ? 'bg-cyan-500/10 text-cyan-400 font-semibold border-l-2 border-cyan-400'
-                        : 'hover:bg-slate-800/60 hover:text-white'
-                    }`}
-                  >
-                    <Icon className={`w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-105 ${active ? 'text-cyan-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
-                    
-                    {!sidebarCollapsed && (
-                      <span className="truncate">{item.name}</span>
-                    )}
-
-                    {/* Tooltip on Hover when Collapsed */}
-                    {sidebarCollapsed && (
-                      <div className="absolute left-16 z-50 hidden group-hover:flex items-center">
-                        <div className="bg-slate-900 border border-slate-700 text-white font-medium text-xs rounded px-2.5 py-1.5 whitespace-nowrap shadow-xl">
-                          {item.name}
-                        </div>
-                        <div className="w-1.5 h-1.5 bg-slate-900 border-l border-t border-slate-700 rotate-[-45deg] -translate-x-1" />
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+              {/* Tooltip on Hover when Collapsed */}
+              {sidebarCollapsed && (
+                <div className="absolute left-16 z-50 hidden group-hover:flex items-center">
+                  <div className="bg-slate-900 border border-slate-700 text-white font-medium text-xs rounded px-2.5 py-1.5 whitespace-nowrap shadow-xl">
+                    {item.name}
+                  </div>
+                  <div className="w-1.5 h-1.5 bg-slate-900 border-l border-t border-slate-700 rotate-[-45deg] -translate-x-1" />
+                </div>
+              )}
+            </Link>
+          );
+        })}
       </div>
 
       {/* 3. COLLAPSE TOGGLE FOOTER BUTTON */}

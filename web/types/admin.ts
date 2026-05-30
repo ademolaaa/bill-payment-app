@@ -154,3 +154,30 @@ export interface DashboardStats {
   atRiskTransactions: number;
   escalatedTickets: number;
 }
+
+export interface MakerCheckerRequest {
+  id: string;
+  makerId: string;
+  makerName: string;
+  actionType: 'WALLET_CREDIT' | 'ROUTE_OVERRIDE' | 'SETTINGS_CHANGE';
+  targetEntityId: string;
+  payload: any;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  checkerId?: string;
+  checkerName?: string;
+  rejectionReason?: string;
+}
+
+export interface BankDepositRecord {
+  id: string;
+  bankTimestamp: string;
+  senderName: string;
+  amount: number;
+  reference: string;
+  reconciliationStatus: 'UNMATCHED' | 'MATCHED' | 'PARTIAL_MATCH';
+  matchedLedgerTxId?: string;
+  varianceAmount?: number;
+}
+

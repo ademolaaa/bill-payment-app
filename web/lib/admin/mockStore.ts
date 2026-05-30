@@ -8,7 +8,9 @@ import {
   AuditLog,
   SystemAlert,
   DashboardStats,
-  TicketMessage
+  TicketMessage,
+  MakerCheckerRequest,
+  BankDepositRecord
 } from '../../types/admin';
 
 // Subscription system for reactive state re-renders across components
@@ -375,6 +377,66 @@ export let systemAlerts: SystemAlert[] = [
   { id: 'al-3', type: 'info', message: 'Providus bank transfer webhook speed is optimal (avg 180ms response).', service: 'Deposit Engine', timestamp: '2026-05-28T14:00:00Z', acknowledged: true, isResolved: true, resolvedAt: '2026-05-28T14:30:00Z', sourceUrl: '/admin/transactions' },
   { id: 'al-4', type: 'error', message: 'Scratch Card PIN engine reported complete database socket drop. Circuit OPEN — graceful degradation active.', service: 'Pins Integration', timestamp: '2026-05-28T08:10:00Z', acknowledged: true, isResolved: false, sourceUrl: '/admin/providers' },
   { id: 'al-5', type: 'warning', message: 'TX-20260529-003 (Ikeja Electric, ₦15,000) has been PENDING for >30 minutes. Flagged AT RISK.', service: 'Electricity Webhook', timestamp: '2026-05-29T10:32:00Z', acknowledged: false, isResolved: false, sourceUrl: '/admin/transactions' }
+];
+
+// 7.1 MOCK MAKER CHECKER REQUESTS
+export let makerCheckerRequests: MakerCheckerRequest[] = [
+  {
+    id: 'mc-1',
+    makerId: 'adm-2',
+    makerName: 'Finance Admin Tolu',
+    actionType: 'WALLET_CREDIT',
+    targetEntityId: 'usr-14',
+    payload: { userId: 'usr-14', amount: 1250000, type: 'credit', reason: 'Settlement for offline payment deposit matching reference WEMA-9921' },
+    status: 'PENDING',
+    createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 mins ago
+    expiresAt: new Date(Date.now() + 90 * 60 * 1000).toISOString() // expires in 90 mins
+  },
+  {
+    id: 'mc-2',
+    makerId: 'adm-3',
+    makerName: 'Operations Admin Kemi',
+    actionType: 'WALLET_CREDIT',
+    targetEntityId: 'usr-22',
+    payload: { userId: 'usr-22', amount: 2000000, type: 'debit', reason: 'Reversal correction of duplicate corporate funding' },
+    status: 'REJECTED',
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+    expiresAt: new Date(Date.now() - 22 * 60 * 60 * 1000).toISOString(),
+    checkerId: 'adm-1',
+    checkerName: 'Super Admin Dele',
+    rejectionReason: 'Maker input incorrect corporate user ID.'
+  }
+];
+
+// 7.2 MOCK BANK STATEMENT DEPOSIT RECORDS
+export let bankDepositRecords: BankDepositRecord[] = [
+  {
+    id: 'dep-1',
+    bankTimestamp: '2026-05-29T09:12:00Z',
+    senderName: 'Chinonso Okafor',
+    amount: 2000.00,
+    reference: 'WEMA-VTU-9921102',
+    reconciliationStatus: 'MATCHED',
+    matchedLedgerTxId: 'tx-1'
+  },
+  {
+    id: 'dep-2',
+    bankTimestamp: '2026-05-29T10:02:00Z',
+    senderName: 'Emeka Ike',
+    amount: 15150.00,
+    reference: 'IKJ-ELEC-9021',
+    reconciliationStatus: 'PARTIAL_MATCH',
+    matchedLedgerTxId: 'tx-3',
+    varianceAmount: 50.00
+  },
+  {
+    id: 'dep-3',
+    bankTimestamp: '2026-05-29T11:30:00Z',
+    senderName: 'Aisha Yusuf',
+    amount: 1250000.00,
+    reference: 'WEMA-9921',
+    reconciliationStatus: 'UNMATCHED'
+  }
 ];
 
 // 8. DYNAMIC DASHBOARD STATS OBJECT
@@ -998,4 +1060,126 @@ export const getServiceCategoryWithFees = () => {
     color: val.color,
     feeRate: val.feeRate
   }));
+};
+
+// ==========================================
+// 11. NEW MUTATION METHODS FOR MAKER-CHECKER AND RECONCILIATION
+// ==========================================
+
+export const submitMakerCheckerRequest = (request: Omit<MakerCheckerRequest, 'id' | 'createdAt' | 'expiresAt' | 'status'>): MakerCheckerRequest => {
+  const newReq: MakerCheckerRequest = {
+    id: `mc-${makerCheckerRequests.length + 1}`,
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours expiration
+    status: 'PENDING',
+    ...request
+  };
+  makerCheckerRequests.unshift(newReq);
+  
+  addAuditLog({
+    adminId: request.makerId,
+    adminName: request.makerName,
+    action: 'Maker Checker Submitted',
+    target: newReq.id,
+    details: `Created Maker-Checker request for action ${request.actionType} on target ${request.targetEntityId}`,
+    ipAddress: '102.89.34.99'
+  });
+
+  notify();
+  return newReq;
+};
+
+export const approveMakerCheckerRequest = (requestId: string, checkerId: string, checkerName: string): MakerCheckerRequest => {
+  const req = makerCheckerRequests.find(r => r.id === requestId);
+  if (!req) throw new Error('Maker-Checker request not found');
+  if (req.status !== 'PENDING') throw new Error('Request is not in a pending state');
+  if (req.makerId === checkerId) throw new Error('Maker cannot approve their own submitted request!');
+  
+  req.status = 'APPROVED';
+  req.checkerId = checkerId;
+  req.checkerName = checkerName;
+
+  // Execute underlying payload action based on actionType
+  if (req.actionType === 'WALLET_CREDIT') {
+    const { userId, amount, type } = req.payload;
+    const user = customerUsers.find(u => u.id === userId);
+    if (user) {
+      if (type === 'credit') {
+        user.walletBalance += amount;
+      } else {
+        if (user.walletBalance < amount) throw new Error('Insufficient wallet float to perform debit adjustment');
+        user.walletBalance -= amount;
+      }
+    }
+  } else if (req.actionType === 'ROUTE_OVERRIDE') {
+    const { providerId, manualOverride } = req.payload;
+    const provider = providers.find(p => p.id === providerId);
+    if (provider) {
+      provider.manualOverride = manualOverride;
+    }
+  }
+
+  addAuditLog({
+    adminId: checkerId,
+    adminName: checkerName,
+    action: 'Maker Checker Approved',
+    target: requestId,
+    details: `Approved Maker-Checker action ${req.actionType} requested by ${req.makerName}`,
+    ipAddress: '102.89.34.99'
+  });
+
+  notify();
+  return req;
+};
+
+export const rejectMakerCheckerRequest = (requestId: string, checkerId: string, checkerName: string, reason: string): MakerCheckerRequest => {
+  const req = makerCheckerRequests.find(r => r.id === requestId);
+  if (!req) throw new Error('Maker-Checker request not found');
+  if (req.status !== 'PENDING') throw new Error('Request is not in a pending state');
+  
+  req.status = 'REJECTED';
+  req.checkerId = checkerId;
+  req.checkerName = checkerName;
+  req.rejectionReason = reason;
+
+  addAuditLog({
+    adminId: checkerId,
+    adminName: checkerName,
+    action: 'Maker Checker Rejected',
+    target: requestId,
+    details: `Rejected Maker-Checker action ${req.actionType} requested by ${req.makerName}. Reason: "${reason}"`,
+    ipAddress: '102.89.34.99'
+  });
+
+  notify();
+  return req;
+};
+
+export const reconcileManualMatch = (depositId: string, ledgerTxId: string): BankDepositRecord => {
+  const deposit = bankDepositRecords.find(d => d.id === depositId);
+  if (!deposit) throw new Error('Bank deposit record not found');
+  
+  const tx = transactions.find(t => t.id === ledgerTxId);
+  if (!tx) throw new Error('Platform transaction not found');
+
+  deposit.reconciliationStatus = 'MATCHED';
+  deposit.matchedLedgerTxId = ledgerTxId;
+  
+  // Calculate variance if amount does not perfectly match
+  if (deposit.amount !== tx.amount) {
+    deposit.reconciliationStatus = 'PARTIAL_MATCH';
+    deposit.varianceAmount = deposit.amount - tx.amount;
+  }
+
+  addAuditLog({
+    adminId: 'adm-current',
+    adminName: 'Finance Admin',
+    action: 'Manual Reconciliation Match',
+    target: depositId,
+    details: `Manually matched bank deposit ${deposit.reference} with platform transaction ${tx.reference}. Match status: ${deposit.reconciliationStatus}`,
+    ipAddress: '102.89.34.99'
+  });
+
+  notify();
+  return deposit;
 };
