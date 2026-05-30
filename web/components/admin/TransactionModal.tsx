@@ -20,12 +20,14 @@ interface TransactionModalProps {
   transaction: Transaction | null;
   onClose: () => void;
   onAction: (action: string, txId: string) => void;
+  simulatedRole?: string;
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
   transaction,
   onClose,
-  onAction
+  onAction,
+  simulatedRole = 'Super Admin'
 }) => {
   const [jsonExpanded, setJsonExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -182,20 +184,42 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <User className="w-4 h-4 text-cyan-500" />
               Customer Details
             </h4>
-            <div className="p-3.5 bg-slate-50/50 dark:bg-slate-850 border border-slate-200/40 dark:border-slate-800/80 rounded-xl grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="text-slate-400 font-medium block">Notification Email</span>
-                <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 break-all">
-                  {transaction.userEmail}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-400 font-medium block">Phone Contact</span>
-                <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 font-mono">
-                  {transaction.userPhone}
-                </span>
-              </div>
-            </div>
+            {(() => {
+              const maskEmail = (email: string) => {
+                if (!email || !email.includes('@')) return email;
+                const [username, domain] = email.split('@');
+                if (username.length <= 5) {
+                  return `${username.slice(0, 2)}*****@${domain}`;
+                }
+                return `${username.slice(0, 5)}*****@${domain}`;
+              };
+              const maskPhone = (phone: string) => {
+                if (!phone) return phone;
+                if (phone.length >= 11) {
+                  return `${phone.slice(0, 7)}***${phone.slice(-4)}`;
+                }
+                return phone;
+              };
+              const showFull = simulatedRole === 'Super Admin';
+              const emailVal = showFull ? transaction.userEmail : maskEmail(transaction.userEmail);
+              const phoneVal = showFull ? transaction.userPhone : maskPhone(transaction.userPhone);
+              return (
+                <div className="p-3.5 bg-slate-50/50 dark:bg-slate-850 border border-slate-200/40 dark:border-slate-800/80 rounded-xl grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span className="text-slate-400 font-medium block">Notification Email</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 break-all">
+                      {emailVal}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium block">Phone Contact</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 font-mono">
+                      {phoneVal}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* SECTION 3: PROCESSING TIMELINE TRACK */}

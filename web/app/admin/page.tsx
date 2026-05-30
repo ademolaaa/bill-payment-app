@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
   getDailySuccessRateData,
   getServiceCategoryWithFees,
+  getRevenueTimelineData,
   makerCheckerRequests,
   bankDepositRecords,
   approveMakerCheckerRequest,
@@ -36,8 +37,24 @@ import {
   FileSpreadsheet,
   Users,
   Clock,
-  Layers
 } from 'lucide-react';
+
+const maskEmail = (email: string) => {
+  if (!email || !email.includes('@')) return email;
+  const [username, domain] = email.split('@');
+  if (username.length <= 5) {
+    return `${username.slice(0, 2)}*****@${domain}`;
+  }
+  return `${username.slice(0, 5)}*****@${domain}`;
+};
+
+const maskPhone = (phone: string) => {
+  if (!phone) return phone;
+  if (phone.length >= 11) {
+    return `${phone.slice(0, 7)}***${phone.slice(-4)}`;
+  }
+  return phone;
+};
 
 export default function AdminOverviewPage() {
   const { stats, transactions, auditLogs } = useDashboardStats();
@@ -66,15 +83,8 @@ export default function AdminOverviewPage() {
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 5);
 
-  // Mock revenue chart coordinates
-  const revenueData = [
-    { date: '2026-05-24', revenue: 145000, fees: 8900 },
-    { date: '2026-05-25', revenue: 172000, fees: 11000 },
-    { date: '2026-05-26', revenue: 158000, fees: 9800 },
-    { date: '2026-05-27', revenue: 210000, fees: 14200 },
-    { date: '2026-05-28', revenue: 195000, fees: 12500 },
-    { date: '2026-05-29', revenue: 245000, fees: 16800 }
-  ];
+  // Dynamic revenue chart coordinates from mockStore
+  const revenueData = getRevenueTimelineData();
 
   // Donut chart with fee rates from mockStore
   const donutData = getServiceCategoryWithFees();
@@ -163,21 +173,23 @@ export default function AdminOverviewPage() {
           <StatCards stats={stats} />
           
           <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
                   <DollarSign className="w-5 h-5" />
                 </div>
-                <div>
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Net Platform Profit</span>
-                  <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 font-mono mt-0.5">
+                <div className="min-w-0">
+                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">Net Platform Profit</span>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-slate-100 font-mono mt-0.5 truncate" title={`₦${Math.round(netProfit).toLocaleString()}`}>
                     ₦{Math.round(netProfit).toLocaleString()}
                   </h3>
                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] text-slate-400 font-semibold">After {gatewayCostRate}% gateway fees</span>
-                <div className="text-xs font-bold text-emerald-500 mt-1">Gross: ₦{Math.round(stats.totalRevenue).toLocaleString()}</div>
+              <div className="text-left sm:text-right shrink-0">
+                <span className="text-[10px] text-slate-400 font-semibold block">After {gatewayCostRate}% gateway fees</span>
+                <div className="text-xs font-bold text-emerald-500 mt-1 truncate" title={`Gross: ₦${Math.round(stats.totalRevenue).toLocaleString()}`}>
+                  Gross: ₦{Math.round(stats.totalRevenue).toLocaleString()}
+                </div>
               </div>
             </div>
           </div>
@@ -541,54 +553,69 @@ export default function AdminOverviewPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-transparent">
-                {recentTxs.map((tx) => (
-                  <tr
-                    key={tx.id}
-                    onClick={() => setSelectedTx(tx)}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 cursor-pointer transition-colors"
-                  >
-                    <td className="p-3 font-mono font-bold text-cyan-600 dark:text-cyan-500">{tx.reference}</td>
-                    <td className="p-3">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{tx.userEmail}</span>
-                        <span className="text-[10px] text-slate-400 font-mono mt-0.5">{tx.userPhone}</span>
-                      </div>
-                    </td>
-                    <td className="p-3 text-right font-mono font-bold text-slate-700 dark:text-slate-350">
-                      ₦{tx.amount.toLocaleString()}
-                    </td>
-                    <td className="p-3 capitalize">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-cyan-500/10 text-[10px] font-extrabold text-cyan-500 uppercase tracking-wide">
-                        {tx.serviceType.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="p-3 font-medium text-slate-600 dark:text-slate-400">{tx.provider}</td>
-                    <td className="p-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider ${
-                          tx.status === 'successful'
-                            ? 'bg-emerald-500/10 text-emerald-500'
-                            : tx.status === 'failed'
-                            ? 'bg-rose-500/10 text-rose-500'
-                            : tx.status === 'reversed'
-                            ? 'bg-blue-500/10 text-blue-500'
-                            : 'bg-amber-500/10 text-amber-500 animate-pulse'
-                        }`}>
-                          {tx.status}
-                        </span>
-                        {tx.atRisk && (
-                          <span className="px-1.5 py-0.5 rounded bg-rose-500/10 text-[8px] font-extrabold text-rose-500 uppercase tracking-wider animate-pulse">
-                            ⚠ AT RISK
+                {recentTxs.length > 0 ? (
+                  recentTxs.map((tx) => (
+                    <tr
+                      key={tx.id}
+                      onClick={() => setSelectedTx(tx)}
+                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 cursor-pointer transition-colors"
+                    >
+                      <td className="p-3 font-mono font-bold text-cyan-600 dark:text-cyan-500">{tx.reference}</td>
+                      <td className="p-3">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">
+                            {simulatedRole === 'Super Admin' ? tx.userEmail : maskEmail(tx.userEmail)}
                           </span>
-                        )}
+                          <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+                            {simulatedRole === 'Super Admin' ? tx.userPhone : maskPhone(tx.userPhone)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold text-slate-700 dark:text-slate-350">
+                        ₦{tx.amount.toLocaleString()}
+                      </td>
+                      <td className="p-3 capitalize">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-cyan-500/10 text-[10px] font-extrabold text-cyan-500 uppercase tracking-wide">
+                          {tx.serviceType.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="p-3 font-medium text-slate-600 dark:text-slate-400">{tx.provider}</td>
+                      <td className="p-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border select-none ${
+                            tx.status === 'successful'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                              : tx.status === 'failed'
+                              ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                              : tx.status === 'reversed'
+                              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 animate-pulse'
+                          }`}>
+                            {tx.status}
+                          </span>
+                          {tx.atRisk && (
+                            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[8px] font-black uppercase tracking-wider border border-rose-500/35 animate-pulse select-none shadow-sm">
+                              <span>⚠</span> AT RISK
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 text-right font-mono text-slate-400">
+                        {new Date(tx.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} -{' '}
+                        {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-xs text-slate-400 dark:text-slate-500 italic select-none">
+                      <div className="flex flex-col items-center justify-center gap-2 py-6">
+                        <span className="text-2xl">📊</span>
+                        <span>No ledger activities populated or matched today.</span>
                       </div>
-                    </td>
-                    <td className="p-3 text-right font-mono text-slate-400">
-                      {new Date(tx.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} -{' '}
-                      {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -601,6 +628,7 @@ export default function AdminOverviewPage() {
           transaction={selectedTx}
           onClose={() => setSelectedTx(null)}
           onAction={handleTxAction}
+          simulatedRole={simulatedRole}
         />
       )}
 

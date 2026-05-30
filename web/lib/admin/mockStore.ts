@@ -517,6 +517,59 @@ export const scanEscalatedTickets = () => {
   });
 };
 
+export const getLagosDateString = (dateInput: Date | string): string => {
+  const d = new Date(dateInput);
+  const lagosTime = new Date(d.getTime() + 1 * 60 * 60 * 1000);
+  return lagosTime.getUTCFullYear() + '-' + 
+         String(lagosTime.getUTCMonth() + 1).padStart(2, '0') + '-' + 
+         String(lagosTime.getUTCDate()).padStart(2, '0');
+};
+
+const shiftMockDates = () => {
+  const baseDate = new Date('2026-05-29T12:00:00Z');
+  const currentDate = new Date();
+  const diffMs = currentDate.getTime() - baseDate.getTime();
+
+  const shiftDate = (isoStr: string) => {
+    if (!isoStr) return isoStr;
+    const d = new Date(isoStr);
+    return new Date(d.getTime() + diffMs).toISOString();
+  };
+
+  transactions.forEach(t => {
+    t.createdAt = shiftDate(t.createdAt);
+    if (t.pendingFlaggedAt) t.pendingFlaggedAt = shiftDate(t.pendingFlaggedAt);
+  });
+
+  makerCheckerRequests.forEach(r => {
+    r.createdAt = shiftDate(r.createdAt);
+    r.expiresAt = shiftDate(r.expiresAt);
+  });
+
+  bankDepositRecords.forEach(d => {
+    d.bankTimestamp = shiftDate(d.bankTimestamp);
+  });
+
+  supportTickets.forEach(t => {
+    t.createdAt = shiftDate(t.createdAt);
+    if (t.resolvedAt) t.resolvedAt = shiftDate(t.resolvedAt);
+    if (t.slaDeadline) t.slaDeadline = shiftDate(t.slaDeadline);
+    if (t.lastActivityAt) t.lastActivityAt = shiftDate(t.lastActivityAt);
+    t.messages.forEach(m => {
+      m.timestamp = shiftDate(m.timestamp);
+    });
+  });
+
+  auditLogs.forEach(l => {
+    l.timestamp = shiftDate(l.timestamp);
+  });
+
+  systemAlerts.forEach(a => {
+    a.timestamp = shiftDate(a.timestamp);
+    if (a.resolvedAt) a.resolvedAt = shiftDate(a.resolvedAt);
+  });
+};
+
 // Function to dynamically calculate stats based on in-memory array values
 export const recalculateStats = () => {
   // Run side-effect scans on each stats cycle
@@ -534,8 +587,8 @@ export const recalculateStats = () => {
   dashboardStats.netProfit = dashboardStats.totalRevenue - gatewayCosts;
 
   // Today's revenue
-  const today = new Date().toISOString().split('T')[0];
-  const todaySuccessful = successfulTxs.filter(t => t.createdAt.startsWith(today));
+  const lagosToday = getLagosDateString(new Date());
+  const todaySuccessful = successfulTxs.filter(t => getLagosDateString(t.createdAt) === lagosToday);
   dashboardStats.todayRevenue = todaySuccessful.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
 
   dashboardStats.totalTransactions = allTxs.length;
@@ -550,6 +603,9 @@ export const recalculateStats = () => {
   dashboardStats.atRiskTransactions = allTxs.filter(t => t.atRisk).length;
   dashboardStats.escalatedTickets = supportTickets.filter(t => t.escalated).length;
 };
+
+// Execute date shifting of mock database records
+shiftMockDates();
 
 // Execute initial stats calculation
 recalculateStats();
@@ -886,15 +942,24 @@ export const addAuditLog = (log: Omit<AuditLog, 'id' | 'timestamp'>): AuditLog =
 
 // Simulate dynamic user growth stats for custom SVG area charts
 export const getRevenueTimelineData = () => {
-  return [
-    { date: '2026-05-23', revenue: 14200, fees: 450 },
-    { date: '2026-05-24', revenue: 38400, fees: 890 },
-    { date: '2026-05-25', revenue: 41100, fees: 300 },
-    { date: '2026-05-26', revenue: 23500, fees: 250 },
-    { date: '2026-05-27', revenue: 32000, fees: 350 },
-    { date: '2026-05-28', revenue: 68500, fees: 500 },
-    { date: '2026-05-29', revenue: dashboardStats.totalRevenue > 0 ? Math.round(dashboardStats.totalRevenue) : 55000, fees: 410 }
-  ];
+  const dates: string[] = [];
+  const currentDate = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(currentDate.getTime() - i * 24 * 60 * 60 * 1000);
+    dates.push(getLagosDateString(d));
+  }
+
+  return dates.map(dateStr => {
+    const dayTxs = transactions.filter(t => t.status === 'successful' && getLagosDateString(t.createdAt) === dateStr);
+    const revenue = dayTxs.reduce((sum, t) => sum + t.amount, 0);
+    const fees = dayTxs.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
+    
+    return {
+      date: dateStr,
+      revenue: Math.round(revenue),
+      fees: Math.round(fees)
+    };
+  });
 };
 
 export const getServiceCategoryData = () => {

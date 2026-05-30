@@ -166,17 +166,27 @@ export const RevenueAreaChart: React.FC<RevenueAreaChartProps> = ({ data }) => {
         ))}
 
         {/* X Axis Labels */}
-        {points.map((p, idx) => (
-          <text
-            key={idx}
-            x={p.x}
-            y={height - 8}
-            textAnchor="middle"
-            className="fill-slate-400 dark:fill-slate-500 text-[10px] font-medium"
-          >
-            {new Date(p.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-          </text>
-        ))}
+        {points.map((p, idx) => {
+          const parts = p.date.split('-');
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          let formattedDate = p.date;
+          if (parts.length === 3) {
+            const mIdx = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            formattedDate = `${months[mIdx]} ${day}`;
+          }
+          return (
+            <text
+              key={idx}
+              x={p.x}
+              y={height - 8}
+              textAnchor="middle"
+              className="fill-slate-400 dark:fill-slate-500 text-[10px] font-medium"
+            >
+              {formattedDate}
+            </text>
+          );
+        })}
 
         {/* Closed Gradient Fills */}
         {closedRevenuePath && <path d={closedRevenuePath} fill="url(#revGrad)" />}
@@ -228,39 +238,53 @@ export const RevenueAreaChart: React.FC<RevenueAreaChartProps> = ({ data }) => {
       </svg>
 
       {/* HTML Absolute Tooltip Overlay Card */}
-      {hoverIndex !== null && (
-        <div
-          style={{
-            left: `${Math.min(Math.max(tooltipPos.x - 70, padLeft), width - 150)}px`,
-            top: `${Math.max(tooltipPos.y - 65, 0)}px`
-          }}
-          className="absolute z-10 pointer-events-none p-2.5 bg-white dark:bg-[#1c2128] border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg text-xs transition-all duration-100 ease-out font-sans"
-        >
-          <div className="font-semibold text-slate-500 dark:text-slate-400 mb-1 select-none">
-            {new Date(data[hoverIndex].date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center justify-between gap-6">
-              <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-cyan-500" />
-                Gross Rev:
-              </span>
-              <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[11px] tabular-nums">
-                ₦{data[hoverIndex].revenue.toLocaleString()}
-              </span>
+      {hoverIndex !== null && (() => {
+        const parts = data[hoverIndex].date.split('-');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        let formattedFull = data[hoverIndex].date;
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10);
+          const mIdx = parseInt(parts[1], 10) - 1;
+          const day = parseInt(parts[2], 10);
+          const d = new Date(year, mIdx, day);
+          const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const weekday = weekdays[d.getDay()];
+          formattedFull = `${weekday}, ${months[mIdx]} ${day}`;
+        }
+        return (
+          <div
+            style={{
+              left: `${Math.min(Math.max(tooltipPos.x - 70, padLeft), width - 150)}px`,
+              top: `${Math.max(tooltipPos.y - 65, 0)}px`
+            }}
+            className="absolute z-10 pointer-events-none p-2.5 bg-white dark:bg-[#1c2128] border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg text-xs transition-all duration-100 ease-out font-sans"
+          >
+            <div className="font-semibold text-slate-500 dark:text-slate-400 mb-1 select-none">
+              {formattedFull}
             </div>
-            <div className="flex items-center justify-between gap-6">
-              <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                Fee Margin:
-              </span>
-              <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[11px] tabular-nums">
-                ₦{data[hoverIndex].fees.toLocaleString()}
-              </span>
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center justify-between gap-6">
+                <span className="flex items-center gap-1.5 text-slate-400">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                  Gross Rev:
+                </span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[11px] tabular-nums">
+                  ₦{data[hoverIndex].revenue.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-6">
+                <span className="flex items-center gap-1.5 text-slate-400">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  Fee Margin:
+                </span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 font-mono text-[11px] tabular-nums">
+                  ₦{data[hoverIndex].fees.toLocaleString()}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

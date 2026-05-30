@@ -73,7 +73,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.totalRevenue)}>
             <AnimatedNumber value={stats.totalRevenue} formatter={formatNaira} />
           </h3>
           <div className="flex items-center gap-1 mt-2.5 text-emerald-500 text-xs font-semibold">
@@ -94,12 +94,12 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.todayRevenue)}>
             <AnimatedNumber value={stats.todayRevenue} formatter={formatNaira} />
           </h3>
           <div className="flex items-center gap-1 mt-2.5 text-emerald-500 text-xs font-semibold">
             <ArrowUpRight className="w-4 h-4" />
-            <span>₦4,200 since midnight</span>
+            <span>₦{Math.round(stats.todayRevenue).toLocaleString()} since midnight</span>
           </div>
         </div>
       </div>
@@ -115,7 +115,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap">
             <AnimatedNumber value={stats.totalTransactions} />
           </h3>
           <div className="flex items-center justify-between items-center mt-2.5">
@@ -141,7 +141,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap">
             <AnimatedNumber value={stats.successRate} formatter={formatPercent} />
           </h3>
           <div className="flex items-center gap-1 mt-2.5 text-xs font-semibold">
@@ -173,7 +173,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap">
             <AnimatedNumber value={stats.activeUsers} />
           </h3>
           <div className="flex items-center gap-1 mt-2.5 text-emerald-500 text-xs font-semibold">
@@ -194,7 +194,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums flex items-center gap-2">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
             <AnimatedNumber value={stats.pendingKYC} />
             {stats.pendingKYC > 0 && (
               <span className="px-2 py-0.5 rounded bg-orange-500/10 text-[10px] font-extrabold text-orange-500 uppercase tracking-wide animate-pulse">
@@ -219,7 +219,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums flex items-center gap-2">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
             <AnimatedNumber value={stats.openTickets} />
             {stats.openTickets > 0 && (
               <span className="px-2 py-0.5 rounded bg-rose-500/10 text-[10px] font-extrabold text-rose-500 uppercase tracking-wide">
@@ -245,7 +245,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.walletFloat)}>
             <AnimatedNumber value={stats.walletFloat} formatter={formatNaira} />
           </h3>
           <div className="flex items-center gap-1 mt-2.5 text-slate-400 text-xs">
