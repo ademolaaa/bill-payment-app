@@ -231,7 +231,7 @@ export default function HomePage() {
 
             {/* Title row with eye toggle */}
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[14px] text-gray-700 dark:text-slate-600 font-medium">Total Balance</p>
+              <p className="text-[14px] text-gray-700 dark:text-slate-600 font-medium">Available Wallet Balances</p>
               <button
                 onClick={() => setBalanceVisible(v => !v)}
                 className="text-gray-600 dark:text-slate-700 hover:text-gray-600 transition p-1 rounded-full hover:bg-gray-100 dark:bg-slate-800 focus:outline-none"
@@ -241,12 +241,20 @@ export default function HomePage() {
               </button>
             </div>
 
-            <h2 className="text-[28px] font-bold text-gray-900 dark:text-white tracking-tight leading-none mb-2 transition-all duration-300">
-              {mask(`${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} NGN`)}
-            </h2>
-            <p className="text-[15px] font-medium text-gray-700 dark:text-slate-600 mb-6">
-              {mask(`${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`)}
-            </p>
+            <div className="space-y-3 mb-6 mt-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Wallet NGN Balance</span>
+                <h2 className="text-[28px] font-extrabold text-gray-900 dark:text-white tracking-tight leading-none transition-all duration-300">
+                  {mask(`₦${balanceNGN.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
+                </h2>
+              </div>
+              <div className="border-t border-gray-100 dark:border-slate-800/80 pt-2.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Wallet USDT Balance</span>
+                <p className="text-[18px] font-extrabold text-gray-900 dark:text-white transition-all duration-300">
+                  {mask(`${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`)}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="flex w-full space-x-3">
@@ -275,7 +283,7 @@ export default function HomePage() {
                   <div className="w-10 h-10 rounded-full bg-[#E0E7FF] dark:bg-blue-900/30 flex items-center justify-center text-[#0047FF] font-bold text-[14px]">
                     NGN
                   </div>
-                  <p className="text-[13px] font-bold text-gray-900 dark:text-white">NGN</p>
+                  <p className="text-[13px] font-bold text-gray-900 dark:text-white">Invested NGN</p>
                 </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
                   {mask(`${investedNGN.toLocaleString('en-NG', { minimumFractionDigits: 2 })} NGN`)}
@@ -293,7 +301,7 @@ export default function HomePage() {
                   <div className="w-5 h-5 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
                     T
                   </div>
-                  <p className="text-[13px] font-bold text-gray-900 dark:text-white">USDT</p>
+                  <p className="text-[13px] font-bold text-gray-900 dark:text-white">Invested USDT</p>
                 </div>
                 <h4 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">
                   {mask(`${investedUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`)}

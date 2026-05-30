@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '../../components/Button';
@@ -51,6 +51,32 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isForceMode, setIsForceMode] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      if (typeof window !== 'undefined') {
+        const search = window.location.search;
+        if (search.includes('force=1')) {
+          setIsForceMode(true);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            setCurrentUser(user);
+          }
+        }
+      }
+    };
+    checkSession();
+  }, []);
+
+  const handleSignOut = async () => {
+    setIsLoading(true);
+    await supabase.auth.signOut();
+    setCurrentUser(null);
+    setIsLoading(false);
+    router.refresh();
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -129,6 +155,32 @@ export default function SignUpPage() {
         
         {error && <p className="text-red-500 text-[13px] font-medium mb-4 w-full text-center">{error}</p>}
         
+        {/* QA TESTING MODE OVERRIDE BANNER */}
+        {currentUser && isForceMode && (
+          <div className="w-full mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs text-amber-700 dark:text-amber-400 select-none animate-fade-in shadow-sm">
+            <div className="flex items-start gap-2.5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <span className="font-extrabold uppercase block tracking-wider mb-1 text-[10px]">Active QA Simulation Mode</span>
+                <p className="leading-normal font-medium">
+                  You are currently logged in as <strong className="font-bold">{currentUser.email}</strong>. 
+                  To test signup-based wallet provisioning and onboarding flows, you must sign out first.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isLoading}
+                  className="mt-3 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-[11px] font-black uppercase rounded-lg shadow-sm transition-colors cursor-pointer select-none"
+                >
+                  {isLoading ? 'Processing...' : 'Sign Out and Continue'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSignUp} className="w-full flex flex-col">
           <div className="space-y-4 mb-8">
             

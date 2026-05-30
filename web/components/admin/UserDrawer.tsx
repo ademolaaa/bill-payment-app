@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { CustomerUser, Transaction } from '../../types/admin';
 import { transactions } from '../../lib/admin/mockStore';
+import { useLayout } from './LayoutContext';
 import {
   X,
   Wallet,
@@ -17,6 +18,24 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+const maskEmail = (email: string) => {
+  if (!email || !email.includes('@')) return email;
+  const [username, domain] = email.split('@');
+  if (username.length <= 2) {
+    return `${username[0]}***@${domain}`;
+  }
+  return `${username[0]}***${username[username.length - 1]}@${domain}`;
+};
+
+const maskPhone = (phone: string) => {
+  if (!phone) return '';
+  const clean = phone.replace(/\s+/g, '');
+  if (clean.length <= 6) {
+    return '***';
+  }
+  return `${clean.slice(0, 4)}******${clean.slice(-3)}`;
+};
+
 interface UserDrawerProps {
   user: CustomerUser | null;
   onClose: () => void;
@@ -27,6 +46,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ user, onClose, onAction 
   const [isOpen, setIsOpen] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { simulatedRole } = useLayout();
 
   // Bind Escape key to close the drawer
   useEffect(() => {
@@ -73,7 +93,10 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ user, onClose, onAction 
     if (actionName === 'activate') msg = `User ${user.fullName} activated successfully.`;
     if (actionName === 'approveKYC') msg = `KYC for ${user.fullName} approved.`;
     if (actionName === 'rejectKYC') msg = `KYC for ${user.fullName} rejected.`;
-    if (actionName === 'resetPassword') msg = `Password reset link dispatched to ${user.email}.`;
+    if (actionName === 'resetPassword') {
+      const emailDisplay = simulatedRole === 'Super Admin' ? user.email : maskEmail(user.email);
+      msg = `Password reset link dispatched to ${emailDisplay}.`;
+    }
     
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
@@ -156,11 +179,15 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ user, onClose, onAction 
           <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-[#0d1117]/30 border border-slate-100 dark:border-slate-800 rounded-xl text-xs">
             <div>
               <span className="text-slate-400 font-medium block">Email Address</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 break-all">{user.email}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 break-all">
+                {simulatedRole === 'Super Admin' ? user.email : maskEmail(user.email)}
+              </span>
             </div>
             <div>
               <span className="text-slate-400 font-medium block">Phone Number</span>
-              <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 font-mono">{user.phone}</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold block mt-0.5 font-mono">
+                {simulatedRole === 'Super Admin' ? user.phone : maskPhone(user.phone)}
+              </span>
             </div>
           </div>
 

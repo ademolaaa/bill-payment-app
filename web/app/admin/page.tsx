@@ -13,6 +13,7 @@ import {
 } from '../../lib/admin/mockStore';
 import { useDashboardStats } from '../../hooks/useDashboardStats';
 import { DashboardStats, Transaction, AuditLog, MakerCheckerRequest, BankDepositRecord } from '../../types/admin';
+import { useLayout } from '../../components/admin/LayoutContext';
 import { StatCards } from '../../components/admin/StatCards';
 import { AtRiskBanner } from '../../components/admin/AtRiskBanner';
 import {
@@ -43,23 +44,23 @@ const maskEmail = (email: string) => {
   if (!email || !email.includes('@')) return email;
   const [username, domain] = email.split('@');
   if (username.length <= 5) {
-    return `${username.slice(0, 2)}*****@${domain}`;
+    return `${username[0]}***${username[username.length - 1]}@${domain}`;
   }
-  return `${username.slice(0, 5)}*****@${domain}`;
+  return `${username.slice(0, 3)}***${username.slice(-2)}@${domain}`;
 };
 
 const maskPhone = (phone: string) => {
-  if (!phone) return phone;
-  if (phone.length >= 11) {
-    return `${phone.slice(0, 7)}***${phone.slice(-4)}`;
+  if (!phone) return '';
+  if (phone.length <= 5) {
+    return '***';
   }
-  return phone;
+  return `${phone.slice(0, 4)}******${phone.slice(-3)}`;
 };
 
 export default function AdminOverviewPage() {
   const { stats, transactions, auditLogs } = useDashboardStats();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-  const [simulatedRole, setSimulatedRole] = useState<'Super Admin' | 'Finance Admin' | 'Operations Admin' | 'Compliance Officer'>('Super Admin');
+  const { simulatedRole, setSimulatedRole } = useLayout();
   const [mcRequests, setMcRequests] = useState<MakerCheckerRequest[]>([]);
   const [deposits, setDeposits] = useState<BankDepositRecord[]>([]);
 

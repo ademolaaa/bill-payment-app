@@ -37,7 +37,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
-  const { toggleMobileSidebar } = useLayout();
+  const { toggleMobileSidebar, simulatedRole, setSimulatedRole } = useLayout();
 
   // Reactive store data
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
@@ -349,7 +349,23 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
           )}
         </div>
 
-        {/* B. DARK / LIGHT THEME TOGGLE */}
+        {/* B. SIMULATED ROLE SWITCHER DROPDOWN */}
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-sm">
+          <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden sm:inline">Role:</span>
+          <select
+            value={simulatedRole}
+            onChange={(e) => setSimulatedRole(e.target.value as any)}
+            className="bg-transparent text-xs font-black text-cyan-600 dark:text-cyan-400 outline-none border-none cursor-pointer focus:ring-0 p-0 pr-6"
+            style={{ backgroundImage: 'none' }}
+          >
+            <option value="Super Admin" className="bg-white dark:bg-[#1c2128] text-slate-800 dark:text-slate-200">Super Admin</option>
+            <option value="Finance Admin" className="bg-white dark:bg-[#1c2128] text-slate-800 dark:text-slate-200">Finance Admin</option>
+            <option value="Operations Admin" className="bg-white dark:bg-[#1c2128] text-slate-800 dark:text-slate-200">Operations Admin</option>
+            <option value="Compliance Officer" className="bg-white dark:bg-[#1c2128] text-slate-800 dark:text-slate-200">Compliance Officer</option>
+          </select>
+        </div>
+
+        {/* C. DARK / LIGHT THEME TOGGLE */}
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors duration-200"
@@ -358,7 +374,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
 
-        {/* C. ADMIN PROFILE DROPDOWN */}
+        {/* D. ADMIN PROFILE DROPDOWN */}
         <div ref={profileRef} className="relative">
           <button
             onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
@@ -369,7 +385,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
             </div>
             <div className="hidden md:flex flex-col text-left select-none">
               <span className="text-xs font-semibold leading-none">Dele</span>
-              <span className="text-[10px] font-medium text-slate-400 leading-none mt-1">Super Admin</span>
+              <span className="text-[10px] font-medium text-slate-400 leading-none mt-1">{simulatedRole}</span>
             </div>
             <ChevronDown className="w-4 h-4 text-slate-400 hidden md:block" />
           </button>
@@ -381,7 +397,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Dele Balogun</p>
                 <div className="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded bg-cyan-500/10 text-[10px] font-bold text-cyan-500">
                   <Shield className="w-3 h-3" />
-                  Super Admin
+                  {simulatedRole}
                 </div>
               </div>
 

@@ -55,7 +55,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // If a user is already logged in and tries to access login or signup, send them to home
-  if ((currentPath === '/login' || currentPath === '/signup') && user) {
+  const hasForceOverride = request.nextUrl.searchParams.get('force') === '1';
+  if ((currentPath === '/login' || (currentPath === '/signup' && !hasForceOverride)) && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/home'
     return NextResponse.redirect(url)

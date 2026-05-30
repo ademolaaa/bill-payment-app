@@ -13,6 +13,10 @@ export default function DepositPage() {
   const [activeTab, setActiveTab] = useState<'NGN' | 'USDT'>('NGN');
   const [copied, setCopied] = useState(false);
   const [amount, setAmount] = useState<string>('');
+  const [cryptoAmount, setCryptoAmount] = useState<string>('');
+  const [generatedPayment, setGeneratedPayment] = useState<any>(null);
+  const [generating, setGenerating] = useState<boolean>(false);
+  const [webhookSimulating, setWebhookSimulating] = useState<boolean>(false);
   const [balanceNGN, setBalanceNGN] = useState<number>(0);
   const [balanceUSDT, setBalanceUSDT] = useState<number>(0);
   const [user, setUser] = useState<any>(null);
@@ -39,6 +43,80 @@ export default function DepositPage() {
       console.error('Error fetching balances:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateCryptoDeposit = async () => {
+    setFeedback(null);
+    const amt = parseFloat(cryptoAmount);
+    if (isNaN(amt) || amt <= 0) {
+      setFeedback({ type: 'error', message: 'Please enter a valid deposit amount greater than zero.' });
+      return;
+    }
+    if (amt < 5) {
+      setFeedback({ type: 'error', message: 'Minimum deposit amount is 5.00 USDT.' });
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/payments/create-crypto-deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setGeneratedPayment(data);
+        setFeedback({ type: 'success', message: 'NOWPayments deposit invoice generated successfully!' });
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Failed to generate crypto deposit address.' });
+      }
+    } catch (e) {
+      console.error(e);
+      setFeedback({ type: 'error', message: 'Network error generating crypto deposit.' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleSimulateWebhook = async () => {
+    if (!generatedPayment) return;
+    setFeedback(null);
+    setWebhookSimulating(true);
+    try {
+      const res = await fetch('/api/webhooks/nowpayments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-nowpayments-sig': 'sandbox-test-signature',
+        },
+        body: JSON.stringify({
+          payment_status: 'confirmed',
+          order_id: generatedPayment.orderId,
+          price_amount: Number(generatedPayment.amount),
+          price_currency: 'usd',
+          actually_paid: Number(generatedPayment.amount),
+          pay_currency: 'usdttrc20',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.received) {
+        setFeedback({ 
+          type: 'success', 
+          message: `Webhook simulated! Credited +${generatedPayment.amount} USDT to your wallet successfully.` 
+        });
+        setGeneratedPayment(null);
+        setCryptoAmount('');
+        await fetchBalances(); // Reload balances immediately!
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Failed to trigger simulated webhook.' });
+      }
+    } catch (e) {
+      console.error(e);
+      setFeedback({ type: 'error', message: 'Network error simulating payment webhook.' });
+    } finally {
+      setWebhookSimulating(false);
     }
   };
 
@@ -231,126 +309,199 @@ export default function DepositPage() {
               </div>
             </div>
 
-            {/* QR Code Container */}
-            <div className="flex justify-center mb-6">
-              <div className="p-2 bg-white dark:bg-slate-800 rounded-3xl border-4 border-blue-600 shadow-sm relative w-[220px] h-[220px] flex items-center justify-center">
-                {/* Simplified QR Placeholder using SVG blocks */}
-                <svg width="100%" height="100%" viewBox="0 0 100 100" fill="currentColor" className="text-gray-900 dark:text-white">
-                  {/* Top Left Square */}
-                  <rect x="5" y="5" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="3"/>
-                  <rect x="10" y="10" width="15" height="15"/>
-                  {/* Top Right Square */}
-                  <rect x="70" y="5" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="3"/>
-                  <rect x="75" y="10" width="15" height="15"/>
-                  {/* Bottom Left Square */}
-                  <rect x="5" y="70" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="3"/>
-                  <rect x="10" y="75" width="15" height="15"/>
-                  
-                  {/* Random inner blocks */}
-                  <rect x="35" y="5" width="10" height="10"/>
-                  <rect x="50" y="15" width="15" height="10"/>
-                  <rect x="5" y="35" width="20" height="15"/>
-                  <rect x="30" y="35" width="15" height="15"/>
-                  <rect x="70" y="35" width="25" height="10"/>
-                  <rect x="50" y="70" width="15" height="15"/>
-                  <rect x="75" y="55" width="10" height="25"/>
-                  <rect x="35" y="80" width="10" height="15"/>
-                  <rect x="85" y="85" width="10" height="10"/>
-                </svg>
-                {/* Center Logo */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center p-1">
-                    <div className="w-full h-full bg-[#26A17B] rounded-full flex items-center justify-center text-white font-bold text-[18px]">
-                      T
+            {feedback && (
+              <div className={`p-4 rounded-2xl text-[13px] font-bold text-center mb-6 border ${
+                feedback.type === 'success' 
+                  ? 'bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30' 
+                  : 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30'
+              }`}>
+                {feedback.message}
+              </div>
+            )}
+
+            {generatedPayment ? (
+              /* DYNAMIC GENERATED NOWPAYMENTS INVOICE SCREEN */
+              <div className="space-y-6">
+                {/* QR Code Container */}
+                <div className="flex justify-center">
+                  <div className="p-2 bg-white dark:bg-slate-800 rounded-3xl border-4 border-[#16a34a] shadow-sm relative w-[200px] h-[200px] flex items-center justify-center">
+                    <svg width="100%" height="100%" viewBox="0 0 100 100" fill="currentColor" className="text-gray-900 dark:text-white">
+                      <rect x="5" y="5" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="3"/>
+                      <rect x="10" y="10" width="15" height="15"/>
+                      <rect x="70" y="5" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="3"/>
+                      <rect x="75" y="10" width="15" height="15"/>
+                      <rect x="5" y="70" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="3"/>
+                      <rect x="10" y="75" width="15" height="15"/>
+                      <rect x="35" y="5" width="10" height="10"/>
+                      <rect x="50" y="15" width="15" height="10"/>
+                      <rect x="5" y="35" width="20" height="15"/>
+                      <rect x="30" y="35" width="15" height="15"/>
+                      <rect x="70" y="35" width="25" height="10"/>
+                      <rect x="50" y="70" width="15" height="15"/>
+                      <rect x="75" y="55" width="10" height="25"/>
+                      <rect x="35" y="80" width="10" height="15"/>
+                      <rect x="85" y="85" width="10" height="10"/>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center p-1">
+                        <div className="w-full h-full bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[18px]">
+                          T
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Wallet Address Box */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-sm flex items-center justify-between">
-              <div className="pr-4">
-                <p className="text-[14px] text-gray-500 dark:text-slate-400 mb-1">Wallet Address</p>
-                <p className="text-[15px] font-bold text-[#0F172A] dark:text-white break-all leading-tight">
-                  TSwL9vQQZWPZbdMaWgV4B2Lizyu5Yw1rHp
-                </p>
-              </div>
-              <button 
-                onClick={handleCopy}
-                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-2xl flex-shrink-0 flex items-center justify-center text-white transition-colors"
-              >
-                {copied ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                )}
-              </button>
-            </div>
+                <div className="text-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#16a34a]/10 text-[#16a34a] animate-pulse">
+                    ● Awaiting Network Confirmation
+                  </span>
+                </div>
 
-            {/* Info List */}
-            <div className="bg-[#F8FAFC] dark:bg-slate-800/50 rounded-2xl p-5 border border-gray-50 dark:border-slate-800 space-y-4">
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-blue-600 dark:text-blue-400">
-                  <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-[12px] font-bold">$</span>
+                {/* Amount to Send */}
+                <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                  <div>
+                    <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-0.5">Send Exact Amount</p>
+                    <p className="text-[20px] font-extrabold text-[#0F172A] dark:text-white leading-none">
+                      {generatedPayment.amount} {generatedPayment.currency}
+                    </p>
                   </div>
-                  <span className="text-[14px] text-[#475569] dark:text-slate-300">Minimum Deposit Amount:</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedPayment.amount.toString());
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="px-3 py-1.5 bg-gray-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-[#0047FF] hover:bg-gray-200 transition"
+                  >
+                    Copy
+                  </button>
                 </div>
-                <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">5.00 USDT</span>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center text-blue-600 dark:text-blue-400">
-                  <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-                    </svg>
+                {/* Deposit TRC20 Address */}
+                <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                  <div className="pr-4 flex-1">
+                    <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-0.5">Deposit Wallet Address (TRC20)</p>
+                    <p className="text-[13px] font-bold text-[#0F172A] dark:text-white break-all leading-tight">
+                      {generatedPayment.payAddress}
+                    </p>
                   </div>
-                  <span className="text-[14px] text-[#475569] dark:text-slate-300">USDT Balance:</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedPayment.payAddress);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="px-3 py-1.5 bg-gray-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-[#0047FF] hover:bg-gray-200 transition"
+                  >
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
                 </div>
-                <span className="text-[14px] font-bold text-[#0F172A] dark:text-white">
-                  {loading ? '...' : `${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`}
-                </span>
-              </div>
 
-              <div className="flex items-start">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                  <span className="text-[12px] font-bold font-serif italic">i</span>
+                {/* Order Reference */}
+                <div className="text-center text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+                  Ref: {generatedPayment.orderId}
                 </div>
-                <p className="text-[13px] text-[#475569] dark:text-slate-300 leading-relaxed">
-                  Only send TRC20-based USDT to this deposit address.
-                </p>
+
+                {/* QA SIMULATOR SANDBOX CONTROLS */}
+                <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-2xl text-xs shadow-sm">
+                  <span className="font-extrabold uppercase text-orange-600 dark:text-orange-400 block mb-1 text-[10px] tracking-wider">NOWPayments Sandbox Controls</span>
+                  <p className="text-slate-600 dark:text-slate-400 leading-normal mb-3.5">
+                    Use this tool to simulate blockchain payment verification and trigger dynamic user wallet crediting.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSimulateWebhook}
+                      disabled={webhookSimulating}
+                      className="flex-1 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-center text-xs uppercase rounded-xl transition shadow-sm disabled:opacity-60 cursor-pointer"
+                    >
+                      {webhookSimulating ? 'Simulating Webhook...' : 'Simulate Successful Webhook'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGeneratedPayment(null)}
+                      className="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase rounded-xl transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
+            ) : (
+              /* DEPOSIT INPUT & METHOD SELECTION */
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-[15px] font-bold text-[#0F172A] dark:text-white mb-2">Deposit Amount (USDT)</label>
+                  <div className="relative">
+                    <input 
+                      type="number" 
+                      placeholder="Min 5.00 USDT"
+                      value={cryptoAmount}
+                      onChange={(e) => setCryptoAmount(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl py-4 pl-4 pr-16 text-[16px] font-medium text-[#0F172A] dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-gray-300 shadow-sm"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                      <span className="text-gray-400 text-[14px] font-bold">USDT</span>
+                    </div>
+                  </div>
+                </div>
 
-            </div>
+                <Button 
+                  onClick={handleCreateCryptoDeposit}
+                  disabled={generating}
+                  className="w-full rounded-2xl bg-[#0047FF] hover:bg-blue-700 text-white font-bold py-4 text-[15px] shadow-md flex items-center justify-center gap-2"
+                >
+                  {generating ? (
+                    'Generating Invoice...'
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Generate USDT TRC20 Invoice
+                    </>
+                  )}
+                </Button>
 
-            {/* Bottom Actions */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 p-5 flex space-x-3 pb-8 border-t border-gray-100 dark:border-slate-800 z-10">
-              <Button 
-                variant="outline" 
-                className="flex-1 rounded-2xl border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold py-4 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Save Picture
-              </Button>
-              <Button 
-                onClick={handleCopy}
-                className="flex-1 rounded-2xl bg-[#0047FF] hover:bg-blue-700 flex items-center justify-center text-white font-bold py-4 shadow-md"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                {copied ? 'Copied' : 'Copy Address'}
-              </Button>
-            </div>
+                {/* Static Alternative */}
+                <div className="border-t border-gray-150 dark:border-slate-800 pt-5">
+                  <div className="bg-[#F8FAFC] dark:bg-slate-800/40 rounded-2xl p-4 border border-gray-50 dark:border-slate-800">
+                    <h4 className="text-[13px] font-bold text-gray-800 dark:text-slate-200 mb-2">Or Direct Transfer (Static Wallet)</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal mb-3">
+                      Transfer directly to the Kyvatron static vault address. Deposits under this method require manual support ticket verification.
+                    </p>
+                    <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between">
+                      <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 break-all select-all font-bold">
+                        TSwL9vQQZWPZbdMaWgV4B2Lizyu5Yw1rHp
+                      </span>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText('TSwL9vQQZWPZbdMaWgV4B2Lizyu5Yw1rHp');
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="text-[11px] font-extrabold text-[#0047FF] uppercase ml-2"
+                      >
+                        {copied ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Balance & network info */}
+                <div className="bg-[#F8FAFC] dark:bg-slate-800/50 rounded-2xl p-5 border border-gray-50 dark:border-slate-800 space-y-3.5 text-slate-600 dark:text-slate-400">
+                  <div className="flex justify-between items-center text-xs">
+                    <span>Active Wallet balance</span>
+                    <strong className="text-slate-800 dark:text-slate-200 font-bold">{loading ? '...' : `${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span>Minimum deposit</span>
+                    <strong className="text-slate-800 dark:text-slate-200 font-bold">5.00 USDT</strong>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

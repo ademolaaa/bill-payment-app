@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useLayout } from '../../../components/admin/LayoutContext';
 import {
   customerUsers,
   subscribe,
@@ -22,9 +23,28 @@ import {
   Plus
 } from 'lucide-react';
 
+const maskEmail = (email: string) => {
+  if (!email || !email.includes('@')) return email;
+  const [username, domain] = email.split('@');
+  if (username.length <= 2) {
+    return `${username[0]}***@${domain}`;
+  }
+  return `${username[0]}***${username[username.length - 1]}@${domain}`;
+};
+
+const maskPhone = (phone: string) => {
+  if (!phone) return '';
+  const clean = phone.replace(/\s+/g, '');
+  if (clean.length <= 6) {
+    return '***';
+  }
+  return `${clean.slice(0, 4)}******${clean.slice(-3)}`;
+};
+
 function UsersPageContent() {
   const searchParams = useSearchParams();
   const autoOpenId = searchParams.get('id');
+  const { simulatedRole } = useLayout();
 
   const [users, setUsers] = useState<CustomerUser[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -184,8 +204,12 @@ function UsersPageContent() {
                         </span>
                       </div>
                     </td>
-                    <td className="p-3.5 text-slate-600 dark:text-slate-400 font-medium break-all max-w-[150px]">{user.email}</td>
-                    <td className="p-3.5 font-mono text-slate-500 dark:text-slate-400">{user.phone}</td>
+                    <td className="p-3.5 text-slate-600 dark:text-slate-400 font-medium break-all max-w-[150px]">
+                      {simulatedRole === 'Super Admin' ? user.email : maskEmail(user.email)}
+                    </td>
+                    <td className="p-3.5 font-mono text-slate-500 dark:text-slate-400">
+                      {simulatedRole === 'Super Admin' ? user.phone : maskPhone(user.phone)}
+                    </td>
                     <td className="p-3.5 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
                       ₦{user.walletBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                     </td>
