@@ -15,6 +15,7 @@ export default function DepositPage() {
   const [amount, setAmount] = useState<string>('');
   const [cryptoAmount, setCryptoAmount] = useState<string>('');
   const [generatedPayment, setGeneratedPayment] = useState<any>(null);
+  const [paymentStatus, setPaymentStatus] = useState<string>('waiting');
   const [generating, setGenerating] = useState<boolean>(false);
   const [webhookSimulating, setWebhookSimulating] = useState<boolean>(false);
   const [balanceNGN, setBalanceNGN] = useState<number>(0);
@@ -31,13 +32,28 @@ export default function DepositPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('balance_ngn, balance_usdt')
+        .select('balance_ngn, balance_usdt, nowpayments_sub_partner_id')
         .eq('id', currentUser.id)
         .single();
         
       if (profile) {
         setBalanceNGN(Number(profile.balance_ngn) || 0);
         setBalanceUSDT(Number(profile.balance_usdt) || 0);
+
+        // Background automatic provisioning retry check
+        if (!profile.nowpayments_sub_partner_id) {
+          try {
+            fetch('/api/user/setup-wallet', { method: 'POST' })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  console.log('Background wallet setup succeeded:', data.sub_partner_id);
+                }
+              });
+          } catch (walletErr) {
+            console.warn('Background wallet setup attempt failed:', walletErr);
+          }
+        }
       }
     } catch (err) {
       console.error('Error fetching balances:', err);
@@ -68,6 +84,7 @@ export default function DepositPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setGeneratedPayment(data);
+        setPaymentStatus(data.paymentStatus || 'waiting');
         setFeedback({ type: 'success', message: 'NOWPayments deposit invoice generated successfully!' });
       } else {
         setFeedback({ type: 'error', message: data.error || 'Failed to generate crypto deposit address.' });
@@ -123,6 +140,29 @@ export default function DepositPage() {
   useEffect(() => {
     fetchBalances();
   }, []);
+
+  // Poll payment status every 15s when a payment is active
+  useEffect(() => {
+    if (!generatedPayment?.paymentId || ['finished', 'confirmed', 'failed', 'expired'].includes(paymentStatus)) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/payments/status?paymentId=${generatedPayment.paymentId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status) {
+            setPaymentStatus(data.status);
+            if (['finished', 'confirmed'].includes(data.status)) {
+              setFeedback({ type: 'success', message: `Payment confirmed! +${generatedPayment.amount} USDT credited.` });
+              await fetchBalances();
+            } else if (['failed', 'expired'].includes(data.status)) {
+              setFeedback({ type: 'error', message: `Payment ${data.status}. Please try again.` });
+            }
+          }
+        }
+      } catch { /* silent polling failure */ }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [generatedPayment, paymentStatus]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText('TSwL9vQQZWPZbdMaWgV4B2Lizyu5Yw1rHp');
@@ -352,10 +392,44 @@ export default function DepositPage() {
                   </div>
                 </div>
 
+                {/* Payment Status Badge */}
                 <div className="text-center">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#16a34a]/10 text-[#16a34a] animate-pulse">
-                    ● Awaiting Network Confirmation
+                  <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
+                    paymentStatus === 'waiting' ? 'bg-amber-500/10 text-amber-600 animate-pulse' :
+                    paymentStatus === 'confirming' || paymentStatus === 'sending' ? 'bg-blue-500/10 text-blue-600 animate-pulse' :
+                    paymentStatus === 'finished' || paymentStatus === 'confirmed' ? 'bg-green-500/10 text-green-600' :
+                    'bg-red-500/10 text-red-600'
+                  }`}>
+                    ● {paymentStatus === 'waiting' ? 'Awaiting Payment' :
+                       paymentStatus === 'confirming' ? 'Confirming on Blockchain' :
+                       paymentStatus === 'sending' ? 'Processing...' :
+                       paymentStatus === 'finished' || paymentStatus === 'confirmed' ? 'Payment Confirmed ✓' :
+                       paymentStatus === 'expired' ? 'Invoice Expired' :
+                       paymentStatus === 'failed' ? 'Payment Failed' :
+                       paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
                   </span>
+                </div>
+
+                {/* Payment & Order IDs */}
+                <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-3 shadow-sm space-y-1.5">
+                  {generatedPayment.paymentId && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500 dark:text-slate-400">Payment ID</span>
+                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{generatedPayment.paymentId}</span>
+                    </div>
+                  )}
+                  {generatedPayment.expirationDate && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500 dark:text-slate-400">Expires</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-300">{new Date(generatedPayment.expirationDate).toLocaleString()}</span>
+                    </div>
+                  )}
+                  {generatedPayment.isMock && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-orange-500 font-bold">⚠ Sandbox Mode</span>
+                      <span className="text-orange-500 font-bold">Simulated Invoice</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Amount to Send */}
@@ -464,10 +538,10 @@ export default function DepositPage() {
                   )}
                 </Button>
 
-                {/* Static Alternative */}
+                {/* Static Fallback Wallet */}
                 <div className="border-t border-gray-150 dark:border-slate-800 pt-5">
-                  <div className="bg-[#F8FAFC] dark:bg-slate-800/40 rounded-2xl p-4 border border-gray-50 dark:border-slate-800">
-                    <h4 className="text-[13px] font-bold text-gray-800 dark:text-slate-200 mb-2">Or Direct Transfer (Static Wallet)</h4>
+                  <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl p-4 border border-amber-200/50 dark:border-amber-800/30">
+                    <h4 className="text-[13px] font-bold text-amber-800 dark:text-amber-300 mb-2">⚠ Fallback: Manual Support Wallet</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal mb-3">
                       Transfer directly to the Kyvatron static vault address. Deposits under this method require manual support ticket verification.
                     </p>
@@ -492,7 +566,7 @@ export default function DepositPage() {
                 {/* Balance & network info */}
                 <div className="bg-[#F8FAFC] dark:bg-slate-800/50 rounded-2xl p-5 border border-gray-50 dark:border-slate-800 space-y-3.5 text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between items-center text-xs">
-                    <span>Active Wallet balance</span>
+                    <span>Available USDT Balance</span>
                     <strong className="text-slate-800 dark:text-slate-200 font-bold">{loading ? '...' : `${balanceUSDT.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`}</strong>
                   </div>
                   <div className="flex justify-between items-center text-xs">

@@ -58,13 +58,28 @@ export default function HomePage() {
         // Fetch profile balances
         const { data: profile } = await supabase
           .from('profiles')
-          .select('balance_ngn, balance_usdt')
+          .select('balance_ngn, balance_usdt, nowpayments_sub_partner_id')
           .eq('id', user.id)
           .single();
           
         if (profile) {
           setBalanceNGN(Number(profile.balance_ngn) || 0);
           setBalanceUSDT(Number(profile.balance_usdt) || 0);
+          
+          // Background automated retry provisioning checkpoint
+          if (!profile.nowpayments_sub_partner_id) {
+            try {
+              fetch('/api/user/setup-wallet', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    console.log('Background wallet setup succeeded:', data.sub_partner_id);
+                  }
+                });
+            } catch (walletErr) {
+              console.warn('Background wallet setup attempt failed:', walletErr);
+            }
+          }
         }
 
         // Fetch investment balances

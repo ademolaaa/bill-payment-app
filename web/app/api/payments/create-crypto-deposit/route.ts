@@ -1,116 +1,108 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
+import {
+  nowPayments,
+  generateOrderId,
+  createMockPayment,
+  PAYMENT_STATUS,
+  type PaymentResponse,
+} from '../../../../lib/nowpayments';
+import { isNowPaymentsConfigured } from '../../../../lib/env';
 
 export async function POST(request: Request) {
   try {
-    // 1. Authenticate user
+    // ── 1. Authenticate user ─────────────────────────────────────────────────
     const supabase = createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse request body
+    // ── 2. Parse and validate request body ───────────────────────────────────
     const body = await request.json();
     const { amount } = body;
-    if (!amount || Number(amount) <= 0) {
+    const numericAmount = Number(amount);
+
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
       return NextResponse.json({ error: 'Invalid deposit amount' }, { status: 400 });
     }
 
-    // 3. Generate unique order ID
-    const timestamp = Date.now();
-    const orderId = `kyvatron-crypto-${user.id}-${timestamp}`;
+    if (numericAmount < 5) {
+      return NextResponse.json({ error: 'Minimum deposit is 5.00 USDT' }, { status: 400 });
+    }
 
-    const apiKey = process.env.NOWPAYMENTS_API_KEY;
-    
-    // We default to usdttrc20 for stable and low-fee transactions
+    // ── 3. Generate unique order ID ──────────────────────────────────────────
+    const orderId = generateOrderId(user.id);
     const payCurrency = 'usdttrc20';
 
-    // Build the dynamic callback URL for webhooks
+    // Build the dynamic callback URL
     const host = request.headers.get('host') || 'kyvatron.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const callbackUrl = `${protocol}://${host}/api/webhooks/nowpayments`;
 
-    // Initialize mock fallback indicator
+    // ── 4. Create payment (real or mock) ─────────────────────────────────────
+    let paymentData: PaymentResponse;
     let isMock = false;
-    let paymentData: any = null;
 
-    if (apiKey && apiKey !== 'mock_api_key' && apiKey.trim() !== '') {
+    if (isNowPaymentsConfigured()) {
       try {
-        const response = await fetch('https://api.nowpayments.io/v1/payment', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-          },
-          body: JSON.stringify({
-            price_amount: Number(amount),
-            price_currency: 'usd',
-            pay_currency: payCurrency,
-            ipn_callback_url: callbackUrl,
-            order_id: orderId,
-            order_description: `USDT TRC20 Wallet Deposit for user ${user.email}`,
-          }),
+        paymentData = await nowPayments.createPayment({
+          priceAmount: numericAmount,
+          priceCurrency: 'usd',
+          payCurrency,
+          ipnCallbackUrl: callbackUrl,
+          orderId,
+          orderDescription: `USDT TRC20 Wallet Deposit for user ${user.email}`,
         });
-
-        if (response.ok) {
-          paymentData = await response.json();
-        } else {
-          const errText = await response.text();
-          console.warn('NOWPayments API responded with an error, falling back to simulator:', errText);
-          isMock = true;
-        }
+        console.log(`[Crypto Deposit] Real payment created: payment_id=${paymentData.payment_id} order=${orderId}`);
       } catch (err) {
-        console.error('NOWPayments API connection failed, falling back to simulator:', err);
+        console.warn('[Crypto Deposit] NOWPayments API failed, falling back to mock:', err);
+        paymentData = createMockPayment(numericAmount, orderId, payCurrency);
         isMock = true;
       }
     } else {
-      // API Key is missing or empty, trigger simulated high-fidelity mode
+      console.log('[Crypto Deposit] NOWPayments not configured, using mock payment.');
+      paymentData = createMockPayment(numericAmount, orderId, payCurrency);
       isMock = true;
     }
 
-    if (isMock) {
-      // Return a simulated NOWPayments invoice response matching actual schema parameters
-      paymentData = {
-        payment_id: `mock-pay-${Math.random().toString(36).substr(2, 9)}`,
-        payment_status: 'waiting',
-        pay_address: 'T9yD14Nj9y7xAB4dbGeiX9h8unkKHxuWwb', // High fidelity mock TRC20 address
-        price_amount: Number(amount),
-        price_currency: 'usd',
-        pay_amount: Number(amount),
-        pay_currency: payCurrency,
-        order_id: orderId,
-        created_at: new Date().toISOString(),
-        is_mock: true,
-      };
-    }
-
-    // 4. Record initial pending deposit inside the DB
+    // ── 5. Store initial deposit record in DB ────────────────────────────────
     const { error: dbError } = await supabase.from('crypto_deposits').insert({
+      user_id: user.id,
       order_id: orderId,
-      status: 'waiting',
-      fiat_amount: Number(amount),
+      payment_id: paymentData.payment_id?.toString() || null,
+      status: PAYMENT_STATUS.WAITING,
+      fiat_amount: numericAmount,
       fiat_currency: 'usd',
-      crypto_amount: Number(amount),
+      crypto_amount: paymentData.pay_amount || numericAmount,
       crypto_currency: payCurrency,
-      metadata: { ...paymentData, user_email: user.email },
+      pay_address: paymentData.pay_address || null,
+      metadata: {
+        ...paymentData,
+        user_email: user.email,
+        is_mock: isMock,
+      },
     });
 
     if (dbError) {
-      console.error('Failed to insert initial crypto deposit record:', dbError);
+      console.error('[Crypto Deposit] DB insert failed:', dbError);
+      // Don't fail the request — the payment was already created upstream
     }
 
+    // ── 6. Return payment details to frontend ────────────────────────────────
     return NextResponse.json({
       success: true,
-      paymentId: paymentData.payment_id,
-      payAddress: paymentData.pay_address,
-      amount: paymentData.pay_amount,
-      currency: paymentData.pay_currency.toUpperCase(),
-      orderId: orderId,
-      isMock: isMock,
+      paymentId: paymentData.payment_id?.toString() || null,
+      paymentStatus: paymentData.payment_status || PAYMENT_STATUS.WAITING,
+      payAddress: paymentData.pay_address || null,
+      amount: paymentData.pay_amount || numericAmount,
+      currency: (paymentData.pay_currency || payCurrency).toUpperCase(),
+      orderId,
+      expirationDate: paymentData.expiration_estimate_date || null,
+      isMock,
     });
   } catch (error: any) {
-    console.error('Create crypto deposit exception:', error);
+    console.error('[Crypto Deposit] Unhandled exception:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

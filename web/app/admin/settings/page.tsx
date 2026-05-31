@@ -29,6 +29,28 @@ function SettingsPageContent() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [logQuery, setLogQuery] = useState('');
+  
+  // NOWPayments Connection and Hook statistics state
+  const [nowpaymentsHealth, setNowpaymentsHealth] = useState<any>(null);
+  const [loadingHealth, setLoadingHealth] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (activeTab === 'security') {
+      setLoadingHealth(true);
+      fetch('/api/admin/gateway-health')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setNowpaymentsHealth(data);
+          }
+          setLoadingHealth(false);
+        })
+        .catch(err => {
+          console.error('Error fetching NOWPayments health stats:', err);
+          setLoadingHealth(false);
+        });
+    }
+  }, [activeTab]);
 
   // Filter audit logs
   const filteredLogs = logs.filter((log) => {
@@ -361,6 +383,127 @@ function SettingsPageContent() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* NOWPayments Gateway Health & Connectivity Section */}
+            <div className="pt-6 mt-6 border-t border-slate-150 dark:border-slate-800 space-y-4">
+              <div className="space-y-1 select-none">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <h4 className="text-[13px] font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                    ⚡ NOWPayments Gateway Connectivity & Health
+                  </h4>
+                </div>
+                <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-normal">
+                  Real-time connection checks and webhook transaction processing health logs for USDT (TRC20) deposits.
+                </p>
+              </div>
+
+              {loadingHealth ? (
+                <div className="p-6 bg-slate-50 dark:bg-[#11161d] rounded-2xl border border-slate-100 dark:border-slate-800/80 text-center text-xs text-slate-400 dark:text-slate-500 animate-pulse font-bold">
+                  Evaluating gateway nodes and fetching statistics...
+                </div>
+              ) : nowpaymentsHealth ? (
+                <div className="space-y-4">
+                  {/* Status Indicators Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3 bg-slate-50 dark:bg-[#11161d] border border-slate-100 dark:border-slate-800/60 rounded-xl flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Connection Status</span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                        nowpaymentsHealth.webhookEndpointHealthy
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-amber-500/10 text-amber-500'
+                      }`}>
+                        {nowpaymentsHealth.webhookEndpointHealthy ? 'Connected' : 'Degraded'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 dark:bg-[#11161d] border border-slate-100 dark:border-slate-800/60 rounded-xl flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">API Credentials</span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                        nowpaymentsHealth.apiKeyConfigured
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-rose-500/10 text-rose-500'
+                      }`}>
+                        {nowpaymentsHealth.apiKeyConfigured ? 'Configured' : 'Missing Key'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 dark:bg-[#11161d] border border-slate-100 dark:border-slate-800/60 rounded-xl flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-bold text-slate-400">IPN Webhook Secret</span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                        nowpaymentsHealth.ipnSecretConfigured
+                          ? 'bg-emerald-500/10 text-emerald-500'
+                          : 'bg-rose-500/10 text-rose-500'
+                      }`}>
+                        {nowpaymentsHealth.ipnSecretConfigured ? 'Configured' : 'Missing Secret'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Operational Settings Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] font-bold text-slate-650 dark:text-slate-350">
+                    <div className="p-3.5 bg-slate-50 dark:bg-[#11161d]/60 border border-slate-100 dark:border-slate-850/60 rounded-xl flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="block text-slate-800 dark:text-slate-200">USDT Wallet Provisioning</span>
+                        <span className="text-[9px] text-slate-400 font-medium block">Autocreated on user registration</span>
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active</span>
+                    </div>
+
+                    <div className="p-3.5 bg-slate-50 dark:bg-[#11161d]/60 border border-slate-100 dark:border-slate-850/60 rounded-xl flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="block text-slate-800 dark:text-slate-200">Crypto Deposit Processing</span>
+                        <span className="text-[9px] text-slate-400 font-medium block">Accepting TRC20 payments</span>
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active</span>
+                    </div>
+                  </div>
+
+                  {/* Transaction Stats */}
+                  <div className="p-4 bg-slate-50 dark:bg-[#11161d] border border-slate-100 dark:border-slate-800/80 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between select-none">
+                      <span className="text-[10px] uppercase font-black text-slate-400">Webhook Ledger Statistics</span>
+                      {nowpaymentsHealth.stats.lastEventTime && (
+                        <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">
+                          Last activity: {new Date(nowpaymentsHealth.stats.lastEventTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-lg">
+                        <span className="text-slate-400 text-[9px] block uppercase font-bold">Total Invoices</span>
+                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100 block mt-0.5">
+                          {nowpaymentsHealth.stats.total}
+                        </span>
+                      </div>
+                      <div className="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-lg">
+                        <span className="text-emerald-500 text-[9px] block uppercase font-bold">Successful</span>
+                        <span className="text-sm font-extrabold text-emerald-500 block mt-0.5">
+                          {nowpaymentsHealth.stats.successful}
+                        </span>
+                      </div>
+                      <div className="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-lg">
+                        <span className="text-amber-500 text-[9px] block uppercase font-bold">Pending</span>
+                        <span className="text-sm font-extrabold text-amber-500 block mt-0.5">
+                          {nowpaymentsHealth.stats.pending}
+                        </span>
+                      </div>
+                      <div className="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-lg">
+                        <span className="text-rose-500 text-[9px] block uppercase font-bold">Failed</span>
+                        <span className="text-sm font-extrabold text-rose-500 block mt-0.5">
+                          {nowpaymentsHealth.stats.failed}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl text-xs font-semibold text-center select-none">
+                  Failed to verify NOWPayments gateway health diagnostics.
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,167 +1,233 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
-import crypto from 'crypto';
+import {
+  verifyWebhookSignature,
+  parseUserIdFromOrderId,
+  isSuccessfulStatus,
+  isTerminalStatus,
+  PAYMENT_STATUS,
+} from '../../../../lib/nowpayments';
+import { isIpnSecretConfigured, isSandboxMode } from '../../../../lib/env';
 
 export async function POST(request: Request) {
-  const ipnSecret = process.env.NOWPAYMENTS_IPN_SECRET;
-
-  if (!ipnSecret) {
-    console.error('NOWPayments IPN: NOWPAYMENTS_IPN_SECRET is not configured.');
+  // ── 0. Pre-flight: IPN secret must be configured ─────────────────────────
+  if (!isIpnSecretConfigured()) {
+    console.error('[NOWPayments IPN] NOWPAYMENTS_IPN_SECRET is not configured.');
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 
-  // 1. Validate the HMAC-SHA512 signature from NOWPayments
+  // ── 1. Read raw body and signature header ────────────────────────────────
   const receivedSignature = request.headers.get('x-nowpayments-sig');
   if (!receivedSignature) {
-    console.warn('NOWPayments IPN: missing signature header.');
+    console.warn('[NOWPayments IPN] Missing x-nowpayments-sig header.');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const rawBody = await request.text();
-  let isSignatureValid = false;
 
-  try {
-    const expectedSignature = crypto
-      .createHmac('sha512', ipnSecret)
-      .update(
-        // NOWPayments requires the payload to be sorted by key
-        JSON.stringify(JSON.parse(rawBody), Object.keys(JSON.parse(rawBody)).sort())
-      )
-      .digest('hex');
+  // ── 2. Verify HMAC-SHA512 signature ──────────────────────────────────────
+  let isSignatureValid = verifyWebhookSignature(rawBody, receivedSignature);
 
-    // timing-safe comparison to protect against timing attacks
-    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-    const receivedBuffer = Buffer.from(receivedSignature, 'hex');
-
-    if (expectedBuffer.length === receivedBuffer.length && crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {
+  // Sandbox bypass: ONLY in development/test mode, allow test signatures
+  if (!isSignatureValid && isSandboxMode()) {
+    const testSignatures = ['sandbox-test-signature', 'mock-sig'];
+    if (testSignatures.includes(receivedSignature)) {
+      console.log('[NOWPayments IPN] Sandbox signature bypass active (dev/test only).');
       isSignatureValid = true;
     }
-  } catch (e) {
-    // catch encoding or length mismatch errors
-  }
-
-  // Support local / QA sandbox testing signature bypass override
-  if (!isSignatureValid && (receivedSignature === 'sandbox-test-signature' || receivedSignature === 'mock-sig')) {
-    console.log('NOWPayments IPN: Signature bypassed via sandbox override.');
-    isSignatureValid = true;
   }
 
   if (!isSignatureValid) {
-    console.warn('NOWPayments IPN: signature mismatch.');
+    console.warn('[NOWPayments IPN] Signature verification failed.');
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // ── 3. Parse and validate payload ────────────────────────────────────────
+  let payload: any;
   try {
-    const payload = JSON.parse(rawBody);
-    const { payment_status, order_id, price_amount, price_currency, actually_paid, pay_currency } = payload;
+    payload = JSON.parse(rawBody);
+  } catch {
+    console.error('[NOWPayments IPN] Failed to parse request body as JSON.');
+    return NextResponse.json({ error: 'Bad Request' }, { status: 400 });
+  }
 
-    // Parse user_id from order_id (format: kyvatron-crypto-{userId}-{timestamp})
-    let userId = '';
-    if (order_id && order_id.startsWith('kyvatron-crypto-')) {
-      const parts = order_id.split('-');
-      if (parts.length >= 4) {
-        userId = parts[2];
-      }
-    }
+  const {
+    payment_id,
+    payment_status,
+    order_id,
+    price_amount,
+    price_currency,
+    actually_paid,
+    pay_currency,
+    pay_address,
+  } = payload;
 
-    if (!userId) {
-      console.error('NOWPayments IPN: Could not parse userId from order_id:', order_id);
-      return NextResponse.json({ error: 'Invalid order ID format' }, { status: 400 });
-    }
+  if (!order_id || !payment_status) {
+    console.error('[NOWPayments IPN] Missing required fields: order_id or payment_status.');
+    return NextResponse.json({ error: 'Bad Request' }, { status: 400 });
+  }
 
-    const supabase = createClient();
+  // ── 4. Parse userId from order_id ────────────────────────────────────────
+  // CRITICAL FIX: UUIDs contain hyphens. Previous code used split('-')[2]
+  // which only captured the first UUID segment. Now using a robust parser.
+  const userId = parseUserIdFromOrderId(order_id);
 
-    // 2. IDEMPOTENCY CHECK: Ensure we haven't already credited this deposit
+  if (!userId) {
+    console.error('[NOWPayments IPN] Could not parse userId from order_id:', order_id);
+    return NextResponse.json({ error: 'Invalid order ID format' }, { status: 400 });
+  }
+
+  console.log(`[NOWPayments IPN] Received: order=${order_id} status=${payment_status} payment_id=${payment_id} user=${userId}`);
+
+  const supabase = createClient();
+
+  try {
+    // ── 5. Idempotency check ─────────────────────────────────────────────────
     const { data: existingDeposit } = await supabase
       .from('crypto_deposits')
-      .select('status')
+      .select('status, credited_at')
       .eq('order_id', order_id)
       .maybeSingle();
 
-    if (existingDeposit && ['confirmed', 'finished'].includes(existingDeposit.status)) {
-      console.log(`NOWPayments IPN: Duplicate webhook for order_id ${order_id}. Already credited.`);
+    // If already credited (finished/confirmed with credited_at), return early
+    if (existingDeposit && isSuccessfulStatus(existingDeposit.status) && existingDeposit.credited_at) {
+      console.log(`[NOWPayments IPN] Duplicate webhook for order_id ${order_id}. Already credited at ${existingDeposit.credited_at}.`);
       return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
     }
 
-    // Only process confirmed or finished payments to update profile balance
-    if (!['confirmed', 'finished'].includes(payment_status)) {
-      // Just update status of the initial pending deposit record
-      await supabase.from('crypto_deposits').upsert(
+    // ── 6. Non-terminal status: just update deposit record ───────────────────
+    if (!isSuccessfulStatus(payment_status)) {
+      const { error: upsertError } = await supabase.from('crypto_deposits').upsert(
         {
           order_id,
+          user_id: userId,
+          payment_id: payment_id?.toString() || null,
           status: payment_status,
-          fiat_amount: Number(price_amount),
-          fiat_currency: price_currency,
-          crypto_amount: Number(actually_paid || price_amount),
-          crypto_currency: pay_currency,
+          fiat_amount: Number(price_amount) || 0,
+          fiat_currency: price_currency || 'usd',
+          crypto_amount: Number(actually_paid || price_amount) || 0,
+          crypto_currency: pay_currency || 'usdttrc20',
+          pay_address: pay_address || null,
           metadata: payload,
+          updated_at: new Date().toISOString(),
         },
         { onConflict: 'order_id' }
       );
+
+      if (upsertError) {
+        console.error('[NOWPayments IPN] Upsert error for non-terminal status:', upsertError);
+      }
+
+      console.log(`[NOWPayments IPN] Updated deposit status to '${payment_status}' for order ${order_id}.`);
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
-    // 3. Update deposit status inside DB
+    // ── 7. Successful payment: update deposit record ─────────────────────────
     const { error: upsertError } = await supabase.from('crypto_deposits').upsert(
       {
         order_id,
+        user_id: userId,
+        payment_id: payment_id?.toString() || null,
         status: payment_status,
-        fiat_amount: Number(price_amount),
-        fiat_currency: price_currency,
-        crypto_amount: Number(actually_paid || price_amount),
-        crypto_currency: pay_currency,
+        fiat_amount: Number(price_amount) || 0,
+        fiat_currency: price_currency || 'usd',
+        crypto_amount: Number(actually_paid || price_amount) || 0,
+        crypto_currency: pay_currency || 'usdttrc20',
+        pay_address: pay_address || null,
         metadata: payload,
+        updated_at: new Date().toISOString(),
       },
       { onConflict: 'order_id' }
     );
 
     if (upsertError) {
-      console.error('NOWPayments IPN DB upsert error:', upsertError);
+      console.error('[NOWPayments IPN] Upsert error for successful status:', upsertError);
     }
 
-    // 4. Retrieve current balance to execute an atomic increment update
-    const { data: profile, error: profileFetchError } = await supabase
-      .from('profiles')
-      .select('balance_usdt')
-      .eq('id', userId)
-      .single();
-
-    if (profileFetchError || !profile) {
-      console.error('NOWPayments IPN: Profile fetch failed or user not found:', userId);
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+    // ── 8. Atomic balance credit via RPC ─────────────────────────────────────
+    // Uses the credit_usdt_deposit function which:
+    // - Locks the deposit row (prevents double-credit)
+    // - Locks the profile row (prevents race conditions)
+    // - Only credits if not already credited
+    const creditAmount = Number(price_amount) || 0;
+    if (creditAmount <= 0) {
+      console.error('[NOWPayments IPN] Invalid credit amount:', creditAmount);
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
     }
 
-    const currentUsdt = Number(profile.balance_usdt) || 0;
-    const newUsdt = currentUsdt + Number(price_amount);
+    const { data: newBalance, error: rpcError } = await supabase.rpc('credit_usdt_deposit', {
+      p_user_id: userId,
+      p_order_id: order_id,
+      p_amount: creditAmount,
+      p_payment_id: payment_id?.toString() || null,
+    });
 
-    const { error: balanceUpdateError } = await supabase
-      .from('profiles')
-      .update({ balance_usdt: newUsdt })
-      .eq('id', userId);
+    if (rpcError) {
+      console.error('[NOWPayments IPN] RPC credit_usdt_deposit failed:', rpcError);
+      
+      // Fallback: manual update if RPC doesn't exist yet (migration not applied)
+      console.log('[NOWPayments IPN] Attempting manual balance update fallback...');
+      
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('balance_usdt')
+        .eq('id', userId)
+        .single();
 
-    if (balanceUpdateError) {
-      console.error('NOWPayments IPN: Failed to update user balance:', balanceUpdateError);
-      return NextResponse.json({ error: 'Failed to update balance' }, { status: 500 });
+      if (profileError || !profile) {
+        console.error('[NOWPayments IPN] User profile not found:', userId);
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      const currentUsdt = Number(profile.balance_usdt) || 0;
+      const updatedUsdt = currentUsdt + creditAmount;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ balance_usdt: updatedUsdt, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error('[NOWPayments IPN] Manual balance update failed:', updateError);
+        return NextResponse.json({ error: 'Balance update failed' }, { status: 500 });
+      }
+
+      // Mark as credited in deposits table
+      await supabase.from('crypto_deposits').update({
+        credited_at: new Date().toISOString(),
+        status: 'finished',
+      }).eq('order_id', order_id);
     }
 
-    // 5. Create a transaction log record for recent activity list
+    // ── 9. Create transaction log entry ──────────────────────────────────────
+    const txRef = `kyvatron-crypto-deposit-${order_id}-${Date.now()}`;
     const { error: txInsertError } = await supabase.from('transactions').insert({
       user_id: userId,
+      tx_ref: txRef,
       type: 'deposit',
-      amount: Number(price_amount),
+      amount: creditAmount,
       currency: 'USDT',
       status: 'successful',
-      description: `USDT Deposit via NOWPayments (${pay_currency?.toUpperCase() || 'USDTTRC20'})`
+      description: `USDT Deposit via NOWPayments (${pay_currency?.toUpperCase() || 'USDTTRC20'})`,
+      metadata: {
+        payment_id,
+        order_id,
+        actually_paid: actually_paid || price_amount,
+        pay_currency,
+        source: 'nowpayments_ipn',
+      },
     });
 
     if (txInsertError) {
-      console.error('NOWPayments IPN: Failed to insert recent transaction record:', txInsertError);
+      // tx_ref unique constraint may fire if webhook retries — this is safe to ignore
+      console.warn('[NOWPayments IPN] Transaction insert warning:', txInsertError.message);
     }
 
-    console.log(`NOWPayments IPN: Successfully processed payment for user ${userId}. Credited +${price_amount} USDT.`);
+    console.log(`[NOWPayments IPN] ✅ Successfully credited +${creditAmount} USDT to user ${userId}. Order: ${order_id}`);
     return NextResponse.json({ received: true }, { status: 200 });
+
   } catch (error: any) {
-    console.error('NOWPayments IPN processing error:', error);
+    console.error('[NOWPayments IPN] Unhandled error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
