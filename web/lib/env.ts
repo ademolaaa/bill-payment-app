@@ -67,9 +67,16 @@ export function getNowPaymentsIpnSecret(throwOnMissing = false): string {
 
 /**
  * Returns true if we are running in development/sandbox mode.
+ * On production deployments like Vercel, this returns true if real NOWPayments
+ * API keys and webhook secrets have not been configured yet (i.e. using mock values).
  */
 export function isSandboxMode(): boolean {
-  return process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+  return (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'test' ||
+    !isNowPaymentsConfigured() ||
+    !isIpnSecretConfigured()
+  );
 }
 
 /**
