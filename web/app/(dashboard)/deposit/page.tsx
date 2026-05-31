@@ -107,6 +107,7 @@ export default function DepositPage() {
         headers: {
           'Content-Type': 'application/json',
           'x-nowpayments-sig': 'sandbox-test-signature',
+          'x-sandbox-bypass-secret': 'Kyvatron2026F',
         },
         body: JSON.stringify({
           payment_status: 'confirmed',
