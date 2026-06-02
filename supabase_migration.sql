@@ -27,6 +27,8 @@ DROP FUNCTION IF EXISTS reverse_bill_payment;
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
+  email TEXT,
+  phone TEXT,
   avatar_url TEXT,
   kyc_status TEXT NOT NULL DEFAULT 'unverified',
   nowpayments_sub_partner_id TEXT,
@@ -38,6 +40,8 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 -- Ensure non-negative constraints and columns exist if table already exists
 ALTER TABLE profiles 
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS phone TEXT,
   ADD COLUMN IF NOT EXISTS balance_ngn NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
   ADD COLUMN IF NOT EXISTS balance_usdt NUMERIC(18, 8) NOT NULL DEFAULT 0.00000000,
   ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -58,10 +62,12 @@ END $$;
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, balance_ngn, balance_usdt)
+  INSERT INTO public.profiles (id, full_name, email, phone, balance_ngn, balance_usdt)
   VALUES (
     NEW.id,
     NEW.raw_user_meta_data->>'full_name',
+    NEW.email,
+    coalesce(NEW.phone, NEW.raw_user_meta_data->>'phone'),
     0.00,
     0.00
   )

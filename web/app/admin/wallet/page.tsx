@@ -17,7 +17,8 @@ import {
   Plus,
   Minus,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Coins
 } from 'lucide-react';
 
 export default function WalletPage() {
@@ -26,6 +27,7 @@ export default function WalletPage() {
   
   // Selection & Form state
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [currency, setCurrency] = useState<'NGN' | 'USDT'>('NGN');
   const [adjustType, setAdjustType] = useState<'credit' | 'debit'>('credit');
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustReason, setAdjustReason] = useState('');
@@ -33,6 +35,7 @@ export default function WalletPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const totalFloat = stats.walletFloat;
+  const totalFloatUsdt = stats.walletFloatUsdt || 0;
   const selectedUser = users.find(u => u.id === selectedUserId);
 
   const handleAdjustBalance = (e: React.FormEvent) => {
@@ -54,9 +57,12 @@ export default function WalletPage() {
     const u = users.find(cust => cust.id === selectedUserId);
     if (!u) return;
 
-    if (adjustType === 'debit' && u.walletBalance < amountNum) {
-      alert('Insufficient wallet float balance to execute debit deduction!');
-      return;
+    if (adjustType === 'debit') {
+      const balance = currency === 'USDT' ? (u.usdtBalance || 0) : u.walletBalance;
+      if (balance < amountNum) {
+        alert(`Insufficient ${currency} wallet balance to execute debit deduction!`);
+        return;
+      }
     }
 
     setShowConfirmModal(true);
@@ -66,8 +72,9 @@ export default function WalletPage() {
     if (!selectedUserId) return;
     const amountNum = parseFloat(adjustAmount);
     try {
-      adjustUserBalance(selectedUserId, amountNum, adjustType, adjustReason);
-      setSuccessMsg(`Wallet successfully ${adjustType === 'credit' ? 'credited' : 'debited'} by ₦${amountNum.toLocaleString()}!`);
+      adjustUserBalance(selectedUserId, amountNum, adjustType, adjustReason, currency);
+      const symbol = currency === 'USDT' ? '$' : '₦';
+      setSuccessMsg(`Wallet successfully ${adjustType === 'credit' ? 'credited' : 'debited'} by ${symbol}${amountNum.toLocaleString()} ${currency}!`);
       setAdjustAmount('');
       setAdjustReason('');
       setShowConfirmModal(false);
@@ -121,21 +128,30 @@ export default function WalletPage() {
 
       {/* 2. STAT CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 select-none font-sans">
-        <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Total Outstanding Float</span>
-          <span className="text-2xl font-black font-mono mt-2 block text-slate-800 dark:text-slate-100">
+        <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl relative overflow-hidden">
+          <div className="absolute right-3 top-3 p-1.5 bg-blue-500/10 text-blue-500 rounded-lg">
+            <Coins className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Outstanding NGN Float</span>
+          <span className="text-2xl font-black font-mono mt-2 block text-slate-850 dark:text-slate-100">
             ₦{totalFloat.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
           </span>
         </div>
-        <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Average Customer Balance</span>
-          <span className="text-2xl font-black font-mono mt-2 block text-slate-800 dark:text-slate-100">
-            ₦{users.length > 0 ? (totalFloat / users.length).toLocaleString('en-NG', { minimumFractionDigits: 2 }) : '0.00'}
+        <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl relative overflow-hidden">
+          <div className="absolute right-3 top-3 p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg">
+            <Coins className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Outstanding USDT Float</span>
+          <span className="text-2xl font-black font-mono mt-2 block text-slate-850 dark:text-slate-100">
+            ${totalFloatUsdt.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT
           </span>
         </div>
-        <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl">
+        <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl relative overflow-hidden">
+          <div className="absolute right-3 top-3 p-1.5 bg-cyan-500/10 text-cyan-500 rounded-lg">
+            <Activity className="w-5 h-5" />
+          </div>
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Total Financed Accounts</span>
-          <span className="text-2xl font-black font-mono mt-2 block text-slate-800 dark:text-slate-100">
+          <span className="text-2xl font-black font-mono mt-2 block text-slate-850 dark:text-slate-100">
             {users.length} Active
           </span>
         </div>
@@ -174,13 +190,42 @@ export default function WalletPage() {
                 <option value="">Select a customer user...</option>
                 {users.map(u => (
                   <option key={u.id} value={u.id}>
-                    {u.fullName} (₦{u.walletBalance.toLocaleString()})
+                    {u.fullName} (₦{u.walletBalance.toLocaleString()} | ${(u.usdtBalance || 0).toLocaleString()} USDT)
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* ADJUSTMENT TYPE */}
+            {/* CURRENCY SELECTOR */}
+            <div className="space-y-1.5">
+              <label className="text-slate-400 uppercase tracking-widest block">Operational Currency</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrency('NGN')}
+                  className={`py-2 px-4 rounded-xl border flex items-center justify-center gap-1.5 transition-colors font-bold uppercase ${
+                    currency === 'NGN'
+                      ? 'border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10 text-blue-500'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117]/30 text-slate-450'
+                  }`}
+                >
+                  NGN (Naira)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrency('USDT')}
+                  className={`py-2 px-4 rounded-xl border flex items-center justify-center gap-1.5 transition-colors font-bold uppercase ${
+                    currency === 'USDT'
+                      ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-500'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117]/30 text-slate-450'
+                  }`}
+                >
+                  USDT (Trc20)
+                </button>
+              </div>
+            </div>
+
+            {/* ADJUSTMENT DIRECTION */}
             <div className="space-y-1.5">
               <label className="text-slate-400 uppercase tracking-widest block">Adjustment Direction</label>
               <div className="grid grid-cols-2 gap-2">
@@ -190,7 +235,7 @@ export default function WalletPage() {
                   className={`py-2 px-4 rounded-xl border flex items-center justify-center gap-1.5 transition-colors font-bold uppercase ${
                     adjustType === 'credit'
                       ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-500'
-                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117]/30 text-slate-400'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117]/30 text-slate-450'
                   }`}
                 >
                   <Plus className="w-4 h-4" />
@@ -202,7 +247,7 @@ export default function WalletPage() {
                   className={`py-2 px-4 rounded-xl border flex items-center justify-center gap-1.5 transition-colors font-bold uppercase ${
                     adjustType === 'debit'
                       ? 'border-rose-500/30 bg-rose-500/5 dark:bg-rose-500/10 text-rose-500'
-                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117]/30 text-slate-400'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0d1117]/30 text-slate-450'
                   }`}
                 >
                   <Minus className="w-4 h-4" />
@@ -213,13 +258,15 @@ export default function WalletPage() {
 
             {/* AMOUNT */}
             <div className="space-y-1.5">
-              <label className="text-slate-400 uppercase tracking-widest block">Adjustment Amount (NGN)</label>
+              <label className="text-slate-400 uppercase tracking-widest block">Adjustment Amount ({currency})</label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 font-bold text-slate-400">₦</span>
+                <span className="absolute left-3 top-2.5 font-bold text-slate-400">
+                  {currency === 'USDT' ? '$' : '₦'}
+                </span>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="e.g. 5000"
+                  placeholder={currency === 'USDT' ? 'e.g. 10.00' : 'e.g. 5000'}
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
                   className="w-full pl-7 pr-4 py-2.5 bg-slate-50 dark:bg-[#0d1117] text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-cyan-500 font-mono font-bold"
@@ -276,8 +323,8 @@ export default function WalletPage() {
               <thead className="bg-slate-50 dark:bg-[#1c2128] text-slate-400 uppercase font-bold select-none">
                 <tr>
                   <th className="p-3">Customer User</th>
-                  <th className="p-3">Email Address</th>
-                  <th className="p-3 text-right">Float Balance</th>
+                  <th className="p-3 text-right">NGN Balance</th>
+                  <th className="p-3 text-right">USDT Balance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-transparent">
@@ -288,16 +335,19 @@ export default function WalletPage() {
                       onClick={() => setSelectedUserId(cust.id)}
                       className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/30 cursor-pointer transition-colors ${
                         selectedUserId === cust.id
-                          ? 'bg-cyan-550/5 dark:bg-cyan-500/5 border-l-2 border-cyan-500'
+                          ? 'bg-cyan-500/5 border-l-2 border-cyan-500'
                           : ''
                       }`}
                     >
-                      <td className="p-3 font-extrabold text-slate-800 dark:text-slate-100">
-                        {cust.fullName}
+                      <td className="p-3">
+                        <div className="font-extrabold text-slate-800 dark:text-slate-100">{cust.fullName}</div>
+                        <div className="text-[10px] text-slate-400 font-medium leading-normal mt-0.5">{cust.email}</div>
                       </td>
-                      <td className="p-3 font-medium text-slate-500 dark:text-slate-400 break-all">{cust.email}</td>
                       <td className="p-3 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
                         ₦{cust.walletBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        ${(cust.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT
                       </td>
                     </tr>
                   ))
@@ -351,13 +401,13 @@ export default function WalletPage() {
                 <span className={`uppercase font-black ${
                   adjustType === 'credit' ? 'text-emerald-500' : 'text-rose-500'
                 }`}>
-                  Manual Wallet {adjustType === 'credit' ? 'Credit' : 'Debit'}
+                  Manual Wallet {adjustType === 'credit' ? 'Credit' : 'Debit'} ({currency})
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Amount to {adjustType === 'credit' ? 'Credit' : 'Debit'}:</span>
-                <span className="font-mono font-black text-slate-850 dark:text-slate-100 text-sm">
-                  ₦{parseFloat(adjustAmount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                <span className="font-mono font-black text-slate-855 dark:text-slate-100 text-sm">
+                  {currency === 'USDT' ? '$' : '₦'}{parseFloat(adjustAmount).toLocaleString(currency === 'USDT' ? 'en-US' : 'en-NG', { minimumFractionDigits: 2 })} {currency}
                 </span>
               </div>
               <div className="flex justify-between items-start border-t border-slate-100 dark:border-slate-800 pt-3">

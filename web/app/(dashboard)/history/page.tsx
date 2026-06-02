@@ -386,7 +386,10 @@ export default function HistoryPage() {
           <div className="divide-y divide-gray-100 dark:divide-slate-800">
             {filteredTransactions.map((tx) => {
               const isPositive = tx.type === 'deposit' || tx.type === 'refund';
-              const formattedAmount = tx.currency === 'USDT'
+              const isUsdt = tx.currency?.toUpperCase() === 'USDT' || 
+                             tx.description?.includes('USDT') || 
+                             tx.description?.toLowerCase().includes('nowpayments');
+              const formattedAmount = isUsdt
                 ? `$${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
                 : new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(tx.amount));
               
@@ -407,6 +410,63 @@ export default function HistoryPage() {
               if (tx.type === 'conversion') displayDescription = `Convert ${tx.currency}`;
               if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
 
+              const isInvestment = tx.type === 'withdrawal' && (
+                tx.tx_ref?.startsWith('kyvatron-invest') || 
+                tx.description?.toLowerCase().includes('investment') || 
+                tx.description?.toLowerCase().includes('roi')
+              );
+
+              // Define 5 distinct styles
+              let iconBg = 'bg-[#0047FF]';
+              let iconSvg = (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              );
+              let displayType = tx.type;
+
+              if (isPositive) {
+                iconBg = 'bg-[#16A34A]';
+                iconSvg = (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                );
+                displayType = tx.type === 'deposit' ? 'Deposit' : 'Refund';
+              } else if (isInvestment) {
+                iconBg = 'bg-amber-500';
+                iconSvg = (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                );
+                displayType = 'Investment';
+              } else if (tx.type === 'conversion') {
+                iconBg = 'bg-purple-600';
+                iconSvg = (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                );
+                displayType = 'Conversion';
+              } else if (tx.type === 'bill_payment') {
+                iconBg = 'bg-sky-600';
+                iconSvg = (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                );
+                displayType = 'Bill Payment';
+              } else if (tx.type === 'withdrawal') {
+                iconBg = 'bg-red-500';
+                iconSvg = (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                );
+                displayType = 'Withdrawal';
+              }
+
               return (
                 <Link 
                   href={`/history/${tx.id}`} 
@@ -414,16 +474,12 @@ export default function HistoryPage() {
                   className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer block"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${
-                      isPositive ? 'bg-[#16A34A]' : 'bg-[#0047FF]'
-                    }`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={isPositive ? "M5 10l7-7m0 0l7 7m-7-7v18" : "M19 14l-7 7m0 0l-7-7m7 7V3"} />
-                      </svg>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${iconBg}`}>
+                      {iconSvg}
                     </div>
                     <div>
                       <h4 className="text-[15px] font-bold text-[#0F172A] dark:text-white mb-0.5 capitalize">
-                        {tx.type === 'conversion' ? 'Conversion' : tx.type === 'bill_payment' ? 'Bill Payment' : tx.type}
+                        {displayType}
                       </h4>
                       <p className="text-[13px] text-[#475569] dark:text-slate-400 mb-0.5">{displayDescription}</p>
                       <p className="text-[11px] text-[#64748B] dark:text-slate-500">{txDateStr}</p>

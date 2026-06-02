@@ -62,7 +62,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     
     let msg = '';
     if (actionName === 'retry') msg = `Transaction manual retry triggered for ${transaction.reference}.`;
-    if (actionName === 'reverse') msg = `₦${transaction.amount.toLocaleString()} reversed to user wallet successfully.`;
+    if (actionName === 'reverse') {
+      const isUsdt = transaction.currency === 'USDT' || transaction.serviceType === 'USDT_DEPOSIT' || transaction.reference.toLowerCase().includes('usdt') || transaction.provider === 'NOWPayments';
+      msg = isUsdt 
+        ? `$${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT reversed to user wallet successfully.`
+        : `₦${transaction.amount.toLocaleString()} reversed to user wallet successfully.`;
+    }
     if (actionName === 'receipt') msg = `PDF receipt generated for reference ${transaction.reference}.`;
     
     setToastMessage(msg);
@@ -161,7 +166,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Charged Amount</span>
               <span className="text-base font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight block mt-1">
-                ₦{transaction.amount.toLocaleString()}
+                {transaction.currency === 'USDT' || transaction.serviceType === 'USDT_DEPOSIT' || transaction.reference.toLowerCase().includes('usdt') || transaction.provider === 'NOWPayments'
+                  ? `$${transaction.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`
+                  : `₦${transaction.amount.toLocaleString()}`
+                }
               </span>
             </div>
             <div>

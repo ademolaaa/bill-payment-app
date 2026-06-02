@@ -174,22 +174,46 @@ export default function AdminOverviewPage() {
           <StatCards stats={stats} />
           
           <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
-                  <DollarSign className="w-5 h-5" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-150 dark:divide-slate-800">
+              {/* NGN Profit Split */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-500 shrink-0">
+                    <DollarSign className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">NGN Net Profit</span>
+                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-slate-100 font-mono mt-0.5 truncate" title={`₦${Math.round(netProfit).toLocaleString()}`}>
+                      ₦{Math.round(netProfit).toLocaleString()}
+                    </h3>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">Net Platform Profit</span>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-slate-100 font-mono mt-0.5 truncate" title={`₦${Math.round(netProfit).toLocaleString()}`}>
-                    ₦{Math.round(netProfit).toLocaleString()}
-                  </h3>
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] text-slate-400 font-semibold block">After {gatewayCostRate}% fee offset</span>
+                  <div className="text-xs font-bold text-cyan-500 mt-1 truncate" title={`Gross NGN: ₦${Math.round(stats.totalRevenue).toLocaleString()}`}>
+                    Gross: ₦{Math.round(stats.totalRevenue).toLocaleString()}
+                  </div>
                 </div>
               </div>
-              <div className="text-left sm:text-right shrink-0">
-                <span className="text-[10px] text-slate-400 font-semibold block">After {gatewayCostRate}% gateway fees</span>
-                <div className="text-xs font-bold text-emerald-500 mt-1 truncate" title={`Gross: ₦${Math.round(stats.totalRevenue).toLocaleString()}`}>
-                  Gross: ₦{Math.round(stats.totalRevenue).toLocaleString()}
+
+              {/* USDT Profit Split */}
+              <div className="flex items-center justify-between gap-4 pt-4 md:pt-0 md:pl-6">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
+                    <DollarSign className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">USDT Net Profit</span>
+                    <h3 className="text-lg sm:text-xl font-extrabold text-emerald-500 font-mono mt-0.5 truncate" title={`$${((stats.totalRevenueUsdt || 0) * (1 - gatewayCostRate / 100)).toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`}>
+                      ${((stats.totalRevenueUsdt || 0) * (1 - gatewayCostRate / 100)).toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT
+                    </h3>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] text-slate-400 font-semibold block">After {gatewayCostRate}% fee offset</span>
+                  <div className="text-xs font-bold text-emerald-500 mt-1 truncate" title={`Gross USDT: $${(stats.totalRevenueUsdt || 0).toLocaleString()} USDT`}>
+                    Gross: ${(stats.totalRevenueUsdt || 0).toLocaleString()} USDT
+                  </div>
                 </div>
               </div>
             </div>
@@ -573,7 +597,10 @@ export default function AdminOverviewPage() {
                         </div>
                       </td>
                       <td className="p-3 text-right font-mono font-bold text-slate-700 dark:text-slate-350">
-                        ₦{tx.amount.toLocaleString()}
+                        {tx.currency === 'USDT' || tx.serviceType === 'USDT_DEPOSIT' || tx.reference.toLowerCase().includes('usdt') || tx.provider === 'NOWPayments'
+                          ? `$${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`
+                          : `₦${tx.amount.toLocaleString()}`
+                        }
                       </td>
                       <td className="p-3 capitalize">
                         <span className="inline-flex items-center px-2 py-0.5 rounded bg-cyan-500/10 text-[10px] font-extrabold text-cyan-500 uppercase tracking-wide">

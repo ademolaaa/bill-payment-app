@@ -242,7 +242,10 @@ function TransactionsPageContent() {
                       </div>
                     </td>
                     <td className="p-3.5 text-right font-mono font-bold text-slate-700 dark:text-slate-350">
-                      ₦{tx.amount.toLocaleString()}
+                      {tx.currency === 'USDT' || tx.serviceType === 'USDT_DEPOSIT' || tx.reference.toLowerCase().includes('usdt') || tx.provider === 'NOWPayments'
+                        ? `$${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`
+                        : `₦${tx.amount.toLocaleString()}`
+                      }
                     </td>
                     <td className="p-3.5 capitalize">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-cyan-500/10 text-[10px] font-extrabold text-cyan-500 uppercase tracking-wide">

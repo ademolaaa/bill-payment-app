@@ -195,30 +195,42 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ user, onClose, onAction 
           <div className="space-y-3">
             <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 select-none">
               <Wallet className="w-4 h-4 text-cyan-500" />
-              Wallet Balance
+              Active Wallet Ledger
             </h4>
-            <div className="p-4 bg-gradient-to-r from-slate-900 to-slate-850 text-white rounded-2xl shadow-sm flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Active Funds Available</span>
-                <div className="text-2xl font-black font-mono mt-1 tracking-tight">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-gradient-to-r from-slate-900 to-slate-850 text-white rounded-2xl shadow-sm relative overflow-hidden">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">NGN Ledger</span>
+                <div className="text-lg font-black font-mono mt-1 tracking-tight text-slate-100">
                   ₦{user.walletBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <span className="text-[11px] font-bold px-2 py-1 rounded bg-white/10 text-cyan-300">
-                NGN Ledger
-              </span>
+              <div className="p-4 bg-gradient-to-r from-slate-900 to-slate-850 text-white rounded-2xl shadow-sm relative overflow-hidden">
+                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest block">USDT Ledger</span>
+                <div className="text-lg font-black font-mono mt-1 tracking-tight text-emerald-300">
+                  ${(user.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT
+                </div>
+              </div>
             </div>
 
             {/* Funding mini-list */}
             <div className="space-y-1.5 mt-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block select-none">Funding References</span>
               {walletFunding.length > 0 ? (
-                walletFunding.map((fund) => (
-                  <div key={fund.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50/50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/50 text-xs">
-                    <span className="font-mono text-slate-500 dark:text-slate-400">{fund.reference}</span>
-                    <span className="font-bold text-emerald-500 font-mono">+₦{fund.amount.toLocaleString()}</span>
-                  </div>
-                ))
+                walletFunding.map((fund) => {
+                  const isUsdt = fund.currency?.toUpperCase() === 'USDT' || 
+                                 fund.provider?.toLowerCase().includes('nowpayments') || 
+                                 fund.reference?.toLowerCase().includes('usdt');
+                  return (
+                    <div key={fund.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50/50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/50 text-xs">
+                      <span className="font-mono text-slate-500 dark:text-slate-400">{fund.reference}</span>
+                      <span className={`font-bold font-mono ${isUsdt ? 'text-emerald-500' : 'text-cyan-500'}`}>
+                        {isUsdt 
+                          ? `+$${fund.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT` 
+                          : `+₦${fund.amount.toLocaleString()}`}
+                      </span>
+                    </div>
+                  );
+                })
               ) : (
                 <span className="text-xs text-slate-400 italic">No large funding matches on file</span>
               )}
@@ -370,34 +382,41 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({ user, onClose, onAction 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-transparent">
-                    {userTxs.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                        <td className="p-3">
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
-                              {tx.serviceType.replace('_', ' ')}
+                    {userTxs.map((tx) => {
+                      const isUsdt = tx.currency?.toUpperCase() === 'USDT' || 
+                                     tx.provider?.toLowerCase().includes('nowpayments') || 
+                                     tx.reference?.toLowerCase().includes('usdt');
+                      return (
+                        <tr key={tx.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                          <td className="p-3">
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                                {tx.serviceType.replace('_', ' ')}
+                              </span>
+                              <span className="text-[10px] text-slate-400">{tx.provider}</span>
+                            </div>
+                          </td>
+                          <td className="p-3 text-right font-mono font-bold text-slate-700 dark:text-slate-300">
+                            {isUsdt 
+                              ? `$${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT` 
+                              : `₦${tx.amount.toLocaleString()}`}
+                          </td>
+                          <td className="p-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                              tx.status === 'successful'
+                                ? 'bg-emerald-500/10 text-emerald-500'
+                                : tx.status === 'failed'
+                                ? 'bg-rose-500/10 text-rose-500'
+                                : tx.status === 'pending'
+                                ? 'bg-amber-500/10 text-amber-500'
+                                : 'bg-slate-500/10 text-slate-500'
+                            }`}>
+                              {tx.status}
                             </span>
-                            <span className="text-[10px] text-slate-400">{tx.provider}</span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-right font-mono font-bold text-slate-700 dark:text-slate-300">
-                          ₦{tx.amount.toLocaleString()}
-                        </td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                            tx.status === 'successful'
-                              ? 'bg-emerald-500/10 text-emerald-500'
-                              : tx.status === 'failed'
-                              ? 'bg-rose-500/10 text-rose-500'
-                              : tx.status === 'pending'
-                              ? 'bg-amber-500/10 text-amber-500'
-                              : 'bg-slate-500/10 text-slate-500'
-                          }`}>
-                            {tx.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -72,13 +72,18 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
             <TrendingUp className="w-5 h-5" />
           </div>
         </div>
-        <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.totalRevenue)}>
-            <AnimatedNumber value={stats.totalRevenue} formatter={formatNaira} />
-          </h3>
-          <div className="flex items-center gap-1 mt-2.5 text-emerald-500 text-xs font-semibold">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>12.4% vs last month</span>
+        <div className="mt-3 space-y-2">
+          <div>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Naira (NGN)</span>
+            <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.totalRevenue)}>
+              <AnimatedNumber value={stats.totalRevenue} formatter={formatNaira} />
+            </h3>
+          </div>
+          <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/50">
+            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider block">Crypto (USDT)</span>
+            <h3 className="text-lg md:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap">
+              <AnimatedNumber value={stats.totalRevenueUsdt || 0} formatter={(v) => `$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`} />
+            </h3>
           </div>
         </div>
       </div>
@@ -93,13 +98,18 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
             <Clock className="w-5 h-5" />
           </div>
         </div>
-        <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.todayRevenue)}>
-            <AnimatedNumber value={stats.todayRevenue} formatter={formatNaira} />
-          </h3>
-          <div className="flex items-center gap-1 mt-2.5 text-emerald-500 text-xs font-semibold">
-            <ArrowUpRight className="w-4 h-4" />
-            <span>₦{Math.round(stats.todayRevenue).toLocaleString()} since midnight</span>
+        <div className="mt-3 space-y-2">
+          <div>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Naira (NGN)</span>
+            <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.todayRevenue)}>
+              <AnimatedNumber value={stats.todayRevenue} formatter={formatNaira} />
+            </h3>
+          </div>
+          <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/50">
+            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider block">Crypto (USDT)</span>
+            <h3 className="text-lg md:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap">
+              <AnimatedNumber value={stats.todayRevenueUsdt || 0} formatter={(v) => `$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`} />
+            </h3>
           </div>
         </div>
       </div>
@@ -219,7 +229,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
           </div>
         </div>
         <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
+          <h3 className="text-xl md:text-2xl font-extrabold text-slate-850 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
             <AnimatedNumber value={stats.openTickets} />
             {stats.openTickets > 0 && (
               <span className="px-2 py-0.5 rounded bg-rose-500/10 text-[10px] font-extrabold text-rose-500 uppercase tracking-wide">
@@ -244,12 +254,18 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
             <Wallet className="w-5 h-5" />
           </div>
         </div>
-        <div className="mt-3">
-          <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.walletFloat)}>
-            <AnimatedNumber value={stats.walletFloat} formatter={formatNaira} />
-          </h3>
-          <div className="flex items-center gap-1 mt-2.5 text-slate-400 text-xs">
-            <span>Outstanding liabilities</span>
+        <div className="mt-3 space-y-2">
+          <div>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Naira (NGN)</span>
+            <h3 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap" title={formatNaira(stats.walletFloat)}>
+              <AnimatedNumber value={stats.walletFloat} formatter={formatNaira} />
+            </h3>
+          </div>
+          <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/50">
+            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider block">Crypto (USDT)</span>
+            <h3 className="text-lg md:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tracking-tight leading-none tabular-nums overflow-hidden text-ellipsis whitespace-nowrap">
+              <AnimatedNumber value={stats.walletFloatUsdt || 0} formatter={(v) => `$${v.toLocaleString('en-US', { minimumFractionDigits: 2 })} USDT`} />
+            </h3>
           </div>
         </div>
       </div>

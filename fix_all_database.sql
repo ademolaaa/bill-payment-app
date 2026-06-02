@@ -32,8 +32,11 @@ BEGIN
     CHECK (type IN ('deposit', 'bill_payment', 'withdrawal', 'refund', 'conversion'));
 END $$;
 
--- ── STEP 5: Ensure profiles.updated_at exists ────────────────────
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+-- ── STEP 5: Ensure profiles columns exist ────────────────────
+ALTER TABLE public.profiles 
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS phone TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- ── STEP 6: Fix confirm_deposit ──────────────────────────────────
 DROP FUNCTION IF EXISTS confirm_deposit(UUID, BIGINT, TEXT, NUMERIC, TEXT, JSONB, TEXT);

@@ -179,7 +179,8 @@ function UsersPageContent() {
                 <th className="p-3.5">Customer Name</th>
                 <th className="p-3.5">Email Address</th>
                 <th className="p-3.5">Phone Number</th>
-                <th className="p-3.5 text-right">Wallet Balance</th>
+                <th className="p-3.5 text-right">NGN Balance</th>
+                <th className="p-3.5 text-right">USDT Balance</th>
                 <th className="p-3.5 text-center">KYC Status</th>
                 <th className="p-3.5 text-center">Permissions</th>
                 <th className="p-3.5 text-right">Join Date</th>
@@ -212,6 +213,9 @@ function UsersPageContent() {
                     </td>
                     <td className="p-3.5 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
                       ₦{user.walletBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="p-3.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      ${(user.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                     
                     <td className="p-3.5 text-center">
@@ -253,7 +257,7 @@ function UsersPageContent() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center text-xs text-slate-400 italic">
+                  <td colSpan={9} className="p-12 text-center text-xs text-slate-400 italic">
                     No registered user accounts found matching active parameters.
                   </td>
                 </tr>

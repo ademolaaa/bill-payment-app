@@ -17,20 +17,34 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, d
   const isPositive = transaction.type === 'deposit' || transaction.type === 'refund';
   const currency = transaction.currency || 'NGN';
   
+  const isInvestment = transaction.type === 'withdrawal' && (
+    transaction.providerReference?.toLowerCase().includes('investment') || 
+    transaction.providerReference?.toLowerCase().includes('roi') ||
+    transaction.id?.includes('invest')
+  );
+
   // Icon logic based on transaction type
   const getIcon = () => {
+    if (isInvestment) {
+      return (
+        <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-950/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+        </div>
+      );
+    }
+
     switch (transaction.type) {
       case 'deposit': 
       case 'refund':
         return (
           <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/20 flex items-center justify-center text-green-600 dark:text-green-400">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
           </div>
         );
       case 'withdrawal':
         return (
           <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/20 flex items-center justify-center text-red-600 dark:text-red-400">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" /></svg>
           </div>
         );
       case 'conversion':
@@ -62,7 +76,7 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, d
         {getIcon()}
         <div>
           <h4 className="text-[15px] font-semibold text-gray-900 dark:text-white capitalize truncate max-w-[150px]">
-            {transaction.providerReference || (transaction.type === 'conversion' ? 'Conversion' : transaction.type === 'bill_payment' ? 'Bill Payment' : transaction.type)}
+            {isInvestment ? 'Investment' : (transaction.providerReference || (transaction.type === 'conversion' ? 'Conversion' : transaction.type === 'bill_payment' ? 'Bill Payment' : transaction.type))}
           </h4>
           <p className="text-[12px] text-gray-700 dark:text-slate-600">{dateStr}</p>
         </div>

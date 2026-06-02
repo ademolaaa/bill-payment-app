@@ -18,6 +18,7 @@ export interface CustomerUser {
   email: string;
   phone: string;
   walletBalance: number; // in NGN
+  usdtBalance: number; // in USDT
   kycStatus: KYCStatus;
   status: 'active' | 'suspended';
   createdAt: string;
@@ -25,7 +26,7 @@ export interface CustomerUser {
   totalVolume: number;
 }
 
-export type ServiceType = 'airtime' | 'data' | 'electricity' | 'cable_tv' | 'betting' | 'pins';
+export type ServiceType = 'airtime' | 'data' | 'electricity' | 'cable_tv' | 'betting' | 'pins' | 'other' | 'usdt_deposit' | 'USDT_DEPOSIT';
 
 export type TransactionStatus = 'successful' | 'failed' | 'pending' | 'reversed';
 
@@ -37,8 +38,8 @@ export interface Transaction {
   userPhone: string;
   serviceType: ServiceType;
   provider: string;
-  amount: number; // in NGN
-  fee: number; // in NGN
+  amount: number; // in NGN or USDT based on currency
+  fee: number; // in NGN or USDT based on currency
   status: TransactionStatus;
   createdAt: string;
   providerRef: string;
@@ -51,6 +52,12 @@ export interface Transaction {
   atRisk?: boolean;
   pendingFlaggedAt?: string;
   webhookLate?: boolean;
+  // Multi-currency and channel metadata fields
+  currency?: 'NGN' | 'USDT';
+  paymentProvider?: 'FLUTTERWAVE' | 'NOWPAYMENTS' | 'SYSTEM';
+  paymentMethod?: string;
+  network?: 'TRC20' | null;
+  transactionChannel?: 'CARD' | 'BANK_TRANSFER' | 'USSD' | 'CRYPTO' | 'MANUAL_ADJUSTMENT';
 }
 
 export type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
@@ -153,6 +160,10 @@ export interface DashboardStats {
   netProfit: number;
   atRiskTransactions: number;
   escalatedTickets: number;
+  // Multi-currency fields
+  totalRevenueUsdt: number;
+  todayRevenueUsdt: number;
+  walletFloatUsdt: number;
 }
 
 export interface MakerCheckerRequest {

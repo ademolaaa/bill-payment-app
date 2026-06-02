@@ -72,14 +72,25 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
   const isPending = transaction.status === 'pending';
   const isReversed = transaction.status === 'reversed';
   
+  const isInvestment = transaction.type === 'withdrawal' && (
+    transaction.tx_ref?.startsWith('kyvatron-invest') || 
+    transaction.description?.toLowerCase().includes('investment') || 
+    transaction.description?.toLowerCase().includes('roi')
+  );
+  
   const isDeposit = transaction.type === 'deposit' || transaction.type === 'refund';
   
-  const formattedAmount = transaction.currency === 'USDT'
+  const isUsdt = transaction.currency?.toUpperCase() === 'USDT' || 
+                 transaction.description?.includes('USDT') || 
+                 transaction.description?.toLowerCase().includes('nowpayments');
+
+  const formattedAmount = isUsdt
     ? `$${Number(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`
     : new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(transaction.amount));
 
   // Type label formatter
   const getTypeLabel = () => {
+    if (isInvestment) return 'Investment Portfolio Funding';
     switch (transaction.type) {
       case 'deposit': return 'Wallet Funding';
       case 'bill_payment': return 'Utility Bill Payment';
@@ -93,11 +104,15 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
   // Payment method resolver
   const getPaymentMethod = () => {
     if (transaction.type === 'deposit') {
+      if (isUsdt) {
+        return 'NOWPayments (USDT-TRC20)';
+      }
       return 'Flutterwave (Card/USSD)';
     }
     if (transaction.type === 'conversion') {
-      const receiveCurrency = transaction.metadata?.receive_currency || (transaction.currency === 'NGN' ? 'USDT' : 'NGN');
-      return `Wallet Conversion (${transaction.currency} → ${receiveCurrency})`;
+      const baseCurrency = transaction.currency?.toUpperCase() || 'NGN';
+      const receiveCurrency = (transaction.metadata?.receive_currency || (baseCurrency === 'NGN' ? 'USDT' : 'NGN')).toUpperCase();
+      return `Wallet Conversion (${baseCurrency} → ${receiveCurrency})`;
     }
     if (transaction.type === 'bill_payment') {
       return `Kyvatron Wallet (${transaction.metadata?.category || 'Utility'})`;

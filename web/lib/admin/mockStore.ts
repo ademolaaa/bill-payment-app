@@ -12,6 +12,8 @@ import {
   MakerCheckerRequest,
   BankDepositRecord
 } from '../../types/admin';
+import { supabase } from '../supabase/client';
+
 
 // Subscription system for reactive state re-renders across components
 let listeners: (() => void)[] = [];
@@ -37,31 +39,31 @@ export let adminUsers: AdminUser[] = [
 
 // 1. MOCK CUSTOMER USERS (25 realistic Nigerian profiles)
 export let customerUsers: CustomerUser[] = [
-  { id: 'usr-1', fullName: 'Chinonso Okafor', email: 'chinonso.okafor@gmail.com', phone: '+2348031123456', walletBalance: 45200.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-15T08:30:00Z', totalTransactions: 42, totalVolume: 185000.00 },
-  { id: 'usr-2', fullName: 'Babajide Balogun', email: 'jide.balogun@yahoo.com', phone: '+2348123456789', walletBalance: 125000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-20T10:15:00Z', totalTransactions: 55, totalVolume: 420000.00 },
-  { id: 'usr-3', fullName: 'Amina Bello', email: 'amina.bello@bello.co', phone: '+2347081234567', walletBalance: 850.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-20T14:45:00Z', totalTransactions: 3, totalVolume: 12000.00 },
-  { id: 'usr-4', fullName: 'Ngozi Nwachukwu', email: 'ngozi.nwa@gmail.com', phone: '+2348099876543', walletBalance: 15400.00, kycStatus: 'verified', status: 'active', createdAt: '2026-02-05T09:12:00Z', totalTransactions: 19, totalVolume: 65000.00 },
-  { id: 'usr-5', fullName: 'Olamide Soyinka', email: 'ola.soyinka@outlook.com', phone: '+2349033445566', walletBalance: 3200.00, kycStatus: 'unverified', status: 'suspended', createdAt: '2026-03-10T16:22:00Z', totalTransactions: 12, totalVolume: 35000.00 },
-  { id: 'usr-6', fullName: 'Tunde Bakare', email: 'tunde.bakare@bakareops.ng', phone: '+2348055566778', walletBalance: 67800.00, kycStatus: 'verified', status: 'active', createdAt: '2026-02-18T11:40:00Z', totalTransactions: 28, totalVolume: 110000.00 },
-  { id: 'usr-7', fullName: 'Emeka Ike', email: 'emeka.ike@gmail.com', phone: '+2348187766554', walletBalance: 1450.50, kycStatus: 'pending', status: 'active', createdAt: '2026-05-22T08:05:00Z', totalTransactions: 2, totalVolume: 4500.00 },
-  { id: 'usr-8', fullName: 'Hadiza Umar', email: 'hadiza.umar@gmail.com', phone: '+2347039988776', walletBalance: 98000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-08T15:30:00Z', totalTransactions: 64, totalVolume: 380000.00 },
-  { id: 'usr-9', fullName: 'Chinedu Obasi', email: 'chinedu.obasi@yahoo.com', phone: '+2348154433221', walletBalance: 5200.00, kycStatus: 'rejected', status: 'active', createdAt: '2026-04-02T13:10:00Z', totalTransactions: 8, totalVolume: 22000.00 },
-  { id: 'usr-10', fullName: 'Fatima Abubakar', email: 'fatima.abu@gmail.com', phone: '+2349021234567', walletBalance: 12200.00, kycStatus: 'verified', status: 'active', createdAt: '2026-03-25T10:00:00Z', totalTransactions: 15, totalVolume: 48000.00 },
-  { id: 'usr-11', fullName: 'Olumide Adebayo', email: 'olumide.adebayo@gmail.com', phone: '+2348023456781', walletBalance: 3400.00, kycStatus: 'unverified', status: 'active', createdAt: '2026-05-12T17:50:00Z', totalTransactions: 4, totalVolume: 8500.00 },
-  { id: 'usr-12', fullName: 'Kelechi Iheanacho', email: 'kelechi.seniorman@gmail.com', phone: '+2348101234567', walletBalance: 88500.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-29T12:00:00Z', totalTransactions: 36, totalVolume: 210000.00 },
-  { id: 'usr-13', fullName: 'Aisha Yusuf', email: 'aisha.yusuf@yusufcorp.ng', phone: '+2347061122334', walletBalance: 142000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-02-10T09:35:00Z', totalTransactions: 49, totalVolume: 510000.00 },
-  { id: 'usr-14', fullName: 'Chibuike Amaechi', email: 'chibuike.amaechi@yahoo.com', phone: '+2348076543210', walletBalance: 400.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-26T14:15:00Z', totalTransactions: 1, totalVolume: 1000.00 },
-  { id: 'usr-15', fullName: 'Funke Akindele', email: 'funke.akindele@gmail.com', phone: '+2348161122334', walletBalance: 18200.00, kycStatus: 'verified', status: 'active', createdAt: '2026-03-01T15:20:00Z', totalTransactions: 22, totalVolume: 74000.00 },
-  { id: 'usr-16', fullName: 'Ibrahim Babangida', email: 'ibrahim.b@outlook.com', phone: '+2349051234567', walletBalance: 72000.00, kycStatus: 'verified', status: 'suspended', createdAt: '2026-02-28T10:45:00Z', totalTransactions: 31, totalVolume: 195000.00 },
-  { id: 'usr-17', fullName: 'Nneka Egbuna', email: 'nneka.singer@gmail.com', phone: '+2348083322110', walletBalance: 9600.00, kycStatus: 'verified', status: 'active', createdAt: '2026-04-10T16:55:00Z', totalTransactions: 14, totalVolume: 32000.00 },
-  { id: 'usr-18', fullName: 'Obinna Nwaneri', email: 'obinna.nwaneri@gmail.com', phone: '+2348112233445', walletBalance: 23000.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-18T11:20:00Z', totalTransactions: 6, totalVolume: 15400.00 },
-  { id: 'usr-19', fullName: 'Blessing Okagbare', email: 'blessing.okag@gmail.com', phone: '+2347055544332', walletBalance: 11500.00, kycStatus: 'verified', status: 'active', createdAt: '2026-03-15T09:10:00Z', totalTransactions: 20, totalVolume: 82000.00 },
-  { id: 'usr-20', fullName: 'Yakubu Gowon', email: 'yakubu.gowon@nigeria.gov', phone: '+2348039988771', walletBalance: 54000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-05T08:00:00Z', totalTransactions: 75, totalVolume: 620000.00 },
-  { id: 'usr-21', fullName: 'Simi Kosoko', email: 'simi.kosoko@studio.ng', phone: '+2348129988776', walletBalance: 32000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-04-18T14:30:00Z', totalTransactions: 17, totalVolume: 95000.00 },
-  { id: 'usr-22', fullName: 'Wizkid Balogun', email: 'starboy.wiz@gmail.com', phone: '+2349091234567', walletBalance: 150000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-10T12:00:00Z', totalTransactions: 98, totalVolume: 950000.00 },
-  { id: 'usr-23', fullName: 'Davido Adeleke', email: 'oboo.davido@obomusic.com', phone: '+2348051234567', walletBalance: 148500.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-12T13:40:00Z', totalTransactions: 84, totalVolume: 870000.00 },
-  { id: 'usr-24', fullName: 'Burna Boy', email: 'odogwu.burna@atlantic.com', phone: '+2348131234567', walletBalance: 135000.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-14T15:20:00Z', totalTransactions: 92, totalVolume: 890000.00 },
-  { id: 'usr-25', fullName: 'Tiwa Savage', email: 'tiwa.savage@savage.co', phone: '+2347011234567', walletBalance: 95400.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-25T11:10:00Z', totalTransactions: 60, totalVolume: 490000.00 }
+  { id: 'usr-1', fullName: 'Chinonso Okafor', email: 'chinonso.okafor@gmail.com', phone: '+2348031123456', walletBalance: 45200.00, usdtBalance: 11.52, kycStatus: 'verified', status: 'active', createdAt: '2026-01-15T08:30:00Z', totalTransactions: 42, totalVolume: 185000.00 },
+  { id: 'usr-2', fullName: 'Babajide Balogun', email: 'jide.balogun@yahoo.com', phone: '+2348123456789', walletBalance: 125000.00, usdtBalance: 250.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-20T10:15:00Z', totalTransactions: 55, totalVolume: 420000.00 },
+  { id: 'usr-3', fullName: 'Amina Bello', email: 'amina.bello@bello.co', phone: '+2347081234567', walletBalance: 850.00, usdtBalance: 0.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-20T14:45:00Z', totalTransactions: 3, totalVolume: 12000.00 },
+  { id: 'usr-4', fullName: 'Ngozi Nwachukwu', email: 'ngozi.nwa@gmail.com', phone: '+2348099876543', walletBalance: 15400.00, usdtBalance: 5.00, kycStatus: 'verified', status: 'active', createdAt: '2026-02-05T09:12:00Z', totalTransactions: 19, totalVolume: 65000.00 },
+  { id: 'usr-5', fullName: 'Olamide Soyinka', email: 'ola.soyinka@outlook.com', phone: '+2349033445566', walletBalance: 3200.00, usdtBalance: 0.00, kycStatus: 'unverified', status: 'suspended', createdAt: '2026-03-10T16:22:00Z', totalTransactions: 12, totalVolume: 35000.00 },
+  { id: 'usr-6', fullName: 'Tunde Bakare', email: 'tunde.bakare@bakareops.ng', phone: '+2348055566778', walletBalance: 67800.00, usdtBalance: 45.00, kycStatus: 'verified', status: 'active', createdAt: '2026-02-18T11:40:00Z', totalTransactions: 28, totalVolume: 110000.00 },
+  { id: 'usr-7', fullName: 'Emeka Ike', email: 'emeka.ike@gmail.com', phone: '+2348187766554', walletBalance: 1450.50, usdtBalance: 0.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-22T08:05:00Z', totalTransactions: 2, totalVolume: 4500.00 },
+  { id: 'usr-8', fullName: 'Hadiza Umar', email: 'hadiza.umar@gmail.com', phone: '+2347039988776', walletBalance: 98000.00, usdtBalance: 85.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-08T15:30:00Z', totalTransactions: 64, totalVolume: 380000.00 },
+  { id: 'usr-9', fullName: 'Chinedu Obasi', email: 'chinedu.obasi@yahoo.com', phone: '+2348154433221', walletBalance: 5200.00, usdtBalance: 0.00, kycStatus: 'rejected', status: 'active', createdAt: '2026-04-02T13:10:00Z', totalTransactions: 8, totalVolume: 22000.00 },
+  { id: 'usr-10', fullName: 'Fatima Abubakar', email: 'fatima.abu@gmail.com', phone: '+2349021234567', walletBalance: 12200.00, usdtBalance: 10.00, kycStatus: 'verified', status: 'active', createdAt: '2026-03-25T10:00:00Z', totalTransactions: 15, totalVolume: 48000.00 },
+  { id: 'usr-11', fullName: 'Olumide Adebayo', email: 'olumide.adebayo@gmail.com', phone: '+2348023456781', walletBalance: 3400.00, usdtBalance: 0.00, kycStatus: 'unverified', status: 'active', createdAt: '2026-05-12T17:50:00Z', totalTransactions: 4, totalVolume: 8500.00 },
+  { id: 'usr-12', fullName: 'Kelechi Iheanacho', email: 'kelechi.seniorman@gmail.com', phone: '+2348101234567', walletBalance: 88500.00, usdtBalance: 90.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-29T12:00:00Z', totalTransactions: 36, totalVolume: 210000.00 },
+  { id: 'usr-13', fullName: 'Aisha Yusuf', email: 'aisha.yusuf@yusufcorp.ng', phone: '+2347061122334', walletBalance: 142000.00, usdtBalance: 115.50, kycStatus: 'verified', status: 'active', createdAt: '2026-02-10T09:35:00Z', totalTransactions: 49, totalVolume: 510000.00 },
+  { id: 'usr-14', fullName: 'Chibuike Amaechi', email: 'chibuike.amaechi@yahoo.com', phone: '+2348076543210', walletBalance: 400.00, usdtBalance: 0.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-26T14:15:00Z', totalTransactions: 1, totalVolume: 1000.00 },
+  { id: 'usr-15', fullName: 'Funke Akindele', email: 'funke.akindele@gmail.com', phone: '+2348161122334', walletBalance: 18200.00, usdtBalance: 12.00, kycStatus: 'verified', status: 'active', createdAt: '2026-03-01T15:20:00Z', totalTransactions: 22, totalVolume: 74000.00 },
+  { id: 'usr-16', fullName: 'Ibrahim Babangida', email: 'ibrahim.b@outlook.com', phone: '+2349051234567', walletBalance: 72000.00, usdtBalance: 320.00, kycStatus: 'verified', status: 'suspended', createdAt: '2026-02-28T10:45:00Z', totalTransactions: 31, totalVolume: 195000.00 },
+  { id: 'usr-17', fullName: 'Nneka Egbuna', email: 'nneka.singer@gmail.com', phone: '+2348083322110', walletBalance: 9600.00, usdtBalance: 8.50, kycStatus: 'verified', status: 'active', createdAt: '2026-04-10T16:55:00Z', totalTransactions: 14, totalVolume: 32000.00 },
+  { id: 'usr-18', fullName: 'Obinna Nwaneri', email: 'obinna.nwaneri@gmail.com', phone: '+2348112233445', walletBalance: 23000.00, usdtBalance: 0.00, kycStatus: 'pending', status: 'active', createdAt: '2026-05-18T11:20:00Z', totalTransactions: 6, totalVolume: 15400.00 },
+  { id: 'usr-19', fullName: 'Blessing Okagbare', email: 'blessing.okag@gmail.com', phone: '+2347055544332', walletBalance: 11500.00, usdtBalance: 2.00, kycStatus: 'verified', status: 'active', createdAt: '2026-03-15T09:10:00Z', totalTransactions: 20, totalVolume: 82000.00 },
+  { id: 'usr-20', fullName: 'Yakubu Gowon', email: 'yakubu.gowon@nigeria.gov', phone: '+2348039988771', walletBalance: 54000.00, usdtBalance: 50.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-05T08:00:00Z', totalTransactions: 75, totalVolume: 620000.00 },
+  { id: 'usr-21', fullName: 'Simi Kosoko', email: 'simi.kosoko@studio.ng', phone: '+2348129988776', walletBalance: 32000.00, usdtBalance: 145.00, kycStatus: 'verified', status: 'active', createdAt: '2026-04-18T14:30:00Z', totalTransactions: 17, totalVolume: 95000.00 },
+  { id: 'usr-22', fullName: 'Wizkid Balogun', email: 'starboy.wiz@gmail.com', phone: '+2349091234567', walletBalance: 150000.00, usdtBalance: 1800.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-10T12:00:00Z', totalTransactions: 98, totalVolume: 950000.00 },
+  { id: 'usr-23', fullName: 'Davido Adeleke', email: 'oboo.davido@obomusic.com', phone: '+2348051234567', walletBalance: 148500.00, usdtBalance: 1420.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-12T13:40:00Z', totalTransactions: 84, totalVolume: 870000.00 },
+  { id: 'usr-24', fullName: 'Burna Boy', email: 'odogwu.burna@atlantic.com', phone: '+2348131234567', walletBalance: 135000.00, usdtBalance: 1650.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-14T15:20:00Z', totalTransactions: 92, totalVolume: 890000.00 },
+  { id: 'usr-25', fullName: 'Tiwa Savage', email: 'tiwa.savage@savage.co', phone: '+2347011234567', walletBalance: 95400.00, usdtBalance: 780.00, kycStatus: 'verified', status: 'active', createdAt: '2026-01-25T11:10:00Z', totalTransactions: 60, totalVolume: 490000.00 }
 ];
 
 // 2. MOCK PROVIDERS (8 major payment pathways)
@@ -451,7 +453,10 @@ export let dashboardStats: DashboardStats = {
   walletFloat: 0,
   netProfit: 0,
   atRiskTransactions: 0,
-  escalatedTickets: 0
+  escalatedTickets: 0,
+  totalRevenueUsdt: 0,
+  todayRevenueUsdt: 0,
+  walletFloatUsdt: 0
 };
 
 // Helper: scan pending transactions and flag those >30 min old as AT RISK
@@ -578,18 +583,27 @@ export const recalculateStats = () => {
 
   const allTxs = transactions;
   const successfulTxs = allTxs.filter(t => t.status === 'successful');
+  const successfulNgnTxs = successfulTxs.filter(t => t.currency !== 'USDT');
+  const successfulUsdtTxs = successfulTxs.filter(t => t.currency === 'USDT');
 
-  // Revenue = platform fees + 2.5% commission on volume
-  dashboardStats.totalRevenue = successfulTxs.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
+  // NGN Revenue = platform fees + 2.5% commission on volume
+  dashboardStats.totalRevenue = successfulNgnTxs.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
 
-  // Estimated gateway costs = 0.8% of volume (paid to providers)
-  const gatewayCosts = successfulTxs.reduce((sum, t) => sum + (t.amount * 0.008), 0);
+  // NGN Estimated gateway costs = 0.8% of volume (paid to providers)
+  const gatewayCosts = successfulNgnTxs.reduce((sum, t) => sum + (t.amount * 0.008), 0);
   dashboardStats.netProfit = dashboardStats.totalRevenue - gatewayCosts;
 
-  // Today's revenue
+  // NGN Today's revenue
   const lagosToday = getLagosDateString(new Date());
-  const todaySuccessful = successfulTxs.filter(t => getLagosDateString(t.createdAt) === lagosToday);
-  dashboardStats.todayRevenue = todaySuccessful.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
+  const todaySuccessfulNgn = successfulNgnTxs.filter(t => getLagosDateString(t.createdAt) === lagosToday);
+  dashboardStats.todayRevenue = todaySuccessfulNgn.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
+
+  // USDT Revenue = platform fees + 2.5% commission on volume in USDT
+  dashboardStats.totalRevenueUsdt = successfulUsdtTxs.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
+
+  // USDT Today's revenue
+  const todaySuccessfulUsdt = successfulUsdtTxs.filter(t => getLagosDateString(t.createdAt) === lagosToday);
+  dashboardStats.todayRevenueUsdt = todaySuccessfulUsdt.reduce((sum, t) => sum + t.fee + (t.amount * 0.025), 0);
 
   dashboardStats.totalTransactions = allTxs.length;
 
@@ -599,7 +613,10 @@ export const recalculateStats = () => {
   dashboardStats.activeUsers = customerUsers.filter(u => u.status === 'active').length;
   dashboardStats.pendingKYC = customerUsers.filter(u => u.kycStatus === 'pending').length;
   dashboardStats.openTickets = supportTickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
+  
   dashboardStats.walletFloat = customerUsers.reduce((sum, u) => sum + u.walletBalance, 0);
+  dashboardStats.walletFloatUsdt = customerUsers.reduce((sum, u) => sum + u.usdtBalance, 0);
+  
   dashboardStats.atRiskTransactions = allTxs.filter(t => t.atRisk).length;
   dashboardStats.escalatedTickets = supportTickets.filter(t => t.escalated).length;
 };
@@ -655,6 +672,19 @@ export const approveKYC = (userId: string): CustomerUser => {
     ipAddress: '102.89.34.99'
   });
   
+  // Background database sync
+  (async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ kyc_status: 'verified' })
+        .eq('id', userId);
+      if (error) console.error('Failed to sync KYC approval to Supabase:', error.message);
+    } catch (err) {
+      console.error('Database KYC approval sync exception:', err);
+    }
+  })();
+
   notify();
   return user;
 };
@@ -673,6 +703,19 @@ export const rejectKYC = (userId: string): CustomerUser => {
     ipAddress: '102.89.34.99'
   });
   
+  // Background database sync
+  (async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ kyc_status: 'rejected' })
+        .eq('id', userId);
+      if (error) console.error('Failed to sync KYC rejection to Supabase:', error.message);
+    } catch (err) {
+      console.error('Database KYC rejection sync exception:', err);
+    }
+  })();
+
   notify();
   return user;
 };
@@ -855,49 +898,159 @@ export const reverseTransaction = (transactionId: string): Transaction => {
   tx.status = 'reversed';
   tx.errorMessage = 'Manually reversed by admin operations';
   
-  // Refund the user's wallet
+  // Refund the user's wallet based on transaction currency
   const user = customerUsers.find(u => u.id === tx.userId);
   if (user) {
-    user.walletBalance += tx.amount;
+    if (tx.currency === 'USDT') {
+      user.usdtBalance += tx.amount;
+    } else {
+      user.walletBalance += tx.amount;
+    }
   }
+  
+  const symbol = tx.currency === 'USDT' ? '$' : '₦';
+  const currencyLabel = tx.currency === 'USDT' ? 'USDT' : 'NGN';
   
   addAuditLog({
     adminId: 'adm-current',
     adminName: 'Finance Admin',
     action: 'Transaction Reversal',
     target: transactionId,
-    details: `Refunded ₦${tx.amount.toLocaleString()} back to user ${tx.userId} for transaction ${tx.reference}`,
+    details: `Refunded ${symbol}${tx.amount.toLocaleString()} ${currencyLabel} back to user ${tx.userId} for transaction ${tx.reference}`,
     ipAddress: '102.89.34.99'
   });
   
+  recalculateStats();
   notify();
   return tx;
 };
 
-export const adjustUserBalance = (userId: string, amount: number, type: 'credit' | 'debit', reason: string): CustomerUser => {
+export const adjustUserBalance = (
+  userId: string, 
+  amount: number, 
+  type: 'credit' | 'debit', 
+  reason: string,
+  currency: 'NGN' | 'USDT' = 'NGN'
+): CustomerUser => {
   const user = customerUsers.find(u => u.id === userId);
   if (!user) throw new Error('User not found');
+  
+  const isUsdt = currency === 'USDT';
+  
   if (type === 'credit') {
-    user.walletBalance += amount;
-  } else {
-    if (user.walletBalance < amount) {
-      throw new Error('Insufficient wallet float balance to execute debit deduction!');
+    if (isUsdt) {
+      user.usdtBalance += amount;
+    } else {
+      user.walletBalance += amount;
     }
-    user.walletBalance -= amount;
+  } else {
+    if (isUsdt) {
+      if (user.usdtBalance < amount) {
+        throw new Error('Insufficient USDT wallet float balance to execute debit deduction!');
+      }
+      user.usdtBalance -= amount;
+    } else {
+      if (user.walletBalance < amount) {
+        throw new Error('Insufficient NGN wallet float balance to execute debit deduction!');
+      }
+      user.walletBalance -= amount;
+    }
   }
+
+  const symbol = isUsdt ? '$' : '₦';
+  const currencyLabel = isUsdt ? 'USDT' : 'NGN';
+  const ref = `TX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+
+  // Log a manual adjustment transaction record so it updates the transaction ledger automatically!
+  transactions.unshift({
+    id: `tx-manual-${Date.now()}`,
+    reference: ref,
+    userId: user.id,
+    userEmail: user.email,
+    userPhone: user.phone,
+    serviceType: 'other',
+    provider: 'SYSTEM',
+    amount: amount,
+    fee: 0,
+    status: 'successful',
+    createdAt: new Date().toISOString(),
+    providerRef: `SYS-${ref}`,
+    processingTimeMs: 45,
+    currency: currency,
+    paymentProvider: 'SYSTEM',
+    paymentMethod: 'System Ledger Desk',
+    transactionChannel: 'MANUAL_ADJUSTMENT'
+  });
 
   addAuditLog({
     adminId: 'adm-current',
     adminName: 'Finance Admin',
     action: type === 'credit' ? 'Wallet Credit' : 'Wallet Debit',
     target: userId,
-    details: `Manually ${type === 'credit' ? 'credited' : 'debited'} ₦${amount.toLocaleString()} to ${user.fullName} (${user.email}). Reason: "${reason}"`,
+    details: `Manually ${type === 'credit' ? 'credited' : 'debited'} ${symbol}${amount.toLocaleString()} ${currencyLabel} to ${user.fullName} (${user.email}). Reason: "${reason}"`,
     ipAddress: '102.89.34.99'
   });
 
+  // Background sync manual adjustment directly with the Supabase database
+  (async () => {
+    try {
+      if (type === 'credit') {
+        if (isUsdt) {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ balance_usdt: user.usdtBalance })
+            .eq('id', userId);
+          if (error) console.error('Error updating profiles USDT balance:', error.message);
+        } else {
+          // Fire transactional confirm_deposit trigger
+          const { error } = await supabase.rpc('confirm_deposit', {
+            p_user_id: userId,
+            p_flw_transaction_id: Math.floor(Math.random() * 1000000000),
+            p_tx_ref: ref,
+            p_amount: amount,
+            p_currency: 'NGN',
+            p_metadata: { is_manual_adjustment: true, reason },
+            p_auth_secret: 'Kyvatron2026F'
+          });
+          if (error) console.error('Error running confirm_deposit RPC:', error.message);
+        }
+      } else {
+        // Debit subtraction
+        const updatePayload = isUsdt 
+          ? { balance_usdt: user.usdtBalance }
+          : { balance_ngn: user.walletBalance };
+
+        const { error: uError } = await supabase
+          .from('profiles')
+          .update(updatePayload)
+          .eq('id', userId);
+        if (uError) console.error('Error updating profiles balance on debit:', uError.message);
+
+        // Record persistent transaction history for manual debit
+        const { error: iError } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: userId,
+            tx_ref: ref,
+            amount: amount,
+            currency: currency,
+            status: 'successful',
+            type: 'withdrawal',
+            description: `Manual adjustment debit: ${reason}`,
+            metadata: { is_manual_adjustment: true, reason }
+          });
+        if (iError) console.error('Error inserting manual debit transaction:', iError.message);
+      }
+    } catch (dbErr) {
+      console.error('Database adjustment synchronization failed:', dbErr);
+    }
+  })();
+
+  recalculateStats();
   notify();
   return user;
 };
+
 
 
 export const acknowledgeAlert = (alertId: string): SystemAlert => {
@@ -1166,14 +1319,24 @@ export const approveMakerCheckerRequest = (requestId: string, checkerId: string,
 
   // Execute underlying payload action based on actionType
   if (req.actionType === 'WALLET_CREDIT') {
-    const { userId, amount, type } = req.payload;
+    const { userId, amount, type, currency } = req.payload;
     const user = customerUsers.find(u => u.id === userId);
     if (user) {
+      const isUsdt = currency === 'USDT';
       if (type === 'credit') {
-        user.walletBalance += amount;
+        if (isUsdt) {
+          user.usdtBalance += amount;
+        } else {
+          user.walletBalance += amount;
+        }
       } else {
-        if (user.walletBalance < amount) throw new Error('Insufficient wallet float to perform debit adjustment');
-        user.walletBalance -= amount;
+        if (isUsdt) {
+          if (user.usdtBalance < amount) throw new Error('Insufficient USDT wallet float to perform debit adjustment');
+          user.usdtBalance -= amount;
+        } else {
+          if (user.walletBalance < amount) throw new Error('Insufficient NGN wallet float to perform debit adjustment');
+          user.walletBalance -= amount;
+        }
       }
     }
   } else if (req.actionType === 'ROUTE_OVERRIDE') {
@@ -1248,3 +1411,93 @@ export const reconcileManualMatch = (depositId: string, ledgerTxId: string): Ban
   notify();
   return deposit;
 };
+
+export const initializeDatabaseSync = async () => {
+  try {
+    // 1. Fetch Supabase Profiles
+    const { data: dbProfiles, error: pError } = await supabase
+      .from('profiles')
+      .select('*');
+
+    if (!pError && dbProfiles && dbProfiles.length > 0) {
+      dbProfiles.forEach(profile => {
+        const existingIdx = customerUsers.findIndex(u => u.id === profile.id);
+        const mappedUser: CustomerUser = {
+          id: profile.id,
+          fullName: profile.full_name || 'Anonymous User',
+          email: profile.email || profile.id + '@kyvatron.com', // fallback
+          phone: profile.phone || '+2340000000000',
+          walletBalance: Number(profile.balance_ngn),
+          usdtBalance: Number(profile.balance_usdt),
+          kycStatus: (profile.kyc_status as any) || 'unverified',
+          status: 'active',
+          createdAt: profile.created_at || new Date().toISOString(),
+          totalTransactions: 0,
+          totalVolume: 0
+        };
+
+        if (existingIdx !== -1) {
+          customerUsers[existingIdx] = {
+            ...customerUsers[existingIdx],
+            ...mappedUser,
+            email: profile.email || customerUsers[existingIdx].email || mappedUser.email,
+            phone: profile.phone || customerUsers[existingIdx].phone || mappedUser.phone,
+          };
+        } else {
+          customerUsers.push(mappedUser);
+        }
+      });
+    }
+
+    // 2. Fetch Supabase Transactions
+    const { data: dbTxs, error: tError } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!tError && dbTxs && dbTxs.length > 0) {
+      dbTxs.forEach(tx => {
+        const mappedTx: Transaction = {
+          id: tx.id,
+          reference: tx.tx_ref,
+          userId: tx.user_id,
+          userEmail: getEmail(tx.user_id),
+          userPhone: getPhone(tx.user_id),
+          serviceType: tx.type === 'deposit' ? 'airtime' : (tx.type as any),
+          provider: tx.metadata?.provider || (tx.currency === 'USDT' ? 'NOWPayments' : 'Flutterwave'),
+          amount: Number(tx.amount),
+          fee: tx.metadata?.fee ? Number(tx.metadata.fee) : 0,
+          status: tx.status as any,
+          createdAt: tx.created_at,
+          providerRef: tx.flw_transaction_id ? String(tx.flw_transaction_id) : `SYS-${tx.tx_ref}`,
+          processingTimeMs: tx.metadata?.processingTimeMs || 50,
+          currency: tx.currency as any,
+          paymentProvider: tx.currency === 'USDT' ? 'NOWPAYMENTS' : 'FLUTTERWAVE',
+          paymentMethod: tx.currency === 'USDT' ? 'NOWPayments (USDT TRC20)' : 'Flutterwave (Card/USSD)',
+          transactionChannel: tx.type.toUpperCase()
+        };
+
+        const existingIdx = transactions.findIndex(t => t.reference === tx.tx_ref || t.id === tx.id);
+        if (existingIdx !== -1) {
+          transactions[existingIdx] = mappedTx;
+        } else {
+          transactions.unshift(mappedTx);
+        }
+      });
+    }
+
+    // Recalculate stats dynamically
+    recalculateStats();
+    // Use the local listener dispatch
+    listeners.forEach((l) => l());
+  } catch (err) {
+    console.error('Failed to sync mockStore with live database:', err);
+  }
+};
+
+// Automatic initialization on browser mount
+if (typeof window !== 'undefined') {
+  initializeDatabaseSync();
+  setInterval(initializeDatabaseSync, 15000);
+}
+
