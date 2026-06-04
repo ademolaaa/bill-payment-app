@@ -295,8 +295,8 @@ export default function HomePage() {
             <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm flex flex-col justify-between border border-gray-100 dark:border-slate-800">
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-[#E0E7FF] dark:bg-blue-900/30 flex items-center justify-center text-[#0047FF] font-bold text-[14px]">
-                    NGN
+                  <div className="w-5 h-5 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[11px]">
+                    ₦
                   </div>
                   <p className="text-[13px] font-bold text-gray-900 dark:text-white">Invested NGN</p>
                 </div>

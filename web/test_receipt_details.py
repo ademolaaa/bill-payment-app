@@ -19,7 +19,7 @@ def run_receipt_tests():
     print(f"[*] Target user account: {test_email}")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=800)
+        browser = p.chromium.launch(headless=True, slow_mo=100)
         context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 
@@ -39,7 +39,7 @@ def run_receipt_tests():
                         logged_in = True
                         break
 
-                    page.goto("http://localhost:3000/login")
+                    page.goto("http://localhost:3999/login")
                     page.wait_for_load_state("networkidle")
 
                     if "home" in page.url:
@@ -71,7 +71,7 @@ def run_receipt_tests():
                             registered = True
                             break
 
-                        page.goto("http://localhost:3000/signup")
+                        page.goto("http://localhost:3999/signup")
                         page.wait_for_load_state("networkidle")
 
                         if "home" in page.url:
@@ -139,7 +139,7 @@ def run_receipt_tests():
             conversion_success = False
             for attempt in range(max_retries):
                 try:
-                    page.goto("http://localhost:3000/convert")
+                    page.goto("http://localhost:3999/convert")
                     page.wait_for_load_state("networkidle")
                     
                     amount_input = page.locator('input[type="number"]')
@@ -161,7 +161,7 @@ def run_receipt_tests():
 
             # ─── STEP 4: NAVIGATE TO TRANSACTION HISTORY PAGE ───
             print("[4] Navigating to Transaction History list page...")
-            page.goto("http://localhost:3000/history")
+            page.goto("http://localhost:3999/history")
             page.wait_for_load_state("networkidle")
             
             # Wait up to 15 seconds for dynamic history links to render

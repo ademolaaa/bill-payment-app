@@ -47,19 +47,35 @@ export async function middleware(request: NextRequest) {
 
   const isProtectedRoute = protectedRoutes.some(route => currentPath.startsWith(route))
 
-  if (isProtectedRoute && !user) {
-    // No active user, redirect to login
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  if (isProtectedRoute) {
+    if (!user) {
+      // No active user, redirect to login
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    // Check MFA status: if enrolled (nextLevel is aal2) but current session is only aal1, redirect to login for challenge
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aalData && aalData.nextLevel === 'aal2' && aalData.currentLevel === 'aal1') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('mfa', '1')
+      return NextResponse.redirect(url)
+    }
   }
 
-  // If a user is already logged in and tries to access login or signup, send them to home
+  // If a user is already logged in and tries to access login or signup, send them to home (unless they need MFA verification)
   const hasForceOverride = request.nextUrl.searchParams.get('force') === '1';
   if ((currentPath === '/login' || (currentPath === '/signup' && !hasForceOverride)) && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/home'
-    return NextResponse.redirect(url)
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    const needsMfa = aalData && aalData.nextLevel === 'aal2' && aalData.currentLevel === 'aal1'
+    
+    if (!needsMfa) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/home'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

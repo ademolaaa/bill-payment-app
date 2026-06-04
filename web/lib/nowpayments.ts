@@ -142,6 +142,10 @@ export class NOWPaymentsAPI {
    * @param name The name or ID of the sub-account (e.g., the user's ID)
    */
   async createSubAccount(name: string): Promise<{ id: string; name: string }> {
+    if (isSandboxMode()) {
+      console.log('[NOWPayments] Sandbox Mode - generating mock sub-account');
+      return { id: `mock-sub-partner-${crypto.randomBytes(6).toString('hex')}`, name };
+    }
     return this.fetchAPI('/sub-partner/balance', {
       method: 'POST',
       body: JSON.stringify({ name }),

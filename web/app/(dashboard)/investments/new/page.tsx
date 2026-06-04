@@ -358,9 +358,7 @@ export default function NewInvestmentPage() {
                 <div key={inv.id} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[24px] p-5 shadow-sm">
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-sm ${
-                        inv.currency === 'NGN' ? 'bg-[#16A34A]' : 'bg-[#009393]'
-                      }`}>
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-sm bg-[#16A34A]">
                         <span className="text-[20px] font-bold">{inv.currency === 'NGN' ? '₦' : 'T'}</span>
                       </div>
                       <div>

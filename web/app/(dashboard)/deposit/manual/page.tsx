@@ -34,12 +34,12 @@ export default function ManualDepositPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-32">
+    <div className="flex flex-col min-h-screen bg-[#F8FAFC] dark:bg-slate-950 pb-48">
       {/* Header */}
       <header className="px-5 pt-12 pb-6 flex items-center bg-[#F8FAFC] dark:bg-slate-950 sticky top-0 z-10">
         <Link href="/deposit" className="mr-4 text-gray-900 dark:text-white">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l-7-7m-7 7h18" />
           </svg>
         </Link>
         <h1 className="text-[20px] font-bold text-gray-900 dark:text-white flex-1 text-center pr-10">
@@ -151,7 +151,7 @@ export default function ManualDepositPage() {
       </div>
 
       {/* Bottom Sticky Action Buttons */}
-      <div className="fixed bottom-0 left-0 w-full bg-[#F8FAFC] dark:bg-slate-950 p-5 flex space-x-3 pb-8">
+      <div className="fixed bottom-16 left-0 w-full bg-[#F8FAFC] dark:bg-slate-950 p-5 flex space-x-3 pb-5 z-40">
         <Button 
           className="flex-1 rounded-2xl bg-[#0047FF] hover:bg-blue-700 flex items-center justify-center text-white font-bold py-4 shadow-md"
         >

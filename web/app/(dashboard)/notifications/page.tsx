@@ -66,11 +66,6 @@ export default function NotificationsPage() {
           </button>
           <h1 className="text-[32px] font-bold text-slate-900 dark:text-white tracking-tight">Notifications</h1>
         </div>
-        <button title="History" aria-label="History" className="w-10 h-10 rounded-full border border-gray-100 dark:border-slate-800 flex items-center justify-center text-slate-900 dark:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
       </header>
 
       <div className="px-6">

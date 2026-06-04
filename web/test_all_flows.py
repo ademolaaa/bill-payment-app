@@ -16,11 +16,12 @@ def run_tests():
     test_email = "tester_dynamic@kyvatron.com"
     test_password = "Password123!"
     max_retries = 3
+    base_url = "http://localhost:3999"
     
     print(f"[*] Target user account: {test_email}")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=800)
+        browser = p.chromium.launch(headless=True, slow_mo=100)
         context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 
@@ -33,7 +34,7 @@ def run_tests():
             for attempt in range(max_retries):
                 print(f"[1] Attempting to Login (Try {attempt + 1}/{max_retries})...")
                 try:
-                    page.goto("http://localhost:3000/login")
+                    page.goto(f"{base_url}/login")
                     page.wait_for_load_state("networkidle")
                     
                     page.fill('input[name="email"]', test_email)
@@ -62,7 +63,7 @@ def run_tests():
                 for attempt in range(max_retries):
                     print(f"[*] Attempting Registration (Try {attempt + 1}/{max_retries})...")
                     try:
-                        page.goto("http://localhost:3000/signup")
+                        page.goto(f"{base_url}/signup")
                         page.wait_for_load_state("networkidle")
                         
                         page.fill('input[name="firstName"]', "Test")
@@ -85,7 +86,7 @@ def run_tests():
                             error_text = page.locator('text=User already registered').first
                             if error_text.is_visible():
                                 print("[*] User is already registered! Redirecting to login directly...")
-                                page.goto("http://localhost:3000/login")
+                                page.goto(f"{base_url}/login")
                                 page.fill('input[name="email"]', test_email)
                                 page.fill('input[name="password"]', test_password)
                                 page.click('button:has-text("Log In")')
@@ -149,7 +150,7 @@ def run_tests():
             conversion_success = False
             for attempt in range(max_retries):
                 try:
-                    page.goto("http://localhost:3000/convert")
+                    page.goto(f"{base_url}/convert")
                     page.wait_for_load_state("networkidle")
                     
                     amount_input = page.locator('input[type="number"]')
@@ -178,7 +179,7 @@ def run_tests():
             invest_success = False
             for attempt in range(max_retries):
                 try:
-                    page.goto("http://localhost:3000/investments/new")
+                    page.goto(f"{base_url}/investments/new")
                     page.wait_for_load_state("networkidle")
                     
                     invest_input = page.locator('input[type="number"]')
@@ -210,7 +211,7 @@ def run_tests():
             bill_success = False
             for attempt in range(max_retries):
                 try:
-                    page.goto("http://localhost:3000/pay-bills")
+                    page.goto(f"{base_url}/pay-bills")
                     page.wait_for_load_state("networkidle")
                     
                     page.click('text=Airtime')
@@ -248,7 +249,7 @@ def run_tests():
             home_success = False
             for attempt in range(max_retries):
                 try:
-                    page.goto("http://localhost:3000/home")
+                    page.goto(f"{base_url}/home")
                     page.wait_for_load_state("networkidle")
                     page.wait_for_timeout(2000)
                     page.screenshot(path="web/dashboard_final.png")

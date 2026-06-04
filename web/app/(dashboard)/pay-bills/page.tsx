@@ -77,24 +77,8 @@ const BILL_CATEGORIES = [
     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
   },
   {
-    id: 'betting' as CategoryId, name: 'Betting', bg: 'bg-red-50', color: 'text-red-600',
-    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-  },
-  {
-    id: 'water' as CategoryId, name: 'Water', bg: 'bg-cyan-50', color: 'text-cyan-600',
-    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C6.477 2 2 9 2 14a10 10 0 0020 0c0-5-4.477-12-10-12z" /></svg>,
-  },
-  {
     id: 'internet' as CategoryId, name: 'Internet', bg: 'bg-indigo-50', color: 'text-indigo-600',
     icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" /></svg>,
-  },
-  {
-    id: 'school' as CategoryId, name: 'School Fees', bg: 'bg-orange-50', color: 'text-orange-600',
-    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>,
-  },
-  {
-    id: 'transport' as CategoryId, name: 'Transport', bg: 'bg-teal-50', color: 'text-teal-600',
-    icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m-8 4h8m-4 4h4M3 12l2-7h14l2 7M3 12v6a1 1 0 001 1h1m12 0h1a1 1 0 001-1v-6M3 12h18" /></svg>,
   },
 ];
 
@@ -568,20 +552,7 @@ export default function PayBillsPage() {
         ))}
       </div>
 
-      {/* Recent Billers */}
-      <section className="mt-2">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent</h3>
-        <div className="flex items-center space-x-4 overflow-x-auto pb-4">
-          {['Mom', 'Electrician', 'Landlord', 'Sister'].map((contact, idx) => (
-            <div key={idx} className="flex flex-col items-center flex-shrink-0">
-              <div className="w-12 h-12 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-700 dark:text-slate-600 border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-100">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-              </div>
-              <p className="text-[11px] font-medium text-gray-600 mt-2 truncate w-14 text-center">{contact}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+
 
       {/* ── Modal ── */}
       {activeCategory && activeConfig && (

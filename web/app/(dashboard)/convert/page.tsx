@@ -134,8 +134,8 @@ export default function ConvertPage() {
           
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#E0E7FF] dark:bg-blue-900/30 rounded-full flex items-center justify-center text-[#0047FF] font-bold text-[12px]">
-                NGN
+              <div className="w-10 h-10 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[18px]">
+                ₦
               </div>
               <span className="text-[15px] text-[#475569] dark:text-slate-300">NGN Balance</span>
             </div>
@@ -146,7 +146,7 @@ export default function ConvertPage() {
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[10px]">
+              <div className="w-10 h-10 bg-[#16a34a] rounded-full flex items-center justify-center text-white font-bold text-[18px]">
                 T
               </div>
               <span className="text-[15px] text-[#475569] dark:text-slate-300">USDT Balance</span>

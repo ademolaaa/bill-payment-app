@@ -27,7 +27,7 @@ def run_concurrency_test():
         try:
             # Step 1: Login
             print("[1] Logging in to establish authenticated session...")
-            page.goto("http://localhost:3000/login")
+            page.goto("http://localhost:3999/login")
             page.wait_for_load_state("networkidle")
             
             page.fill('input[name="email"]', test_email)
