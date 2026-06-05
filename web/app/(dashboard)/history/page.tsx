@@ -692,6 +692,7 @@ export default function HistoryPage() {
                     if (!element) {
                       throw new Error('Statement template element not found in DOM.');
                     }
+
                     
                     const startDateStr = downloadStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     const endDateStr = downloadEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -703,7 +704,22 @@ export default function HistoryPage() {
                       html2canvas:  { 
                         scale: 2, 
                         useCORS: true, 
-                        letterRendering: true
+                        letterRendering: true,
+                        onclone: (clonedDoc: any) => {
+                          const templates = clonedDoc.querySelectorAll('.kyvatron-pdf-template');
+                          templates.forEach((el: any) => {
+                            el.style.position = 'static';
+                            el.style.left = '0';
+                            el.style.top = '0';
+                            el.style.width = '794px';
+                            // Dynamically calculate and force the exact scrollHeight of the contents (at least A4 height)
+                            const actualHeight = Math.max(el.scrollHeight || 0, 1123);
+                            el.style.height = `${actualHeight}px`;
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                            el.style.opacity = '1';
+                          });
+                        }
                       },
                       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                     };
@@ -777,17 +793,17 @@ export default function HistoryPage() {
         <div 
           style={{ 
             position: 'absolute', 
-            left: '0', 
+            left: '-9999px', 
             top: '0', 
-            width: '0', 
-            height: '0', 
+            width: '794px', 
+            height: '1123px', 
             overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: 9999
+            zIndex: -100
           }}
         >
           <div 
             id="kyvatron-statement-template" 
+            className="kyvatron-pdf-template"
             style={{ 
               backgroundColor: '#ffffff', 
               color: '#000000', 
