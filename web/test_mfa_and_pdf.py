@@ -47,6 +47,9 @@ def run_tests():
         context.set_default_timeout(60000)
         context.set_default_navigation_timeout(60000)
         page = context.new_page()
+        
+        # Automatically accept dialogs (alerts, etc.) to prevent hanging or close errors
+        page.on("dialog", lambda dialog: dialog.accept())
 
         # Listen to console log errors
         page.on("console", lambda msg: print(f"[Browser Console] {msg.type}: {msg.text}"))
@@ -192,12 +195,20 @@ def run_tests():
 
             print("[*] Triggering PDF generation and script loading...")
             
-            # Click the submit download button
-            page.click('div.fixed button:has-text("Download Statement"):visible')
+            # Expect a download when clicking the button
+            with page.expect_download(timeout=20000) as download_info:
+                page.click('div.fixed button:has-text("Download Statement"):visible')
             
-            # Since html2pdf triggers a window save/download dialog, we wait a bit to check if it throws any integrity errors
-            print("[*] Waiting to ensure no script errors or integrity blocks occur...")
-            page.wait_for_timeout(5000)
+            download = download_info.value
+            download_path = "web/statement.pdf"
+            download.save_as(download_path)
+            
+            import os
+            file_size = os.path.getsize(download_path)
+            print(f"[+] PDF statement downloaded successfully! Saved to {download_path} ({file_size} bytes)")
+            
+            if file_size < 1000:
+                raise Exception(f"Downloaded PDF is too small ({file_size} bytes), likely empty or failed.")
             
             # If there was an error, browser logs would catch page errors. Let's make sure it doesn't fail.
             print("[+] Verified: html2pdf.js loaded and executed successfully without integrity errors!")

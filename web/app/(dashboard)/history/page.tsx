@@ -688,12 +688,21 @@ export default function HistoryPage() {
                     
                     // Initialize and load the client-side generator from CDN
                     const html2pdf = await loadHtml2Pdf();
-                    const element = document.getElementById('kyvatron-statement-template');
+                    const element = document.getElementById('kyvatron-statement-wrapper');
                     if (!element) {
-                      throw new Error('Statement template element not found in DOM.');
+                      throw new Error('Statement wrapper element not found in DOM.');
                     }
-
+                    const r1 = element.getBoundingClientRect();
+                    console.log('[DEBUG PDF] wrapper rect width/height/top/left:', r1.width, r1.height, r1.top, r1.left);
+                    const templateEl = document.getElementById('kyvatron-statement-template');
+                    if (templateEl) {
+                      const r2 = templateEl.getBoundingClientRect();
+                      console.log('[DEBUG PDF] template rect width/height/top/left:', r2.width, r2.height, r2.top, r2.left);
+                    }
                     
+                    const finalHeight = element ? Math.max(element.offsetHeight || element.scrollHeight || 1123, 1123) : 1123;
+                    console.log('[DEBUG PDF] final height for rendering:', finalHeight);
+
                     const startDateStr = downloadStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     const endDateStr = downloadEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                     
@@ -705,16 +714,59 @@ export default function HistoryPage() {
                         scale: 2, 
                         useCORS: true, 
                         letterRendering: true,
+                        width: 794,
+                        height: finalHeight,
+                        windowWidth: 794,
+                        windowHeight: finalHeight,
                         onclone: (clonedDoc: any) => {
+                          // Clear HTML & Body styles that could restrict height or overflow in cloned doc
+                          if (clonedDoc.documentElement) {
+                            clonedDoc.documentElement.style.height = 'auto';
+                            clonedDoc.documentElement.style.minHeight = '0';
+                            clonedDoc.documentElement.style.overflow = 'visible';
+                          }
+                          if (clonedDoc.body) {
+                            clonedDoc.body.style.height = 'auto';
+                            clonedDoc.body.style.minHeight = '0';
+                            clonedDoc.body.style.overflow = 'visible';
+                            clonedDoc.body.style.width = 'auto';
+                          }
+
+                          // Fix the html2pdf container
+                          const containers = clonedDoc.querySelectorAll('.html2pdf__container');
+                          containers.forEach((container: any) => {
+                            container.style.width = '794px';
+                            container.style.height = `${finalHeight}px`;
+                            container.style.overflow = 'visible';
+                            container.style.opacity = '1';
+                            container.style.visibility = 'visible';
+                            container.style.display = 'block';
+                            container.style.position = 'static';
+                          });
+
+                          // FIX: PDF statement generation wrapper handling in cloned doc
+                          const wrappers = clonedDoc.querySelectorAll('[id="kyvatron-statement-wrapper"]');
+                          console.log('[DEBUG PDF onclone] wrappers count:', wrappers.length);
+                          wrappers.forEach((wrapper: any, idx: number) => {
+                            wrapper.style.position = 'static';
+                            wrapper.style.left = '0';
+                            wrapper.style.top = '0';
+                            wrapper.style.width = '794px';
+                            wrapper.style.height = `${finalHeight}px`;
+                            wrapper.style.opacity = '1';
+                            wrapper.style.visibility = 'visible';
+                            wrapper.style.display = 'block';
+                            wrapper.style.overflow = 'visible';
+                          });
+
                           const templates = clonedDoc.querySelectorAll('.kyvatron-pdf-template');
-                          templates.forEach((el: any) => {
+                          console.log('[DEBUG PDF onclone] templates count:', templates.length);
+                          templates.forEach((el: any, idx: number) => {
                             el.style.position = 'static';
                             el.style.left = '0';
                             el.style.top = '0';
                             el.style.width = '794px';
-                            // Dynamically calculate and force the exact scrollHeight of the contents (at least A4 height)
-                            const actualHeight = Math.max(el.scrollHeight || 0, 1123);
-                            el.style.height = `${actualHeight}px`;
+                            el.style.height = `${finalHeight}px`;
                             el.style.display = 'block';
                             el.style.visibility = 'visible';
                             el.style.opacity = '1';
@@ -789,16 +841,20 @@ export default function HistoryPage() {
       )}
 
       {/* High-Fidelity Printable PDF Statement Template */}
+      {/* FIX: PDF statement generation wrapper positioning & visibility */}
       {downloading && (
         <div 
+          id="kyvatron-statement-wrapper"
           style={{ 
-            position: 'absolute', 
-            left: '-9999px', 
+            position: 'fixed', 
+            left: '0', 
             top: '0', 
             width: '794px', 
-            height: '1123px', 
-            overflow: 'hidden',
-            zIndex: -100
+            height: 'auto', 
+            overflow: 'visible',
+            zIndex: -9999,
+            opacity: 0,
+            pointerEvents: 'none'
           }}
         >
           <div 
@@ -828,27 +884,31 @@ export default function HistoryPage() {
 
         <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', marginBottom: '30px' }} />
 
-        {/* Statement Information Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: '16px', columnGap: '40px', marginBottom: '35px', fontSize: '13px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-            <span style={{ fontWeight: '600', color: '#64748B' }}>Statement Period:</span>
-            <span style={{ fontWeight: '700', color: '#0F172A' }}>
-              {downloadStartDate ? downloadStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''} - {downloadEndDate ? downloadEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
-            </span>
+        {/* Statement Information Grid (using Flexbox to ensure html2canvas rendering) */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', fontSize: '13px' }}>
+          <div style={{ width: '48%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+              <span style={{ fontWeight: '600', color: '#64748B' }}>Statement Period:</span>
+              <span style={{ fontWeight: '700', color: '#0F172A' }}>
+                {downloadStartDate ? downloadStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''} - {downloadEndDate ? downloadEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+              <span style={{ fontWeight: '600', color: '#64748B' }}>Generated:</span>
+              <span style={{ fontWeight: '700', color: '#0F172A' }}>
+                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-            <span style={{ fontWeight: '600', color: '#64748B' }}>Account Name:</span>
-            <span style={{ fontWeight: '700', color: '#0F172A' }}>{userFullName || 'John Doe'}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-            <span style={{ fontWeight: '600', color: '#64748B' }}>Generated:</span>
-            <span style={{ fontWeight: '700', color: '#0F172A' }}>
-              {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-            <span style={{ fontWeight: '600', color: '#64748B' }}>Currency:</span>
-            <span style={{ fontWeight: '700', color: '#0F172A' }}>Multi-Currency (NGN / USDT)</span>
+          <div style={{ width: '48%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+              <span style={{ fontWeight: '600', color: '#64748B' }}>Account Name:</span>
+              <span style={{ fontWeight: '700', color: '#0F172A' }}>{userFullName || 'John Doe'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+              <span style={{ fontWeight: '600', color: '#64748B' }}>Currency:</span>
+              <span style={{ fontWeight: '700', color: '#0F172A' }}>Multi-Currency (NGN / USDT)</span>
+            </div>
           </div>
         </div>
 
