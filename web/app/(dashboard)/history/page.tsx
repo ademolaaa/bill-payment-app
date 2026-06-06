@@ -713,11 +713,13 @@ export default function HistoryPage() {
                       html2canvas:  { 
                         scale: 2, 
                         useCORS: true, 
-                        letterRendering: true,
+                        letterRendering: false,
                         width: 794,
                         height: finalHeight,
                         windowWidth: 794,
                         windowHeight: finalHeight,
+                        scrollX: 0,
+                        scrollY: 0,
                         onclone: (clonedDoc: any) => {
                           // Clear HTML & Body styles that could restrict height or overflow in cloned doc
                           if (clonedDoc.documentElement) {
@@ -871,43 +873,66 @@ export default function HistoryPage() {
             }}
           >
             {/* Header Block */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '30px' }}>
-          <div>
-            <h1 style={{ fontSize: '36px', fontWeight: '800', color: '#0047FF', margin: '0 0 8px 0', letterSpacing: '-0.025em', lineHeight: '1' }}>
-              KYVATRON
-            </h1>
-            <p style={{ fontSize: '13px', color: '#64748B', margin: '0', fontWeight: '500' }}>
-              Official Account Transaction Statement
-            </p>
-          </div>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+              <div>
+                <h1 style={{ fontSize: '36px', fontWeight: '800', color: '#0047FF', margin: '0 0 8px 0', letterSpacing: '-0.025em', lineHeight: '1' }}>
+                  KYVATRON
+                </h1>
+                <p style={{ fontSize: '13px', color: '#64748B', margin: '0', fontWeight: '500' }}>
+                  Official Account Transaction Statement
+                </p>
+              </div>
+              <img 
+                src="/logo.png" 
+                alt="Kyvatron Logo" 
+                style={{ 
+                  height: '42px', 
+                  objectFit: 'contain', 
+                  display: 'block' 
+                }} 
+              />
+            </div>
 
-        <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', marginBottom: '30px' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', marginBottom: '30px' }} />
 
         {/* Statement Information Grid (using Flexbox to ensure html2canvas rendering) */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', fontSize: '13px' }}>
-          <div style={{ width: '48%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#64748B' }}>Statement Period:</span>
-              <span style={{ fontWeight: '700', color: '#0F172A' }}>
-                {downloadStartDate ? downloadStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''} - {downloadEndDate ? downloadEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+          <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{ fontWeight: '700', color: '#0F172A', width: '135px', flexShrink: 0 }}>Statement Period:</span>
+              <span style={{ fontWeight: '500', color: '#475569' }}>
+                {downloadStartDate && downloadEndDate ? (() => {
+                  const startMonth = downloadStartDate.toLocaleDateString('en-US', { month: 'short' });
+                  const startDay = downloadStartDate.getDate();
+                  const startYear = downloadStartDate.getFullYear();
+                  
+                  const endMonth = downloadEndDate.toLocaleDateString('en-US', { month: 'short' });
+                  const endDay = downloadEndDate.getDate();
+                  const endYear = downloadEndDate.getFullYear();
+                  
+                  if (startYear === endYear) {
+                    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${startYear}`;
+                  } else {
+                    return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
+                  }
+                })() : ''}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#64748B' }}>Generated:</span>
-              <span style={{ fontWeight: '700', color: '#0F172A' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{ fontWeight: '700', color: '#0F172A', width: '135px', flexShrink: 0 }}>Generated:</span>
+              <span style={{ fontWeight: '500', color: '#475569' }}>
                 {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
           </div>
-          <div style={{ width: '48%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#64748B' }}>Account Name:</span>
-              <span style={{ fontWeight: '700', color: '#0F172A' }}>{userFullName || 'John Doe'}</span>
+          <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{ fontWeight: '700', color: '#0F172A', width: '115px', flexShrink: 0 }}>Account Name:</span>
+              <span style={{ fontWeight: '500', color: '#475569' }}>{userFullName || 'John Doe'}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#64748B' }}>Currency:</span>
-              <span style={{ fontWeight: '700', color: '#0F172A' }}>Multi-Currency (NGN / USDT)</span>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{ fontWeight: '700', color: '#0F172A', width: '115px', flexShrink: 0 }}>Currency:</span>
+              <span style={{ fontWeight: '500', color: '#475569' }}>Multi-Currency (NGN / USDT)</span>
             </div>
           </div>
         </div>
@@ -916,11 +941,11 @@ export default function HistoryPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginBottom: '30px' }}>
           <thead>
             <tr style={{ backgroundColor: '#0047FF' }}>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', borderTopLeftRadius: '6px', borderBottomLeftRadius: '6px', width: '22%' }}>DATE & TIME</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '15%' }}>TYPE</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '28%' }}>DESCRIPTION</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '23%' }}>AMOUNT</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', borderTopRightRadius: '6px', borderBottomRightRadius: '6px', width: '12%' }}>STATUS</th>
+              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', borderTopLeftRadius: '6px', borderBottomLeftRadius: '6px', width: '22%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Date & Time</th>
+              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '15%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Type</th>
+              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '28%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Description</th>
+              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '23%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Amount</th>
+              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', borderTopRightRadius: '6px', borderBottomRightRadius: '6px', width: '12%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -938,71 +963,115 @@ export default function HistoryPage() {
                 const baseAmountVal = Number(tx.amount);
                 const receiveAmountVal = Number(tx.metadata?.receive_amount || tx.metadata?.converted_amount || (baseAmountVal * (baseCurrency === 'NGN' ? 0.00065 : 1500)));
 
-                const isSuccess = tx.status === 'successful' || tx.status === 'completed';
-                const isPending = tx.status === 'pending';
-                
                 const txDate = new Date(tx.created_at);
                 const dateStr = txDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const timeStr = txDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-                // Provider description matching
-                let displayDescription = tx.description || 'Transaction';
-                if (tx.type === 'deposit') displayDescription = 'Deposit';
-                if (tx.type === 'conversion') displayDescription = `Convert ${tx.currency}`;
-                if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
-
+                // Type normalization
+                let displayType = 'Transaction';
                 const isInvestment = tx.type === 'withdrawal' && (
                   tx.tx_ref?.startsWith('kyvatron-invest') || 
                   tx.description?.toLowerCase().includes('investment') || 
                   tx.description?.toLowerCase().includes('roi')
                 );
-
-                let displayType = tx.type;
-                if (isPositive) {
-                  displayType = tx.type === 'deposit' ? 'Deposit' : 'Refund';
-                } else if (isInvestment) {
+                if (isInvestment) {
                   displayType = 'Investment';
+                } else if (tx.type === 'deposit') {
+                  displayType = 'Deposit';
+                } else if (tx.type === 'withdrawal') {
+                  displayType = 'Withdrawal';
                 } else if (tx.type === 'conversion') {
                   displayType = 'Conversion';
                 } else if (tx.type === 'bill_payment') {
                   displayType = 'Bill Payment';
-                } else if (tx.type === 'withdrawal') {
-                  displayType = 'Withdrawal';
                 }
+
+                // Description normalization
+                let displayDescription = tx.description || '';
+                if (tx.type === 'conversion') {
+                  displayDescription = `${baseCurrency} to ${receiveCurrency}`;
+                } else if (!displayDescription) {
+                  if (tx.type === 'deposit') displayDescription = 'Deposit';
+                  else if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
+                  else displayDescription = 'Transaction';
+                } else {
+                  if (tx.type === 'deposit') {
+                    if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) {
+                      displayDescription = 'USDT (TRC20)';
+                    } else {
+                      displayDescription = 'NGN';
+                    }
+                  } else if (tx.type === 'withdrawal') {
+                    if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) {
+                      displayDescription = 'USDT (TRC20)';
+                    } else if (displayDescription.toLowerCase().includes('bank') || displayDescription.toLowerCase().includes('transfer')) {
+                      displayDescription = 'Bank Transfer';
+                    }
+                  } else if (tx.type === 'bill_payment') {
+                    if (displayDescription.toLowerCase().includes('dstv')) {
+                      displayDescription = 'DSTv Subscription';
+                    } else if (displayDescription.toLowerCase().includes('airtime')) {
+                      displayDescription = 'Airtime Top-up';
+                    }
+                  }
+                }
+
+                // Status mapping
+                const pdfStatus = tx.status?.toLowerCase();
+                let statusLabel = 'Failed';
+                let statusColor = '#EF4444'; // default red
+                if (pdfStatus === 'successful' || pdfStatus === 'completed') {
+                  statusLabel = 'Completed';
+                  statusColor = '#16A34A';
+                } else if (pdfStatus === 'active') {
+                  statusLabel = 'Active';
+                  statusColor = '#16A34A';
+                } else if (pdfStatus === 'pending') {
+                  statusLabel = 'Pending';
+                  statusColor = '#F59E0B';
+                }
+
+                // Amount formatting helper
+                const formatVal = (val: number) => {
+                  return val.toLocaleString('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                  });
+                };
 
                 // Zebra striping
                 const rowBg = idx % 2 === 1 ? '#F8FAFC' : '#ffffff';
 
                 return (
-                  <tr key={tx.id} style={{ backgroundColor: rowBg, borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '12px 14px', color: '#475569' }}>
-                      <div style={{ fontWeight: '600', color: '#0F172A' }}>{dateStr}</div>
+                  <tr key={tx.id} style={{ backgroundColor: rowBg, borderBottom: '1px solid #F1F5F9', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '12px 14px', color: '#475569', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                      <div style={{ fontWeight: '500', color: '#0F172A' }}>{dateStr}</div>
                       <div style={{ fontSize: '9px', color: '#94A3B8', marginTop: '2px' }}>{timeStr}</div>
                     </td>
-                    <td style={{ padding: '12px 14px', fontWeight: '600', color: '#0F172A', textTransform: 'capitalize' }}>
+                    <td style={{ padding: '12px 14px', fontWeight: '500', color: '#0F172A', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {displayType}
                     </td>
-                    <td style={{ padding: '12px 14px', color: '#475569', fontWeight: '500', wordBreak: 'break-all' }}>
+                    <td style={{ padding: '12px 14px', color: '#475569', fontWeight: '500', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {displayDescription}
                     </td>
-                    <td style={{ padding: '12px 14px' }}>
+                    <td style={{ padding: '12px 14px', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {isConversion ? (
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: '700', color: '#0F172A' }}>
-                            -{baseAmountVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {baseCurrency}
+                            -{formatVal(baseAmountVal)} {baseCurrency}
                           </span>
                           <span style={{ fontWeight: '700', color: '#16A34A', marginTop: '2px' }}>
-                            +{receiveAmountVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {receiveCurrency}
+                            +{formatVal(receiveAmountVal)} {receiveCurrency}
                           </span>
                         </div>
                       ) : (
                         <span style={{ fontWeight: '700', color: isPositive ? '#16A34A' : '#0F172A' }}>
-                          {isPositive ? '+' : '-'}{baseAmountVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {baseCurrency}
+                          {isPositive ? '+' : '-'}{formatVal(baseAmountVal)} {baseCurrency}
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '12px 14px', fontWeight: '700', color: isSuccess ? '#16A34A' : isPending ? '#F59E0B' : '#EF4444' }}>
-                      {isSuccess ? 'Completed' : isPending ? 'Pending' : 'Failed'}
+                    <td style={{ padding: '12px 14px', fontWeight: '500', color: statusColor, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                      {statusLabel}
                     </td>
                   </tr>
                 );

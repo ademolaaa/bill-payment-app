@@ -193,7 +193,9 @@ def run_tests():
                 days[0].click()
                 page.wait_for_timeout(1000)
 
-            print("[*] Triggering PDF generation and script loading...")
+            print("[*] Triggering PDF generation after scrolling window down...")
+            page.evaluate("window.scrollTo(0, 300)")
+            page.wait_for_timeout(1000)
             
             # Expect a download when clicking the button
             with page.expect_download(timeout=20000) as download_info:
