@@ -330,8 +330,8 @@ export default function HistoryPage() {
       }
 
       // 2. Filter by Date
-      if (selectedTime === 'Custom Date Range' && filterStartDate) {
-        const txDate = new Date(tx.created_at);
+      if (selectedTime !== 'All Time' && filterStartDate) {
+        const txDate = parseCreatedAt(tx.created_at);
         // Start of start date
         const start = new Date(filterStartDate);
         start.setHours(0, 0, 0, 0);
