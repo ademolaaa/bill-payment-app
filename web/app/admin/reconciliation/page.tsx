@@ -246,7 +246,7 @@ export default function ReconciliationPage() {
                 Bank Amount: <strong>₦{selectedDeposit.amount.toLocaleString()}</strong> | Ref: <strong>{selectedDeposit.reference}</strong>
               </span>
               <span className="opacity-90 block mt-1.5">
-                Below are the closest automated matches based on transaction amount. If there's a small discrepancy, matching will result in a <strong>Partial Match</strong> with variance logging.
+                Below are the closest automated matches based on transaction amount. If there&apos;s a small discrepancy, matching will result in a <strong>Partial Match</strong> with variance logging.
               </span>
             </div>
 

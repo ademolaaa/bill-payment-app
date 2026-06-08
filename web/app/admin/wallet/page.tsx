@@ -413,7 +413,7 @@ export default function WalletPage() {
               <div className="flex justify-between items-start border-t border-slate-100 dark:border-slate-800 pt-3">
                 <span className="text-slate-400">Audit Reason:</span>
                 <span className="font-medium text-slate-800 dark:text-slate-200 italic break-all max-w-[200px] text-right">
-                  "{adjustReason}"
+                  &quot;{adjustReason}&quot;
                 </span>
               </div>
             </div>

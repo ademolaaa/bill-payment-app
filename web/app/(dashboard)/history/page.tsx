@@ -7,9 +7,61 @@ import Link from 'next/link';
 import { supabase } from '../../../lib/supabase/client';
 
 // Date helper functions
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const parseCreatedAt = (dateVal: any): Date => {
+  if (!dateVal) return new Date();
+  if (dateVal instanceof Date) return dateVal;
+  
+  const str = String(dateVal);
+  // Replace space with T for Safari compatibility
+  const normalized = str.replace(' ', 'T');
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) {
+    const dFallback = new Date(str);
+    return isNaN(dFallback.getTime()) ? new Date() : dFallback;
+  }
+  return d;
+};
+
 const formatDate = (date: Date | null) => {
   if (!date) return 'Select Date';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const month = MONTHS[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
+};
+
+const formatStatementDate = (date: Date) => {
+  const month = MONTHS[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
+};
+
+const formatStatementTime = (date: Date) => {
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 should be 12
+  return `${hours}:${minutes} ${ampm}`;
+};
+
+const formatStatementPeriod = (start: Date | null, end: Date | null) => {
+  if (!start || !end) return '';
+  const startMonth = MONTHS[start.getMonth()];
+  const startDay = start.getDate();
+  const startYear = start.getFullYear();
+  
+  const endMonth = MONTHS[end.getMonth()];
+  const endDay = end.getDate();
+  const endYear = end.getFullYear();
+  
+  if (startYear === endYear) {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${startYear}`;
+  }
+  return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
 };
 
 const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -426,13 +478,8 @@ export default function HistoryPage() {
               const isSuccess = tx.status === 'successful' || tx.status === 'completed';
               const isPending = tx.status === 'pending';
 
-              const txDateStr = new Date(tx.created_at).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              });
+              const txDate = parseCreatedAt(tx.created_at);
+              const txDateStr = `${formatStatementDate(txDate)}, ${formatStatementTime(txDate)}`;
 
               // Custom provider descriptions
               let displayDescription = tx.description || 'Transaction';
@@ -677,7 +724,7 @@ export default function HistoryPage() {
                     
                     // Filter down to the transactions matching the selected range
                     const filtered = transactions.filter(tx => {
-                      const txDate = new Date(tx.created_at);
+                      const txDate = parseCreatedAt(tx.created_at);
                       return txDate >= start && txDate <= end;
                     });
                     
@@ -703,23 +750,25 @@ export default function HistoryPage() {
                     const finalHeight = element ? Math.max(element.offsetHeight || element.scrollHeight || 1123, 1123) : 1123;
                     console.log('[DEBUG PDF] final height for rendering:', finalHeight);
 
-                    const startDateStr = downloadStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const endDateStr = downloadEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const startDateStr = formatDate(downloadStartDate);
+                    const endDateStr = formatDate(downloadEndDate);
                     
                     const opt = {
-                      margin:       12,
+                      margin:       0,
                       filename:     `Kyvatron_Statement_${downloadStartDate.toISOString().split('T')[0]}_to_${downloadEndDate.toISOString().split('T')[0]}.pdf`,
                       image:        { type: 'jpeg', quality: 0.98 },
                       html2canvas:  { 
                         scale: 2, 
                         useCORS: true, 
-                        letterRendering: false,
+                        letterRendering: true,
                         width: 794,
                         height: finalHeight,
                         windowWidth: 794,
                         windowHeight: finalHeight,
                         scrollX: 0,
                         scrollY: 0,
+                        x: 0,
+                        y: 0,
                         onclone: (clonedDoc: any) => {
                           // Clear HTML & Body styles that could restrict height or overflow in cloned doc
                           if (clonedDoc.documentElement) {
@@ -750,7 +799,7 @@ export default function HistoryPage() {
                           const wrappers = clonedDoc.querySelectorAll('[id="kyvatron-statement-wrapper"]');
                           console.log('[DEBUG PDF onclone] wrappers count:', wrappers.length);
                           wrappers.forEach((wrapper: any, idx: number) => {
-                            wrapper.style.position = 'static';
+                            wrapper.style.position = 'absolute';
                             wrapper.style.left = '0';
                             wrapper.style.top = '0';
                             wrapper.style.width = '794px';
@@ -764,7 +813,7 @@ export default function HistoryPage() {
                           const templates = clonedDoc.querySelectorAll('.kyvatron-pdf-template');
                           console.log('[DEBUG PDF onclone] templates count:', templates.length);
                           templates.forEach((el: any, idx: number) => {
-                            el.style.position = 'static';
+                            el.style.position = 'relative';
                             el.style.left = '0';
                             el.style.top = '0';
                             el.style.width = '794px';
@@ -843,256 +892,167 @@ export default function HistoryPage() {
       )}
 
       {/* High-Fidelity Printable PDF Statement Template */}
-      {/* FIX: PDF statement generation wrapper positioning & visibility */}
       {downloading && (
-        <div 
+        <div
           id="kyvatron-statement-wrapper"
-          style={{ 
-            position: 'fixed', 
-            left: '0', 
-            top: '0', 
-            width: '794px', 
-            height: 'auto', 
-            overflow: 'visible',
-            zIndex: -9999,
-            opacity: 0,
-            pointerEvents: 'none'
+          style={{
+            position: 'absolute', left: '0', top: '0', width: '794px', height: 'auto',
+            overflow: 'visible', zIndex: -9999, opacity: 0, pointerEvents: 'none'
           }}
         >
-          <div 
-            id="kyvatron-statement-template" 
+          <div
+            id="kyvatron-statement-template"
             className="kyvatron-pdf-template"
-            style={{ 
-              backgroundColor: '#ffffff', 
-              color: '#000000', 
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              padding: '40px',
-              width: '794px', // Standard A4 pixel size at 96 DPI
-              minHeight: '1123px',
-              boxSizing: 'border-box'
+            style={{
+              backgroundColor: '#ffffff', color: '#000000',
+              fontFamily: 'Arial, Helvetica, sans-serif',
+              padding: '48px', width: '794px', minHeight: '1123px', boxSizing: 'border-box'
             }}
           >
-            {/* Header Block */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-              <div>
-                <h1 style={{ fontSize: '36px', fontWeight: '800', color: '#0047FF', margin: '0 0 8px 0', letterSpacing: '-0.025em', lineHeight: '1' }}>
-                  KYVATRON
-                </h1>
-                <p style={{ fontSize: '13px', color: '#64748B', margin: '0', fontWeight: '500' }}>
-                  Official Account Transaction Statement
-                </p>
-              </div>
-              <img 
-                src="/logo.png" 
-                alt="Kyvatron Logo" 
-                style={{ 
-                  height: '42px', 
-                  objectFit: 'contain', 
-                  display: 'block' 
-                }} 
-              />
+            {/* ── HEADER (table layout — no flex/SVG for html2canvas) ── */}
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}><tbody><tr>
+              <td style={{ verticalAlign: 'middle', padding: 0 }}>
+                <div style={{ fontSize: '36px', fontWeight: '900', color: '#0047FF', letterSpacing: '0.02em', lineHeight: '1', marginBottom: '8px' }}>KYVATRON</div>
+                <div style={{ fontSize: '14px', color: '#475569', fontWeight: '500' }}>Official Account Transaction Statement</div>
+              </td>
+            </tr></tbody></table>
+
+            {/* ── INFO GRID (nested tables — no flex) ── */}
+            <div style={{ marginBottom: '32px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}><tbody><tr>
+                <td style={{ verticalAlign: 'top', width: '50%', paddingRight: '16px' }}>
+                  <table style={{ borderCollapse: 'collapse' }}><tbody>
+                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Statement Period:</td><td style={{ padding: '6px 0', color: '#475569' }}>{formatStatementPeriod(downloadStartDate, downloadEndDate)}</td></tr>
+                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Generated:</td><td style={{ padding: '6px 0', color: '#475569' }}>{formatStatementDate(new Date())}</td></tr>
+                  </tbody></table>
+                </td>
+                <td style={{ verticalAlign: 'top', width: '50%' }}>
+                  <table style={{ borderCollapse: 'collapse' }}><tbody>
+                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Account Name:</td><td style={{ padding: '6px 0', color: '#475569' }}>{userFullName || 'John Doe'}</td></tr>
+                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Currency:</td><td style={{ padding: '6px 0', color: '#475569' }}>Multi-Currency (NGN / USDT)</td></tr>
+                  </tbody></table>
+                </td>
+              </tr></tbody></table>
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', marginBottom: '30px' }} />
+            {/* ── TABLE ── */}
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginBottom: '28px' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#0047FF' }}>
+                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '20%' }}>Date &amp; Time</th>
+                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '15%' }}>Type</th>
+                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '25%' }}>Description</th>
+                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '25%' }}>Amount</th>
+                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '15%' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statementTransactions.length > 0 ? (
+                  statementTransactions.map((tx, idx) => {
+                    const isPositive = tx.type === 'deposit' || tx.type === 'refund';
+                    const isConversion = tx.type === 'conversion';
+                    const baseCurrency = tx.currency?.toUpperCase() || 'NGN';
+                    const receiveCurrency = (tx.metadata?.receive_currency || (baseCurrency === 'NGN' ? 'USDT' : 'NGN')).toUpperCase();
+                    const baseAmountVal = Number(tx.amount);
+                    const receiveAmountVal = Number(tx.metadata?.receive_amount || tx.metadata?.converted_amount || (baseAmountVal * (baseCurrency === 'NGN' ? 0.00065 : 1500)));
+                    const txDate = parseCreatedAt(tx.created_at);
+                    const dateStr = formatStatementDate(txDate);
+                    const timeStr = formatStatementTime(txDate);
 
-        {/* Statement Information Grid (using Flexbox to ensure html2canvas rendering) */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', fontSize: '13px' }}>
-          <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <span style={{ fontWeight: '700', color: '#0F172A', width: '135px', flexShrink: 0 }}>Statement Period:</span>
-              <span style={{ fontWeight: '500', color: '#475569' }}>
-                {downloadStartDate && downloadEndDate ? (() => {
-                  const startMonth = downloadStartDate.toLocaleDateString('en-US', { month: 'short' });
-                  const startDay = downloadStartDate.getDate();
-                  const startYear = downloadStartDate.getFullYear();
-                  
-                  const endMonth = downloadEndDate.toLocaleDateString('en-US', { month: 'short' });
-                  const endDay = downloadEndDate.getDate();
-                  const endYear = downloadEndDate.getFullYear();
-                  
-                  if (startYear === endYear) {
-                    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${startYear}`;
-                  } else {
-                    return `${startMonth} ${startDay}, ${startYear} - ${endMonth} ${endDay}, ${endYear}`;
-                  }
-                })() : ''}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <span style={{ fontWeight: '700', color: '#0F172A', width: '135px', flexShrink: 0 }}>Generated:</span>
-              <span style={{ fontWeight: '500', color: '#475569' }}>
-                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            </div>
-          </div>
-          <div style={{ width: '50%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <span style={{ fontWeight: '700', color: '#0F172A', width: '115px', flexShrink: 0 }}>Account Name:</span>
-              <span style={{ fontWeight: '500', color: '#475569' }}>{userFullName || 'John Doe'}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <span style={{ fontWeight: '700', color: '#0F172A', width: '115px', flexShrink: 0 }}>Currency:</span>
-              <span style={{ fontWeight: '500', color: '#475569' }}>Multi-Currency (NGN / USDT)</span>
-            </div>
-          </div>
-        </div>
+                    const isInvestment = tx.type === 'withdrawal' && (
+                      tx.tx_ref?.startsWith('kyvatron-invest') ||
+                      tx.description?.toLowerCase().includes('investment') ||
+                      tx.description?.toLowerCase().includes('roi')
+                    );
+                    let displayType = 'Transaction';
+                    if (isInvestment) displayType = 'Investment';
+                    else if (tx.type === 'deposit') displayType = 'Deposit';
+                    else if (tx.type === 'withdrawal') displayType = 'Withdrawal';
+                    else if (tx.type === 'conversion') displayType = 'Conversion';
+                    else if (tx.type === 'bill_payment') displayType = 'Bill Payment';
 
-        {/* Transaction Table */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginBottom: '30px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#0047FF' }}>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', borderTopLeftRadius: '6px', borderBottomLeftRadius: '6px', width: '22%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Date & Time</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '15%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Type</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '28%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Description</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', width: '23%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Amount</th>
-              <th style={{ padding: '12px 14px', color: '#ffffff', fontWeight: '700', textAlign: 'left', borderTopRightRadius: '6px', borderBottomRightRadius: '6px', width: '12%', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {statementTransactions.length > 0 ? (
-              statementTransactions.map((tx, idx) => {
-                const isPositive = tx.type === 'deposit' || tx.type === 'refund';
-                const isUsdt = tx.currency?.toUpperCase() === 'USDT' || 
-                               tx.description?.includes('USDT') || 
-                               tx.description?.toLowerCase().includes('nowpayments');
-                
-                const isConversion = tx.type === 'conversion';
-                const baseCurrency = tx.currency?.toUpperCase() || 'NGN';
-                const receiveCurrency = (tx.metadata?.receive_currency || (baseCurrency === 'NGN' ? 'USDT' : 'NGN')).toUpperCase();
-                
-                const baseAmountVal = Number(tx.amount);
-                const receiveAmountVal = Number(tx.metadata?.receive_amount || tx.metadata?.converted_amount || (baseAmountVal * (baseCurrency === 'NGN' ? 0.00065 : 1500)));
-
-                const txDate = new Date(tx.created_at);
-                const dateStr = txDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const timeStr = txDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-                // Type normalization
-                let displayType = 'Transaction';
-                const isInvestment = tx.type === 'withdrawal' && (
-                  tx.tx_ref?.startsWith('kyvatron-invest') || 
-                  tx.description?.toLowerCase().includes('investment') || 
-                  tx.description?.toLowerCase().includes('roi')
-                );
-                if (isInvestment) {
-                  displayType = 'Investment';
-                } else if (tx.type === 'deposit') {
-                  displayType = 'Deposit';
-                } else if (tx.type === 'withdrawal') {
-                  displayType = 'Withdrawal';
-                } else if (tx.type === 'conversion') {
-                  displayType = 'Conversion';
-                } else if (tx.type === 'bill_payment') {
-                  displayType = 'Bill Payment';
-                }
-
-                // Description normalization
-                let displayDescription = tx.description || '';
-                if (tx.type === 'conversion') {
-                  displayDescription = `${baseCurrency} to ${receiveCurrency}`;
-                } else if (!displayDescription) {
-                  if (tx.type === 'deposit') displayDescription = 'Deposit';
-                  else if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
-                  else displayDescription = 'Transaction';
-                } else {
-                  if (tx.type === 'deposit') {
-                    if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) {
-                      displayDescription = 'USDT (TRC20)';
+                    let displayDescription = tx.description || '';
+                    if (isInvestment) {
+                      const m = (tx.description || '').match(/(\d+)\s*mo(?:nths?)?\s*@?\s*([\d.]+)%\s*ROI/i);
+                      if (m) displayDescription = `${m[1]} Months, ${m[2]}% ROI`;
+                    } else if (isConversion) {
+                      displayDescription = `${baseCurrency} to ${receiveCurrency}`;
+                    } else if (!displayDescription) {
+                      if (tx.type === 'deposit') displayDescription = 'Deposit';
+                      else if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
+                      else displayDescription = 'Transaction';
                     } else {
-                      displayDescription = 'NGN';
+                      if (tx.type === 'deposit') {
+                        displayDescription = (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) ? 'USDT (TRC20)' : 'NGN';
+                      } else if (tx.type === 'withdrawal') {
+                        if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) displayDescription = 'USDT (TRC20)';
+                        else if (displayDescription.toLowerCase().includes('bank') || displayDescription.toLowerCase().includes('transfer')) displayDescription = 'Bank Transfer';
+                      } else if (tx.type === 'bill_payment') {
+                        if (displayDescription.toLowerCase().includes('dstv')) displayDescription = 'DSTv Subscription';
+                        else if (displayDescription.toLowerCase().includes('airtime')) displayDescription = 'Airtime Top-up';
+                      }
                     }
-                  } else if (tx.type === 'withdrawal') {
-                    if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) {
-                      displayDescription = 'USDT (TRC20)';
-                    } else if (displayDescription.toLowerCase().includes('bank') || displayDescription.toLowerCase().includes('transfer')) {
-                      displayDescription = 'Bank Transfer';
-                    }
-                  } else if (tx.type === 'bill_payment') {
-                    if (displayDescription.toLowerCase().includes('dstv')) {
-                      displayDescription = 'DSTv Subscription';
-                    } else if (displayDescription.toLowerCase().includes('airtime')) {
-                      displayDescription = 'Airtime Top-up';
-                    }
-                  }
-                }
 
-                // Status mapping
-                const pdfStatus = tx.status?.toLowerCase();
-                let statusLabel = 'Failed';
-                let statusColor = '#EF4444'; // default red
-                if (pdfStatus === 'successful' || pdfStatus === 'completed') {
-                  statusLabel = 'Completed';
-                  statusColor = '#16A34A';
-                } else if (pdfStatus === 'active') {
-                  statusLabel = 'Active';
-                  statusColor = '#16A34A';
-                } else if (pdfStatus === 'pending') {
-                  statusLabel = 'Pending';
-                  statusColor = '#F59E0B';
-                }
+                    const pdfStatus = tx.status?.toLowerCase();
+                    let statusLabel = 'Failed';
+                    let statusColor = '#EF4444';
+                    if (pdfStatus === 'successful' || pdfStatus === 'completed') { statusLabel = 'Completed'; statusColor = '#16A34A'; }
+                    else if (pdfStatus === 'active') { statusLabel = 'Active'; statusColor = '#16A34A'; }
+                    else if (pdfStatus === 'pending') { statusLabel = 'Pending'; statusColor = '#F59E0B'; }
 
-                // Amount formatting helper
-                const formatVal = (val: number) => {
-                  return val.toLocaleString('en-US', { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                  });
-                };
-
-                // Zebra striping
-                const rowBg = idx % 2 === 1 ? '#F8FAFC' : '#ffffff';
-
-                return (
-                  <tr key={tx.id} style={{ backgroundColor: rowBg, borderBottom: '1px solid #F1F5F9', verticalAlign: 'middle' }}>
-                    <td style={{ padding: '12px 14px', color: '#475569', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                      <div style={{ fontWeight: '500', color: '#0F172A' }}>{dateStr}</div>
-                      <div style={{ fontSize: '9px', color: '#94A3B8', marginTop: '2px' }}>{timeStr}</div>
-                    </td>
-                    <td style={{ padding: '12px 14px', fontWeight: '500', color: '#0F172A', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                      {displayType}
-                    </td>
-                    <td style={{ padding: '12px 14px', color: '#475569', fontWeight: '500', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                      {displayDescription}
-                    </td>
-                    <td style={{ padding: '12px 14px', whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                      {isConversion ? (
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontWeight: '700', color: '#0F172A' }}>
-                            -{formatVal(baseAmountVal)} {baseCurrency}
-                          </span>
-                          <span style={{ fontWeight: '700', color: '#16A34A', marginTop: '2px' }}>
-                            +{formatVal(receiveAmountVal)} {receiveCurrency}
-                          </span>
-                        </div>
-                      ) : (
-                        <span style={{ fontWeight: '700', color: isPositive ? '#16A34A' : '#0F172A' }}>
-                          {isPositive ? '+' : '-'}{formatVal(baseAmountVal)} {baseCurrency}
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: '12px 14px', fontWeight: '500', color: statusColor, whiteSpace: 'normal', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                      {statusLabel}
+                    const fv = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    return (
+                      <tr key={tx.id} style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #EEF2FF' }}>
+                        <td style={{ padding: '14px 10px', verticalAlign: 'top' }}>
+                          <div style={{ color: '#475569', fontWeight: '600', fontSize: '11px', marginBottom: '4px' }}>{dateStr}</div>
+                          <div style={{ color: '#94A3B8', fontSize: '10px' }}>{timeStr}</div>
+                        </td>
+                        <td style={{ padding: '14px 10px', color: '#475569', verticalAlign: 'top' }}>{displayType}</td>
+                        <td style={{ padding: '14px 10px', color: '#475569', wordBreak: 'break-word', verticalAlign: 'top' }}>{displayDescription}</td>
+                        <td style={{ padding: '14px 10px', fontWeight: '600', fontSize: '10px', verticalAlign: 'top' }}>
+                          {isConversion ? (
+                            <div>
+                              <div style={{ color: '#64748B', marginBottom: '4px' }}>-{fv(baseAmountVal)} {baseCurrency}</div>
+                              <div style={{ color: '#16A34A' }}>+{fv(receiveAmountVal)} {receiveCurrency}</div>
+                            </div>
+                          ) : (
+                            <div style={{ color: isPositive ? '#16A34A' : '#64748B' }}>
+                              {isPositive ? '+' : '-'}{fv(baseAmountVal)} {baseCurrency}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: '14px 10px', fontWeight: '600', color: statusColor, verticalAlign: 'top' }}>{statusLabel}</td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '28px', textAlign: 'center', color: '#94A3B8', fontStyle: 'italic' }}>
+                      No transactions found for this period.
                     </td>
                   </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#94A3B8' }}>
-                  No transaction logs registered inside this timeframe.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                )}
+              </tbody>
+            </table>
 
-        {/* Footer block */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#94A3B8', borderTop: '1px solid #E2E8F0', paddingTop: '20px', marginTop: '30px', fontWeight: '500' }}>
-          <span>Total Transactions: {statementTransactions.length}</span>
-          <span>This is an automatically generated statement from Kyvatron.</span>
+            {/* ── FOOTER (table layout) ── */}
+            <div style={{ borderTop: '1.5px solid #E2E8F0', paddingTop: '16px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><tr>
+                <td style={{ verticalAlign: 'bottom', padding: 0 }}>
+                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#0047FF', marginBottom: '3px' }}>KYVATRON</div>
+                  <div style={{ fontSize: '9px', color: '#94A3B8', lineHeight: '1.5' }}>Automatically generated official account statement. For queries, contact support@kyvatron.com.</div>
+                </td>
+                <td style={{ verticalAlign: 'bottom', textAlign: 'right', padding: 0 }}>
+                  <div style={{ border: '2px solid #0047FF', borderRadius: '8px', padding: '8px 14px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '9px', fontWeight: '800', color: '#0047FF', letterSpacing: '0.08em' }}>&#10003; VERIFIED STATEMENT</div>
+                    <div style={{ fontSize: '8px', color: '#64748B', marginTop: '2px' }}>{formatStatementDate(new Date())} · kyvatron.com</div>
+                  </div>
+                </td>
+              </tr></tbody></table>
+            </div>
+
+          </div>
         </div>
-      </div>
-    </div>
       )}
 
     </div>

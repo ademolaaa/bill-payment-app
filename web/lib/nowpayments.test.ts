@@ -3,7 +3,6 @@
  * Covers: signature verification, order ID parsing, status helpers, env validation
  */
 
-/* eslint-disable @typescript-eslint/no-var-requires */
 import nodeCrypto from 'crypto';
 
 // ── Test helpers (inline to avoid import issues with server-only modules) ──

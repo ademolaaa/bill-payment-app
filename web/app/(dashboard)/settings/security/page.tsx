@@ -301,7 +301,7 @@ export default function SecurityPage() {
                   </div>
 
                   <Button onClick={handleScannedCode} variant="primary" className="w-full py-4 text-[16px]">
-                    I've Scanned the Code
+                    I&apos;ve Scanned the Code
                   </Button>
                 </div>
               )}

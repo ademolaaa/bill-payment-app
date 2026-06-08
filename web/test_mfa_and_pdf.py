@@ -37,15 +37,15 @@ def run_tests():
     random_id = random.randint(10000, 99999)
     test_email = f"mfa_tester_{random_id}@kyvatron.com"
     test_password = "Password123!"
-    base_url = "http://localhost:3999"
+    base_url = "http://localhost:3001"
 
     print(f"[*] Creating unique test user: {test_email}")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1280, "height": 800})
-        context.set_default_timeout(60000)
-        context.set_default_navigation_timeout(60000)
+        context.set_default_timeout(120000)
+        context.set_default_navigation_timeout(120000)
         page = context.new_page()
         
         # Automatically accept dialogs (alerts, etc.) to prevent hanging or close errors

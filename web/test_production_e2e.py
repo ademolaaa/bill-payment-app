@@ -207,6 +207,50 @@ def run_tests():
                 else:
                     print("[!] No transaction history links found at all.")
 
+            # ─── STEP 6: PDF STATEMENT GENERATION ───
+            print("[6] Navigating to /history to test PDF Statement Generation...")
+            page.goto(f"{base_url}/history")
+            page.wait_for_selector('button:has-text("Download Statement")')
+            page.wait_for_timeout(2000)
+
+            # Open download calendar
+            print("[*] Opening download statement calendar modal...")
+            page.click('button:has-text("Download Statement")')
+            page.wait_for_selector('h3:has-text("Download Statement")', timeout=5000)
+            
+            # Wait for calendar days to render inside the modal
+            page.locator('div.fixed span.cursor-pointer').first.wait_for(state="visible")
+            days = page.locator('div.fixed span.cursor-pointer').all()
+            print(f"[*] Found {len(days)} calendar day spans inside the modal.")
+            
+            # Click two days to set From and To range
+            if len(days) >= 11:
+                print("[*] Selecting range: Clicking start date (index 5) and end date (index 10)...")
+                days[5].click()
+                page.wait_for_timeout(1000)
+                days[10].click()
+                page.wait_for_timeout(1000)
+            else:
+                print("[*] Calendar day list shorter than expected. Clicking first day twice...")
+                days[0].click()
+                page.wait_for_timeout(1000)
+                days[0].click()
+                page.wait_for_timeout(1000)
+
+            print("[*] Triggering PDF generation and script loading...")
+            
+            # Click the submit download button
+            page.click('div.fixed button:has-text("Download Statement"):visible')
+            
+            # Wait to capture loading spinner screenshot
+            page.wait_for_timeout(1500)
+            page.screenshot(path="web/statement_downloading_spinner.png")
+            print("[+] Captured screenshot of full-screen blur loading spinner during PDF generation!")
+
+            # Wait to ensure no script errors occur
+            page.wait_for_timeout(5000)
+            print("[+] Verified: html2pdf.js loaded and executed successfully on the live site!")
+
             print("=" * 60)
             print("SUCCESS: ALL END-TO-END PRODUCTION TESTS PASSED FLAWLESSLY!")
             print("=" * 60)

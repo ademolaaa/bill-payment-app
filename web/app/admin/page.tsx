@@ -346,7 +346,7 @@ export default function AdminOverviewPage() {
           {/* Finance Core KPI Set */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-              <span className="text-xs font-semibold text-slate-400 uppercase">Today's Revenue</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase">Today&apos;s Revenue</span>
               <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 font-mono mt-1">₦{stats.todayRevenue.toLocaleString()}</h3>
               <p className="text-[10px] text-slate-400 mt-1">Calculated from ₦{stats.totalRevenue.toLocaleString()} total gross</p>
             </div>
@@ -473,7 +473,7 @@ export default function AdminOverviewPage() {
                           Proposed Action: credit ₦{(req.payload.amount).toLocaleString()} to target {req.payload.userId}
                         </p>
                         <p className="text-[11px] text-slate-450 italic mt-0.5 leading-relaxed">
-                          Reason: "{req.payload.reason}"
+                          Reason: &quot;{req.payload.reason}&quot;
                         </p>
                         <div className="flex items-center gap-3 text-[10px] text-slate-400 font-bold mt-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/50">
                           <span className="flex items-center gap-1">

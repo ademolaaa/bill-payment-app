@@ -227,7 +227,7 @@ export default function MakerCheckerPage() {
                             </div>
                             <div>
                               <span className="text-slate-400 font-semibold">Audit Reason:</span>{' '}
-                              <span className="text-slate-600 dark:text-slate-350 italic">"{req.payload.reason}"</span>
+                              <span className="text-slate-600 dark:text-slate-350 italic">&quot;{req.payload.reason}&quot;</span>
                             </div>
                           </>
                         )}
@@ -281,7 +281,7 @@ export default function MakerCheckerPage() {
                           </div>
                           {req.rejectionReason && (
                             <div className="mt-1 font-bold text-rose-500">
-                              Rejection Reason: <span className="italic font-semibold">"{req.rejectionReason}"</span>
+                              Rejection Reason: <span className="italic font-semibold">&quot;{req.rejectionReason}&quot;</span>
                             </div>
                           )}
                         </div>

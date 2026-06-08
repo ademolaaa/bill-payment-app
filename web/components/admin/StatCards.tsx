@@ -92,7 +92,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
       <div className="flex flex-col justify-between p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800/80 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Today's Revenue
+            Today&apos;s Revenue
           </span>
           <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400">
             <Clock className="w-5 h-5" />
