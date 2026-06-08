@@ -892,168 +892,166 @@ export default function HistoryPage() {
       )}
 
       {/* High-Fidelity Printable PDF Statement Template */}
-      {downloading && (
+      <div
+        id="kyvatron-statement-wrapper"
+        style={{
+          position: 'absolute', left: '0', top: '0', width: '794px', height: 'auto',
+          overflow: 'visible', zIndex: -9999, opacity: 0, pointerEvents: 'none'
+        }}
+      >
         <div
-          id="kyvatron-statement-wrapper"
+          id="kyvatron-statement-template"
+          className="kyvatron-pdf-template"
           style={{
-            position: 'absolute', left: '0', top: '0', width: '794px', height: 'auto',
-            overflow: 'visible', zIndex: -9999, opacity: 0, pointerEvents: 'none'
+            backgroundColor: '#ffffff', color: '#000000',
+            fontFamily: 'Arial, Helvetica, sans-serif',
+            padding: '48px', width: '794px', minHeight: '1123px', boxSizing: 'border-box'
           }}
         >
-          <div
-            id="kyvatron-statement-template"
-            className="kyvatron-pdf-template"
-            style={{
-              backgroundColor: '#ffffff', color: '#000000',
-              fontFamily: 'Arial, Helvetica, sans-serif',
-              padding: '48px', width: '794px', minHeight: '1123px', boxSizing: 'border-box'
-            }}
-          >
-            {/* ── HEADER (table layout — no flex/SVG for html2canvas) ── */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}><tbody><tr>
-              <td style={{ verticalAlign: 'middle', padding: 0 }}>
-                <div style={{ fontSize: '36px', fontWeight: '900', color: '#0047FF', letterSpacing: '0.02em', lineHeight: '1', marginBottom: '8px' }}>KYVATRON</div>
-                <div style={{ fontSize: '14px', color: '#475569', fontWeight: '500' }}>Official Account Transaction Statement</div>
+          {/* ── HEADER (table layout — no flex/SVG for html2canvas) ── */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}><tbody><tr>
+            <td style={{ verticalAlign: 'middle', padding: 0 }}>
+              <div style={{ fontSize: '36px', fontWeight: '900', color: '#0047FF', letterSpacing: '0.02em', lineHeight: '1', marginBottom: '8px' }}>KYVATRON</div>
+              <div style={{ fontSize: '14px', color: '#475569', fontWeight: '500' }}>Official Account Transaction Statement</div>
+            </td>
+          </tr></tbody></table>
+
+          {/* ── INFO GRID (nested tables — no flex) ── */}
+          <div style={{ marginBottom: '32px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}><tbody><tr>
+              <td style={{ verticalAlign: 'top', width: '50%', paddingRight: '16px' }}>
+                <table style={{ borderCollapse: 'collapse' }}><tbody>
+                  <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Statement Period:</td><td style={{ padding: '6px 0', color: '#475569' }}>{formatStatementPeriod(downloadStartDate, downloadEndDate)}</td></tr>
+                  <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Generated:</td><td style={{ padding: '6px 0', color: '#475569' }}>{formatStatementDate(new Date())}</td></tr>
+                </tbody></table>
+              </td>
+              <td style={{ verticalAlign: 'top', width: '50%' }}>
+                <table style={{ borderCollapse: 'collapse' }}><tbody>
+                  <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Account Name:</td><td style={{ padding: '6px 0', color: '#475569' }}>{userFullName || 'John Doe'}</td></tr>
+                  <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Currency:</td><td style={{ padding: '6px 0', color: '#475569' }}>Multi-Currency (NGN / USDT)</td></tr>
+                </tbody></table>
               </td>
             </tr></tbody></table>
-
-            {/* ── INFO GRID (nested tables — no flex) ── */}
-            <div style={{ marginBottom: '32px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}><tbody><tr>
-                <td style={{ verticalAlign: 'top', width: '50%', paddingRight: '16px' }}>
-                  <table style={{ borderCollapse: 'collapse' }}><tbody>
-                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Statement Period:</td><td style={{ padding: '6px 0', color: '#475569' }}>{formatStatementPeriod(downloadStartDate, downloadEndDate)}</td></tr>
-                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Generated:</td><td style={{ padding: '6px 0', color: '#475569' }}>{formatStatementDate(new Date())}</td></tr>
-                  </tbody></table>
-                </td>
-                <td style={{ verticalAlign: 'top', width: '50%' }}>
-                  <table style={{ borderCollapse: 'collapse' }}><tbody>
-                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Account Name:</td><td style={{ padding: '6px 0', color: '#475569' }}>{userFullName || 'John Doe'}</td></tr>
-                    <tr><td style={{ padding: '6px 0', fontWeight: '700', color: '#475569', whiteSpace: 'nowrap', paddingRight: '40px' }}>Currency:</td><td style={{ padding: '6px 0', color: '#475569' }}>Multi-Currency (NGN / USDT)</td></tr>
-                  </tbody></table>
-                </td>
-              </tr></tbody></table>
-            </div>
-
-            {/* ── TABLE ── */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginBottom: '28px' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#0047FF' }}>
-                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '20%' }}>Date &amp; Time</th>
-                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '15%' }}>Type</th>
-                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '25%' }}>Description</th>
-                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '25%' }}>Amount</th>
-                  <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '15%' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {statementTransactions.length > 0 ? (
-                  statementTransactions.map((tx, idx) => {
-                    const isPositive = tx.type === 'deposit' || tx.type === 'refund';
-                    const isConversion = tx.type === 'conversion';
-                    const baseCurrency = tx.currency?.toUpperCase() || 'NGN';
-                    const receiveCurrency = (tx.metadata?.receive_currency || (baseCurrency === 'NGN' ? 'USDT' : 'NGN')).toUpperCase();
-                    const baseAmountVal = Number(tx.amount);
-                    const receiveAmountVal = Number(tx.metadata?.receive_amount || tx.metadata?.converted_amount || (baseAmountVal * (baseCurrency === 'NGN' ? 0.00065 : 1500)));
-                    const txDate = parseCreatedAt(tx.created_at);
-                    const dateStr = formatStatementDate(txDate);
-                    const timeStr = formatStatementTime(txDate);
-
-                    const isInvestment = tx.type === 'withdrawal' && (
-                      tx.tx_ref?.startsWith('kyvatron-invest') ||
-                      tx.description?.toLowerCase().includes('investment') ||
-                      tx.description?.toLowerCase().includes('roi')
-                    );
-                    let displayType = 'Transaction';
-                    if (isInvestment) displayType = 'Investment';
-                    else if (tx.type === 'deposit') displayType = 'Deposit';
-                    else if (tx.type === 'withdrawal') displayType = 'Withdrawal';
-                    else if (tx.type === 'conversion') displayType = 'Conversion';
-                    else if (tx.type === 'bill_payment') displayType = 'Bill Payment';
-
-                    let displayDescription = tx.description || '';
-                    if (isInvestment) {
-                      const m = (tx.description || '').match(/(\d+)\s*mo(?:nths?)?\s*@?\s*([\d.]+)%\s*ROI/i);
-                      if (m) displayDescription = `${m[1]} Months, ${m[2]}% ROI`;
-                    } else if (isConversion) {
-                      displayDescription = `${baseCurrency} to ${receiveCurrency}`;
-                    } else if (!displayDescription) {
-                      if (tx.type === 'deposit') displayDescription = 'Deposit';
-                      else if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
-                      else displayDescription = 'Transaction';
-                    } else {
-                      if (tx.type === 'deposit') {
-                        displayDescription = (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) ? 'USDT (TRC20)' : 'NGN';
-                      } else if (tx.type === 'withdrawal') {
-                        if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) displayDescription = 'USDT (TRC20)';
-                        else if (displayDescription.toLowerCase().includes('bank') || displayDescription.toLowerCase().includes('transfer')) displayDescription = 'Bank Transfer';
-                      } else if (tx.type === 'bill_payment') {
-                        if (displayDescription.toLowerCase().includes('dstv')) displayDescription = 'DSTv Subscription';
-                        else if (displayDescription.toLowerCase().includes('airtime')) displayDescription = 'Airtime Top-up';
-                      }
-                    }
-
-                    const pdfStatus = tx.status?.toLowerCase();
-                    let statusLabel = 'Failed';
-                    let statusColor = '#EF4444';
-                    if (pdfStatus === 'successful' || pdfStatus === 'completed') { statusLabel = 'Completed'; statusColor = '#16A34A'; }
-                    else if (pdfStatus === 'active') { statusLabel = 'Active'; statusColor = '#16A34A'; }
-                    else if (pdfStatus === 'pending') { statusLabel = 'Pending'; statusColor = '#F59E0B'; }
-
-                    const fv = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    return (
-                      <tr key={tx.id} style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #EEF2FF' }}>
-                        <td style={{ padding: '14px 10px', verticalAlign: 'top' }}>
-                          <div style={{ color: '#475569', fontWeight: '600', fontSize: '11px', marginBottom: '4px' }}>{dateStr}</div>
-                          <div style={{ color: '#94A3B8', fontSize: '10px' }}>{timeStr}</div>
-                        </td>
-                        <td style={{ padding: '14px 10px', color: '#475569', verticalAlign: 'top' }}>{displayType}</td>
-                        <td style={{ padding: '14px 10px', color: '#475569', wordBreak: 'break-word', verticalAlign: 'top' }}>{displayDescription}</td>
-                        <td style={{ padding: '14px 10px', fontWeight: '600', fontSize: '10px', verticalAlign: 'top' }}>
-                          {isConversion ? (
-                            <div>
-                              <div style={{ color: '#64748B', marginBottom: '4px' }}>-{fv(baseAmountVal)} {baseCurrency}</div>
-                              <div style={{ color: '#16A34A' }}>+{fv(receiveAmountVal)} {receiveCurrency}</div>
-                            </div>
-                          ) : (
-                            <div style={{ color: isPositive ? '#16A34A' : '#64748B' }}>
-                              {isPositive ? '+' : '-'}{fv(baseAmountVal)} {baseCurrency}
-                            </div>
-                          )}
-                        </td>
-                        <td style={{ padding: '14px 10px', fontWeight: '600', color: statusColor, verticalAlign: 'top' }}>{statusLabel}</td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={5} style={{ padding: '28px', textAlign: 'center', color: '#94A3B8', fontStyle: 'italic' }}>
-                      No transactions found for this period.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* ── FOOTER (table layout) ── */}
-            <div style={{ borderTop: '1.5px solid #E2E8F0', paddingTop: '16px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><tr>
-                <td style={{ verticalAlign: 'bottom', padding: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: '900', color: '#0047FF', marginBottom: '3px' }}>KYVATRON</div>
-                  <div style={{ fontSize: '9px', color: '#94A3B8', lineHeight: '1.5' }}>Automatically generated official account statement. For queries, contact support@kyvatron.com.</div>
-                </td>
-                <td style={{ verticalAlign: 'bottom', textAlign: 'right', padding: 0 }}>
-                  <div style={{ border: '2px solid #0047FF', borderRadius: '8px', padding: '8px 14px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '9px', fontWeight: '800', color: '#0047FF', letterSpacing: '0.08em' }}>&#10003; VERIFIED STATEMENT</div>
-                    <div style={{ fontSize: '8px', color: '#64748B', marginTop: '2px' }}>{formatStatementDate(new Date())} · kyvatron.com</div>
-                  </div>
-                </td>
-              </tr></tbody></table>
-            </div>
-
           </div>
+
+          {/* ── TABLE ── */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', marginBottom: '28px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#0047FF' }}>
+                <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '20%' }}>Date &amp; Time</th>
+                <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '15%' }}>Type</th>
+                <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '25%' }}>Description</th>
+                <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '25%' }}>Amount</th>
+                <th style={{ padding: '12px 10px', color: '#fff', fontWeight: '700', textAlign: 'left', width: '15%' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statementTransactions.length > 0 ? (
+                statementTransactions.map((tx, idx) => {
+                  const isPositive = tx.type === 'deposit' || tx.type === 'refund';
+                  const isConversion = tx.type === 'conversion';
+                  const baseCurrency = tx.currency?.toUpperCase() || 'NGN';
+                  const receiveCurrency = (tx.metadata?.receive_currency || (baseCurrency === 'NGN' ? 'USDT' : 'NGN')).toUpperCase();
+                  const baseAmountVal = Number(tx.amount);
+                  const receiveAmountVal = Number(tx.metadata?.receive_amount || tx.metadata?.converted_amount || (baseAmountVal * (baseCurrency === 'NGN' ? 0.00065 : 1500)));
+                  const txDate = parseCreatedAt(tx.created_at);
+                  const dateStr = formatStatementDate(txDate);
+                  const timeStr = formatStatementTime(txDate);
+
+                  const isInvestment = tx.type === 'withdrawal' && (
+                    tx.tx_ref?.startsWith('kyvatron-invest') ||
+                    tx.description?.toLowerCase().includes('investment') ||
+                    tx.description?.toLowerCase().includes('roi')
+                  );
+                  let displayType = 'Transaction';
+                  if (isInvestment) displayType = 'Investment';
+                  else if (tx.type === 'deposit') displayType = 'Deposit';
+                  else if (tx.type === 'withdrawal') displayType = 'Withdrawal';
+                  else if (tx.type === 'conversion') displayType = 'Conversion';
+                  else if (tx.type === 'bill_payment') displayType = 'Bill Payment';
+
+                  let displayDescription = tx.description || '';
+                  if (isInvestment) {
+                    const m = (tx.description || '').match(/(\d+)\s*mo(?:nths?)?\s*@?\s*([\d.]+)%\s*ROI/i);
+                    if (m) displayDescription = `${m[1]} Months, ${m[2]}% ROI`;
+                  } else if (isConversion) {
+                    displayDescription = `${baseCurrency} to ${receiveCurrency}`;
+                  } else if (!displayDescription) {
+                    if (tx.type === 'deposit') displayDescription = 'Deposit';
+                    else if (tx.type === 'bill_payment') displayDescription = `${tx.metadata?.category || 'Utility'} Payment`;
+                    else displayDescription = 'Transaction';
+                  } else {
+                    if (tx.type === 'deposit') {
+                      displayDescription = (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) ? 'USDT (TRC20)' : 'NGN';
+                    } else if (tx.type === 'withdrawal') {
+                      if (baseCurrency === 'USDT' || displayDescription.toLowerCase().includes('usdt')) displayDescription = 'USDT (TRC20)';
+                      else if (displayDescription.toLowerCase().includes('bank') || displayDescription.toLowerCase().includes('transfer')) displayDescription = 'Bank Transfer';
+                    } else if (tx.type === 'bill_payment') {
+                      if (displayDescription.toLowerCase().includes('dstv')) displayDescription = 'DSTv Subscription';
+                      else if (displayDescription.toLowerCase().includes('airtime')) displayDescription = 'Airtime Top-up';
+                    }
+                  }
+
+                  const pdfStatus = tx.status?.toLowerCase();
+                  let statusLabel = 'Failed';
+                  let statusColor = '#EF4444';
+                  if (pdfStatus === 'successful' || pdfStatus === 'completed') { statusLabel = 'Completed'; statusColor = '#16A34A'; }
+                  else if (pdfStatus === 'active') { statusLabel = 'Active'; statusColor = '#16A34A'; }
+                  else if (pdfStatus === 'pending') { statusLabel = 'Pending'; statusColor = '#F59E0B'; }
+
+                  const fv = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return (
+                    <tr key={tx.id} style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #EEF2FF' }}>
+                      <td style={{ padding: '14px 10px', verticalAlign: 'top' }}>
+                        <div style={{ color: '#475569', fontWeight: '600', fontSize: '11px', marginBottom: '4px' }}>{dateStr}</div>
+                        <div style={{ color: '#94A3B8', fontSize: '10px' }}>{timeStr}</div>
+                      </td>
+                      <td style={{ padding: '14px 10px', color: '#475569', verticalAlign: 'top' }}>{displayType}</td>
+                      <td style={{ padding: '14px 10px', color: '#475569', wordBreak: 'break-word', verticalAlign: 'top' }}>{displayDescription}</td>
+                      <td style={{ padding: '14px 10px', fontWeight: '600', fontSize: '10px', verticalAlign: 'top' }}>
+                        {isConversion ? (
+                          <div>
+                            <div style={{ color: '#64748B', marginBottom: '4px' }}>-{fv(baseAmountVal)} {baseCurrency}</div>
+                            <div style={{ color: '#16A34A' }}>+{fv(receiveAmountVal)} {receiveCurrency}</div>
+                          </div>
+                        ) : (
+                          <div style={{ color: isPositive ? '#16A34A' : '#64748B' }}>
+                            {isPositive ? '+' : '-'}{fv(baseAmountVal)} {baseCurrency}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '14px 10px', fontWeight: '600', color: statusColor, verticalAlign: 'top' }}>{statusLabel}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} style={{ padding: '28px', textAlign: 'center', color: '#94A3B8', fontStyle: 'italic' }}>
+                    No transactions found for this period.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* ── FOOTER (table layout) ── */}
+          <div style={{ borderTop: '1.5px solid #E2E8F0', paddingTop: '16px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><tr>
+              <td style={{ verticalAlign: 'bottom', padding: 0 }}>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0047FF', marginBottom: '3px' }}>KYVATRON</div>
+                <div style={{ fontSize: '9px', color: '#94A3B8', lineHeight: '1.5' }}>Automatically generated official account statement. For queries, contact support@kyvatron.com.</div>
+              </td>
+              <td style={{ verticalAlign: 'bottom', textAlign: 'right', padding: 0 }}>
+                <div style={{ border: '2px solid #0047FF', borderRadius: '8px', padding: '8px 14px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', fontWeight: '800', color: '#0047FF', letterSpacing: '0.08em' }}>&#10003; VERIFIED STATEMENT</div>
+                  <div style={{ fontSize: '8px', color: '#64748B', marginTop: '2px' }}>{formatStatementDate(new Date())} · kyvatron.com</div>
+                </div>
+              </td>
+            </tr></tbody></table>
+          </div>
+
         </div>
-      )}
+      </div>
 
     </div>
   );
