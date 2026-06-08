@@ -596,8 +596,8 @@ export default function HistoryPage() {
 
       {/* Calendar Overlay */}
       {showCalendar && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-0">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-5 shadow-2xl relative animate-in slide-in-from-bottom-10 fade-in">
+        <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/40 backdrop-blur-sm p-4 flex justify-center">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-5 shadow-2xl relative my-auto animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-[18px] font-bold text-[#0F172A] dark:text-white">Select Date Range</h3>
               <button onClick={() => setShowCalendar(false)} className="text-gray-400 hover:text-gray-600">
@@ -661,8 +661,8 @@ export default function HistoryPage() {
 
       {/* Download Statement Calendar Overlay */}
       {showDownloadCalendar && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 pt-3 pb-8 sm:pb-5 shadow-2xl relative animate-in slide-in-from-bottom-10 fade-in">
+        <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/40 backdrop-blur-sm p-4 flex justify-center">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-5 pt-3 pb-5 shadow-2xl relative my-auto animate-in zoom-in-95 duration-200">
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-700 rounded-full mx-auto mb-5"></div>
             
             <div className="flex justify-between items-start mb-2">
