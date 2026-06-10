@@ -890,14 +890,15 @@ export default function HistoryPage() {
       )}
 
       {/* High-Fidelity Printable PDF Statement Template */}
-      <div
-        id="kyvatron-statement-wrapper"
-        style={{
-          position: 'fixed', left: '-9999px', top: '-9999px', width: '794px', height: 'auto',
-          overflow: 'visible', zIndex: -9999, opacity: 0, pointerEvents: 'none'
-        }}
-      >
+      {downloading && (
         <div
+          id="kyvatron-statement-wrapper"
+          style={{
+            position: 'fixed', left: '-9999px', top: '-9999px', width: '794px', height: 'auto',
+            overflow: 'visible', zIndex: -9999, opacity: 0, pointerEvents: 'none'
+          }}
+        >
+          <div
           id="kyvatron-statement-template"
           className="kyvatron-pdf-template"
           style={{
@@ -1050,6 +1051,7 @@ export default function HistoryPage() {
 
         </div>
       </div>
+      )}
 
     </div>
   );
