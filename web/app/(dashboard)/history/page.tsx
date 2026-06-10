@@ -405,7 +405,7 @@ export default function HistoryPage() {
   const filteredTransactions = getFilteredTransactions();
 
   return (
-    <div className="flex flex-col px-4 sm:px-5 pt-12 min-h-screen bg-slate-50 dark:bg-slate-950 pb-10">
+    <div className="flex flex-col px-4 sm:px-5 pt-12 min-h-screen bg-slate-50 dark:bg-slate-950 pb-10 w-full max-w-full overflow-x-hidden">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center">
           <Link href="/home" className="mr-3 p-1">
@@ -423,7 +423,7 @@ export default function HistoryPage() {
           }}
           className="flex items-center justify-center space-x-1.5 text-[#0047FF] border border-[#0047FF] rounded-lg px-3 py-1.5 text-[12px] font-medium hover:bg-blue-50 transition-colors w-full sm:w-auto"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           <span>Download Statement</span>
@@ -431,19 +431,19 @@ export default function HistoryPage() {
       </header>
 
       {/* Filters */}
-      <div className="flex space-x-3 mb-8 relative">
-        <div className="relative flex-1">
+      <div className="flex space-x-3 mb-8 relative w-full min-w-0">
+        <div className="relative flex-1 min-w-0">
           <button 
             onClick={() => setShowTimeDropdown(!showTimeDropdown)}
-            className="w-full flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[14px] font-medium text-[#0F172A] dark:text-white shadow-sm"
+            className="w-full flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl px-2.5 sm:px-4 py-3 text-[13px] sm:text-[14px] font-medium text-[#0F172A] dark:text-white shadow-sm min-w-0"
           >
-            <div className="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>{selectedTime}</span>
+              <span className="truncate">{selectedTime}</span>
             </div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0047FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0047FF] flex-shrink-0 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showTimeDropdown ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
             </svg>
           </button>
@@ -454,36 +454,36 @@ export default function HistoryPage() {
                 onClick={() => handleTimeSelect('All Time')}
                 className={`w-full text-left px-4 py-3 text-[14px] flex items-center space-x-2 ${selectedTime === 'All Time' ? 'bg-blue-50 text-[#0047FF]' : 'text-[#0F172A] dark:text-white hover:bg-gray-50 dark:hover:bg-slate-800'}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>All Time</span>
+                <span className="truncate">All Time</span>
               </button>
               <button 
                 onClick={() => handleTimeSelect('Custom Date Range')}
                 className={`w-full text-left px-4 py-3 text-[14px] flex items-center space-x-2 ${selectedTime === 'Custom Date Range' ? 'bg-blue-50 text-[#0047FF]' : 'text-[#0F172A] dark:text-white hover:bg-gray-50 dark:hover:bg-slate-800'}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>Custom Date Range</span>
+                <span className="truncate">Custom Date Range</span>
               </button>
             </div>
           )}
         </div>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <button 
             onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-            className="w-full flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 text-[14px] font-medium text-[#0F172A] dark:text-white shadow-sm"
+            className="w-full flex justify-between items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl px-2.5 sm:px-4 py-3 text-[13px] sm:text-[14px] font-medium text-[#0F172A] dark:text-white shadow-sm min-w-0"
           >
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-400">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+              <span className="text-gray-400 flex-shrink-0">
                 {typeOptions.find(opt => opt.label === selectedType)?.icon}
               </span>
-              <span>{selectedType}</span>
+              <span className="truncate">{selectedType}</span>
             </div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0047FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0047FF] flex-shrink-0 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showTypeDropdown ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
             </svg>
           </button>
@@ -496,7 +496,7 @@ export default function HistoryPage() {
                   onClick={() => handleTypeSelect(option.label)}
                   className={`w-full text-left px-4 py-3 text-[14px] flex items-center space-x-3 ${selectedType === option.label ? 'bg-blue-50 text-[#0047FF] font-medium' : 'text-[#0F172A] dark:text-white hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                 >
-                  <span className={`${selectedType === option.label ? 'text-[#0047FF]' : option.color}`}>
+                  <span className={`flex-shrink-0 ${selectedType === option.label ? 'text-[#0047FF]' : option.color}`}>
                     {option.icon}
                   </span>
                   <span className="truncate">{option.label}</span>
