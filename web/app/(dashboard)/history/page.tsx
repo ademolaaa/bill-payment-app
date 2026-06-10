@@ -878,7 +878,7 @@ export default function HistoryPage() {
         </div>
       )}
 
-      {/* Premium Full-Screen Loading Overlay */}
+      {/* Premium Full-Screen Loading Overlay for Statement Generation */}
       {downloading && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
           <div className="flex flex-col items-center space-y-4">
