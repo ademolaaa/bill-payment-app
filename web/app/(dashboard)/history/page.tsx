@@ -405,8 +405,8 @@ export default function HistoryPage() {
   const filteredTransactions = getFilteredTransactions();
 
   return (
-    <div className="flex flex-col p-5 pt-12 min-h-screen bg-slate-50 dark:bg-slate-950 pb-10">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="flex flex-col px-4 sm:px-5 pt-12 min-h-screen bg-slate-50 dark:bg-slate-950 pb-10">
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center">
           <Link href="/home" className="mr-3 p-1">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-900 dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -421,7 +421,7 @@ export default function HistoryPage() {
             setDownloadEndDate(null);
             setShowDownloadCalendar(true);
           }}
-          className="flex items-center space-x-1.5 text-[#0047FF] border border-[#0047FF] rounded-lg px-3 py-1.5 text-[12px] font-medium hover:bg-blue-50 transition-colors"
+          className="flex items-center justify-center space-x-1.5 text-[#0047FF] border border-[#0047FF] rounded-lg px-3 py-1.5 text-[12px] font-medium hover:bg-blue-50 transition-colors w-full sm:w-auto"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -648,8 +648,8 @@ export default function HistoryPage() {
 
       {/* Calendar Overlay */}
       {showCalendar && (
-        <div className="fixed inset-0 z-[60] overflow-x-hidden overflow-y-auto bg-black/40 backdrop-blur-sm flex justify-center items-start pt-8 px-3">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-[calc(100vw-24px)] sm:max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
+        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-[calc(100vw-24px)] sm:max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-[18px] font-bold text-[#0F172A] dark:text-white">Select Date Range</h3>
               <button onClick={() => setShowCalendar(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
@@ -687,8 +687,8 @@ export default function HistoryPage() {
 
       {/* Download Statement Calendar Overlay */}
       {showDownloadCalendar && (
-        <div className="fixed inset-0 z-[60] overflow-x-hidden overflow-y-auto bg-black/40 backdrop-blur-sm flex justify-center items-start pt-8 px-3">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-[calc(100vw-24px)] sm:max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative my-auto animate-in zoom-in-95 duration-200 overflow-hidden">
+        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-[calc(100vw-24px)] sm:max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-[20px] font-bold text-[#0F172A] dark:text-white">Download Statement</h3>
               <button onClick={() => setShowDownloadCalendar(false)} className="text-gray-400 hover:text-gray-600 mt-1 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
@@ -893,7 +893,7 @@ export default function HistoryPage() {
       <div
         id="kyvatron-statement-wrapper"
         style={{
-          position: 'absolute', left: '0', top: '0', width: '794px', height: 'auto',
+          position: 'fixed', left: '-9999px', top: '-9999px', width: '794px', height: 'auto',
           overflow: 'visible', zIndex: -9999, opacity: 0, pointerEvents: 'none'
         }}
       >

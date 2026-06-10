@@ -33,7 +33,7 @@ const SimpleDatePicker: React.FC<SimpleDatePickerProps> = ({ label, selectedDate
       <label className="text-sm font-medium text-[#0F172A] dark:text-white">{label}</label>
       <input
         type="date"
-        className="w-full border border-gray-300 dark:border-slate-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#0047FF] bg-white dark:bg-slate-800 text-[#0F172A] dark:text-white"
+        className="w-full border border-gray-300 dark:border-slate-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-brand bg-white dark:bg-slate-800 text-[#0F172A] dark:text-white"
         value={value}
         onChange={handleChange}
       />
