@@ -189,7 +189,7 @@ function TransactionsPageContent() {
       <div className="p-5 bg-white dark:bg-[#161b22] border border-slate-200 dark:border-slate-800 rounded-2xl space-y-4">
         
         {/* Date Filter Button Group */}
-        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-50/50 dark:bg-[#0d1117]/30 border border-slate-100 dark:border-slate-800/80 rounded-xl w-fit">
+        <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-50/50 dark:bg-[#0d1117]/30 border border-slate-100 dark:border-slate-800/80 rounded-xl w-fit overflow-x-auto max-w-full">
           {[
             { id: 'all', label: 'All Time' },
             { id: 'today', label: 'Today' },

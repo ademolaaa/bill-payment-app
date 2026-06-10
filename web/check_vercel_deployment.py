@@ -3,9 +3,7 @@ from playwright.sync_api import sync_playwright
 
 def check_deployment():
     urls = [
-        "https://bill-payment-app-lovat.vercel.app",
-        "https://bill-payment-app-git-main-ademolaaa.vercel.app",
-        "https://bill-payment-app.vercel.app"
+        "https://bill-payment-app-lovat.vercel.app/"
     ]
     test_email = "production_tester_verify3@kyvatron.com"
     test_password = "Password123!"

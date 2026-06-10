@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '../../../lib/supabase/client';
+import SimpleDatePicker from '../../../components/SimpleDatePicker';
+
 
 // Date helper functions
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -74,11 +76,33 @@ const DatePicker = ({
   endDate: Date | null, setEndDate: (d: Date | null) => void
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [activeInput, setActiveInput] = useState<'start' | 'end'>('start');
 
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
-  const renderMonth = (date: Date, showPrevArrow: boolean, showNextArrow: boolean) => {
+  const handleDayClick = (date: Date) => {
+    if (activeInput === 'start') {
+      if (endDate && date > endDate) {
+        setStartDate(date);
+        setEndDate(null);
+        setActiveInput('end');
+      } else {
+        setStartDate(date);
+        setActiveInput('end');
+      }
+    } else {
+      if (startDate && date < startDate) {
+        setStartDate(date);
+        setEndDate(startDate);
+        setActiveInput('end');
+      } else {
+        setEndDate(date);
+      }
+    }
+  };
+
+  const renderMonth = (date: Date, showPrevArrow: boolean, showNextArrow: boolean, monthKey?: string) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
@@ -101,18 +125,27 @@ const DatePicker = ({
       <div>
         <div className="flex justify-between items-center mb-4 px-1">
           {showPrevArrow ? (
-            <button onClick={prevMonth} aria-label="Previous Month" title="Previous Month" className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+            <button type="button" onClick={prevMonth} aria-label="Previous Month" title="Previous Month" className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-          ) : <div className="w-6"/>}
+          ) : <div className="w-7"/>}
           <span className="text-[12px] sm:text-[13px] font-bold text-[#0F172A] dark:text-white">
             {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
           </span>
           {showNextArrow ? (
-            <button onClick={nextMonth} aria-label="Next Month" title="Next Month" className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </button>
-          ) : <div className="w-6"/>}
+            <>
+              <button 
+                type="button" 
+                onClick={nextMonth} 
+                aria-label="Next Month" 
+                title="Next Month" 
+                className={`p-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors ${monthKey === 'month1' ? 'sm:hidden' : ''}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#0F172A] dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </button>
+              {monthKey === 'month1' && <div className="w-7 hidden sm:block"/>}
+            </>
+          ) : <div className="w-7"/>}
         </div>
         <div className="grid grid-cols-7 gap-y-2 gap-x-0 sm:gap-x-1 text-center text-[10px] sm:text-[11px]">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <span key={d} className="text-gray-400 font-medium pb-2">{d}</span>)}
@@ -121,35 +154,31 @@ const DatePicker = ({
             const isSelectedEnd = endDate && d.date.getTime() === endDate.getTime();
             const isSelected = isSelectedStart || isSelectedEnd;
             const isBetween = startDate && endDate && d.date > startDate && d.date < endDate;
-            
-            const handleDayClick = () => {
-              if (!startDate || (startDate && endDate)) {
-                setStartDate(d.date);
-                setEndDate(null);
-              } else if (startDate && !endDate) {
-                if (d.date < startDate) {
-                  setEndDate(startDate);
-                  setStartDate(d.date);
-                } else {
-                  setEndDate(d.date);
-                }
-              }
-            };
 
             return (
-              <div key={idx} className="relative z-10 py-0.5" onClick={handleDayClick}>
-                {isBetween && <div className="absolute inset-y-0 left-0 right-0 bg-blue-50 dark:bg-blue-900/30 -z-10"></div>}
-                {isSelectedStart && startDate && endDate && <div className="absolute inset-y-0 right-0 left-1/2 bg-blue-50 dark:bg-blue-900/30 -z-10"></div>}
-                {isSelectedEnd && startDate && endDate && <div className="absolute inset-y-0 left-0 right-1/2 bg-blue-50 dark:bg-blue-900/30 -z-10"></div>}
-                
-                <span className={`w-6 h-6 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-full cursor-pointer transition-colors ${
-                  isSelected ? 'bg-[#0047FF] text-white font-bold shadow-md' :
-                  isBetween ? 'text-[#0F172A] dark:text-white' :
-                  d.isCurrentMonth ? 'text-[#0F172A] dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800' : 'text-gray-300 dark:text-slate-600'
-                }`}>
+              <button
+                key={idx}
+                type="button"
+                className="relative w-full py-1.5 focus:outline-none"
+                onClick={() => handleDayClick(d.date)}
+              >
+                {isBetween && <div className="absolute inset-y-0 left-0 right-0 bg-blue-50 dark:bg-blue-900/30 -z-10" />}
+                {isSelectedStart && startDate && endDate && (
+                  <div className="absolute inset-y-0 right-0 left-1/2 bg-blue-50 dark:bg-blue-900/30 -z-10" />
+                )}
+                {isSelectedEnd && startDate && endDate && (
+                  <div className="absolute inset-y-0 left-0 right-1/2 bg-blue-50 dark:bg-blue-900/30 -z-10" />
+                )}
+                <span
+                  className={`w-7 h-7 sm:w-9 sm:h-9 mx-auto flex items-center justify-center rounded-full transition-colors ${
+                    isSelected ? 'bg-[#0047FF] text-white font-bold shadow-md' :
+                    isBetween ? 'text-[#0F172A] dark:text-white' :
+                    d.isCurrentMonth ? 'text-[#0F172A] dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800' : 'text-gray-300 dark:text-slate-600'
+                  }`}
+                >
                   {d.day}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -161,15 +190,38 @@ const DatePicker = ({
 
   return (
     <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
-        {renderMonth(currentDate, true, false)}
-        <div className="hidden sm:block">
-          {renderMonth(nextMonthDate, false, true)}
+      {/* Clickable From/To boxes inside DatePicker! */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 space-y-3 sm:space-y-0 sm:space-x-3 w-full">
+        <div className="flex-1 w-full">
+          <SimpleDatePicker
+            label="From"
+            selectedDate={startDate}
+            onSelect={(date) => setStartDate(date)}
+          />
+        </div>
+        <div className="sm:pt-5 text-gray-400 flex-shrink-0 self-center sm:self-start">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:hidden transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </div>
+        <div className="flex-1 w-full">
+          <SimpleDatePicker
+            label="To"
+            selectedDate={endDate}
+            onSelect={(date) => setEndDate(date)}
+          />
         </div>
       </div>
-      <div className="sm:hidden flex justify-between items-center -mt-4 mb-4 px-2">
-        <button onClick={prevMonth} className="text-gray-500 text-[12px] font-bold p-2">&larr; Prev</button>
-        <button onClick={nextMonth} className="text-blue-600 text-[12px] font-bold p-2">Next &rarr;</button>
+
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+        {renderMonth(currentDate, true, true, 'month1')}
+        <div className="hidden sm:block">
+          {renderMonth(nextMonthDate, false, true, 'month2')}
+        </div>
       </div>
     </div>
   );
@@ -596,41 +648,15 @@ export default function HistoryPage() {
 
       {/* Calendar Overlay */}
       {showCalendar && (
-        <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/40 backdrop-blur-sm p-4 flex justify-center">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-5 shadow-2xl relative my-auto animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[60] overflow-x-hidden overflow-y-auto bg-black/40 backdrop-blur-sm flex justify-center items-start pt-8 px-3">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-[calc(100vw-24px)] sm:max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden my-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-[18px] font-bold text-[#0F172A] dark:text-white">Select Date Range</h3>
-              <button onClick={() => setShowCalendar(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowCalendar(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-            </div>
-
-            <div className="flex items-center justify-between mb-8 space-x-3">
-              <div className="flex-1">
-                <label className="text-[12px] text-[#64748B] mb-1 block font-medium">From</label>
-                <div className={`border ${!filterStartDate || (filterStartDate && filterEndDate) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 dark:border-slate-800'} rounded-xl p-3 flex items-center space-x-2`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(filterStartDate)}</span>
-                </div>
-              </div>
-              <div className="pt-5 text-gray-400 flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <label className="text-[12px] text-[#64748B] mb-1 block font-medium">To</label>
-                <div className={`border ${filterStartDate && !filterEndDate ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 dark:border-slate-800'} rounded-xl p-3 flex items-center space-x-2`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(filterEndDate)}</span>
-                </div>
-              </div>
             </div>
 
             {/* Interactive Calendar */}
@@ -661,48 +687,20 @@ export default function HistoryPage() {
 
       {/* Download Statement Calendar Overlay */}
       {showDownloadCalendar && (
-        <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/40 backdrop-blur-sm p-4 flex justify-center">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-5 pt-3 pb-5 shadow-2xl relative my-auto animate-in zoom-in-95 duration-200">
-            <div className="w-10 h-1 bg-gray-200 dark:bg-slate-700 rounded-full mx-auto mb-5"></div>
-            
+        <div className="fixed inset-0 z-[60] overflow-x-hidden overflow-y-auto bg-black/40 backdrop-blur-sm flex justify-center items-start pt-8 px-3">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-[calc(100vw-24px)] sm:max-w-md rounded-3xl p-4 sm:p-6 shadow-2xl relative my-auto animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-[20px] font-bold text-[#0F172A] dark:text-white">Download Statement</h3>
-              <button onClick={() => setShowDownloadCalendar(false)} className="text-gray-400 hover:text-gray-600 mt-1">
+              <button onClick={() => setShowDownloadCalendar(false)} className="text-gray-400 hover:text-gray-600 mt-1 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             
-            <p className="text-[14px] text-[#64748B] mb-8">
+            <p className="text-[14px] text-[#64748B] mb-6">
               Select a date range to generate and download your transaction statement.
             </p>
-
-            <div className="flex items-center justify-between mb-8 space-x-3">
-              <div className="flex-1">
-                <label className="text-[12px] text-[#64748B] mb-1 block font-medium">From</label>
-                <div className={`border ${!downloadStartDate || (downloadStartDate && downloadEndDate) ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 dark:border-slate-800'} rounded-xl p-3 flex items-center space-x-2 bg-white dark:bg-slate-900`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(downloadStartDate)}</span>
-                </div>
-              </div>
-              <div className="pt-5 text-gray-400 flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <label className="text-[12px] text-[#64748B] mb-1 block font-medium">To</label>
-                <div className={`border ${downloadStartDate && !downloadEndDate ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-200 dark:border-slate-800'} rounded-xl p-3 flex items-center space-x-2 bg-white dark:bg-slate-900`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-[14px] text-[#0F172A] dark:text-white font-medium whitespace-nowrap">{formatDate(downloadEndDate)}</span>
-                </div>
-              </div>
-            </div>
 
             {/* Interactive Calendar */}
             <DatePicker 
