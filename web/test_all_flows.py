@@ -16,7 +16,7 @@ def run_tests():
     test_email = "tester_dynamic@kyvatron.com"
     test_password = "Password123!"
     max_retries = 3
-    base_url = "http://localhost:3999"
+    base_url = "https://bill-payment-app-lovat.vercel.app"
     
     print(f"[*] Target user account: {test_email}")
 

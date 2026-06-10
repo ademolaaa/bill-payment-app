@@ -218,23 +218,24 @@ def run_tests():
             page.click('button:has-text("Download Statement")')
             page.wait_for_selector('h3:has-text("Download Statement")', timeout=5000)
             
-            # Wait for calendar days to render inside the modal
-            page.locator('div.fixed span.cursor-pointer').first.wait_for(state="visible")
-            days = page.locator('div.fixed span.cursor-pointer').all()
-            print(f"[*] Found {len(days)} calendar day spans inside the modal.")
+            # Wait for calendar or inputs to render inside the modal
+            page.wait_for_timeout(2000)
             
-            # Click two days to set From and To range
-            if len(days) >= 11:
-                print("[*] Selecting range: Clicking start date (index 5) and end date (index 10)...")
+            # Click the inputs or fill dates
+            print("[*] Selecting range...")
+            inputs = page.locator('input[type="date"]').all()
+            if len(inputs) >= 2:
+                print("[*] Using simple date inputs...")
+                inputs[0].fill("2026-06-01")
+                page.wait_for_timeout(1000)
+                inputs[1].fill("2026-06-30")
+                page.wait_for_timeout(1000)
+            else:
+                print("[*] Fallback: Clicking day buttons...")
+                days = page.locator('div.fixed button').all()
                 days[5].click()
                 page.wait_for_timeout(1000)
                 days[10].click()
-                page.wait_for_timeout(1000)
-            else:
-                print("[*] Calendar day list shorter than expected. Clicking first day twice...")
-                days[0].click()
-                page.wait_for_timeout(1000)
-                days[0].click()
                 page.wait_for_timeout(1000)
 
             print("[*] Triggering PDF generation and script loading...")

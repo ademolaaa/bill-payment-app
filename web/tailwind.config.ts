@@ -16,7 +16,12 @@ const config: Config = {
           card: '#FFFFFF', // Pure white
           success: '#16A34A', // Accessible green
           danger: '#DC2626', // Accessible red
-        }
+        },
+        brand: {
+          DEFAULT: '#0047FF', // Primary brand blue
+          light: '#F0F5FF', // Light blue background
+          dark: '#1D4ED8', // Darker blue for hover/focus
+        },
       }
     },
   },
